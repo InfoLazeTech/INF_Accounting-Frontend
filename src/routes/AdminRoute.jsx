@@ -1,10 +1,12 @@
 // src/routes/AdminRoute.jsx
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const AdminRoute = ({ children }) => {
-  const isLoggedIn = true; // Replace with actual auth check
-  return isLoggedIn ? children : <Navigate to="/login" />;
+  const token = useSelector((state) => state.auth.token) || localStorage.getItem("token"); // check if logged in
+
+  return token ? children : <Navigate to="/login" replace />;
 };
 
 export default AdminRoute;

@@ -13,6 +13,8 @@ import {
   MenuFoldOutlined,
 } from "@ant-design/icons";
 import { Outlet, Link, useNavigate } from "react-router-dom";
+import { logoutUser } from "../redux/slice/auth/authSlice";
+import { useDispatch } from "react-redux";
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -20,6 +22,7 @@ const { Text } = Typography;
 const DashboardLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const toggleCollapse = () => setCollapsed(!collapsed);
 
@@ -68,7 +71,11 @@ const DashboardLayout = () => {
       <Menu.Item
         key="logout"
         icon={<LogoutOutlined />}
-        onClick={() => navigate("/login")}
+           onClick={async () => {
+        await dispatch(logoutUser());
+        navigate("/login", { replace: true });
+      }}
+        
       >
         Logout
       </Menu.Item>

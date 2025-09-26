@@ -1,11 +1,12 @@
 // src/routes/PublicRoute.jsx
-import React from 'react';
-import { Navigate } from 'react-router-dom';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const PublicRoute = ({ children }) => {
-  const isLoggedIn = false; // Replace with actual auth check
-  return !isLoggedIn ? children : <Navigate to="/dashboard" />;
+  const token = useSelector((state) => state.auth.token); // check if logged in
+
+  return !token ? children : <Navigate to="/dashboard" replace />;
 };
 
 export default PublicRoute;
-

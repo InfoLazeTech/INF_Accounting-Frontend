@@ -19,14 +19,14 @@ export const registerUser = createAsyncThunk(
   async (userData, { dispatch, rejectWithValue }) => {
     try {
       // 1. Call register API
-      const res = await authService.register(userData);
+      await authService.register(userData);
 
       // 2. Auto-login using email + password from signup
       const loginRes = await dispatch(
         loginUser({ email: userData.email, password: userData.password })
       ).unwrap();
 
-      // Return combined result
+      // Return user + token
       return { user: loginRes.user, token: loginRes.token };
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
@@ -40,14 +40,12 @@ export const logoutUser = createAsyncThunk("auth/logout", async () => {
   return true;
 });
 
-// Load token from localStorage on app start
-const token = localStorage.getItem("token")
-  ? localStorage.getItem("token")
-  : null;
-
+// Load initial state from localStorage
 const initialState = {
-  user: null,
-  token: token,
+  user: localStorage.getItem("user")
+    ? JSON.parse(localStorage.getItem("user"))
+    : null,
+  token: localStorage.getItem("token") || null,
   loading: false,
   error: null,
 };
@@ -62,6 +60,7 @@ const authSlice = createSlice({
       state.error = null;
       state.loading = false;
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
     },
   },
   extraReducers: (builder) => {
@@ -76,6 +75,7 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         localStorage.setItem("token", action.payload.token);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
@@ -91,6 +91,7 @@ const authSlice = createSlice({
         state.user = action.payload.user;
         state.token = action.payload.token;
         localStorage.setItem("token", action.payload.token);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -101,6 +102,7 @@ const authSlice = createSlice({
         state.user = null;
         state.token = null;
         localStorage.removeItem("token");
+        localStorage.removeItem("user");
       });
   },
 });

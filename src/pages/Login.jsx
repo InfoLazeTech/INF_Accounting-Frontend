@@ -1,16 +1,25 @@
 import React from 'react';
 import { Row, Col, Card, Form, Button, Typography } from 'antd';
 import CustomInput from '../component/CustomInput';
-import { Link } from 'react-router-dom';
+import { Link,useNavigate} from 'react-router-dom';
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../redux/slice/auth/authSlice";
 
 const { Title, Text } = Typography;
 
 export default function Login() {
   const [form] = Form.useForm();
-
-  const onFinish = (values) => {
-    console.log('Login Values:', values);
-    // Handle login logic
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
+  const { loading, error } = useSelector((state) => state.auth);
+  const onFinish =async (values) => {
+    try {
+      await dispatch(loginUser(values)).unwrap();
+      navigate("/dashboard"); // ✅ redirect after login
+    } catch (err) {
+      console.log("Login failed:", err);
+    }
   };
 
   return (
@@ -51,7 +60,7 @@ export default function Login() {
             />
 
             <Form.Item>
-              <Button type="primary" htmlType="submit" block>
+              <Button type="primary" htmlType="submit" block loading={loading}>
                 Login
               </Button>
             </Form.Item>
