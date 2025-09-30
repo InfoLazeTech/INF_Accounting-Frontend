@@ -1,9 +1,9 @@
 import React from 'react';
 import { Row, Col, Card, Form, Button, Typography } from 'antd';
-import CustomInput from '../component/CustomInput';
+import CustomInput from '../../component/commonComponent/CustomInput';
 import { Link,useNavigate} from 'react-router-dom';
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../redux/slice/auth/authSlice";
+import { loginUser } from "../../redux/slice/auth/authSlice";
 
 const { Title, Text } = Typography;
 
@@ -12,7 +12,7 @@ export default function Login() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.auth);
   const onFinish =async (values) => {
     try {
       await dispatch(loginUser(values)).unwrap();

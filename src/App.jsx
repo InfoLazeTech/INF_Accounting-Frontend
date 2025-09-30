@@ -1,18 +1,21 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import About from "./pages/About";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Signup from "./pages/SignUp";
-import CompanyDetail from "./pages/CompanyDetail";
-import SignupOTP from "./pages/SignupOtp";
-import DashboardLayout from "./component/DashboardLayout";
+import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
+import CompanyDetail from "./pages/auth/CompanyDetail";
 import PublicRoute from "./routes/PublicRoute";
 import AdminRoute from "./routes/AdminRoute";
-import Customer from "./pages/Customer";
-import AddCustomer from "./pages/AddCustomer";
-import EditCustomer from "./pages/EditCustomer";
-import SettingsLayout from "./pages/settings/SettingsLayout";
+import Customer from "./pages/customer/Customer";
+import AddCustomer from "./pages/customer/AddCustomer";
+import EditCustomer from "./pages/customer/EditCustomer";
 import Profile from "./pages/settings/Profile";
+import AppLayout from "./component/layout/AppLayout";
+import SignupOTP from "./pages/auth/SignupOtp";
 
 export default function App() {
   return (
@@ -52,12 +55,11 @@ export default function App() {
           }
         />
 
-        {/* Dashboard/Admin routes */}
         <Route
-          path="/dashboard/*"
+          path="/"
           element={
             <AdminRoute>
-              <DashboardLayout />
+              <AppLayout />
             </AdminRoute>
           }
         >
@@ -68,8 +70,7 @@ export default function App() {
           <Route path="profile" element={<Profile />} />
         </Route>
 
-        {/* Root redirect */}
-        <Route path="/" element={<Login />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );

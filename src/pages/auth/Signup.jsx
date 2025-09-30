@@ -1,9 +1,8 @@
-// src/pages/Signup.jsx
-import React, { useState } from "react";
+import { useState } from "react";
 import { Row, Col, Card, Form, Button, Steps, Typography } from "antd";
-import CustomInput from "../component/CustomInput";
 import { Link } from "react-router-dom";
 import {  useNavigate } from "react-router-dom";
+import CustomInput from "../../component/commonComponent/CustomInput";
 
 const { Step } = Steps;
 const { Text } = Typography;

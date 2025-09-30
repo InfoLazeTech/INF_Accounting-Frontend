@@ -1,9 +1,9 @@
 // src/pages/CompanyDetail.jsx
 import React from "react";
 import { Row, Col, Card, Form, Button } from "antd";
-import CustomInput from "../component/CustomInput";
+import CustomInput from "../../component/commonComponent/CustomInput";
 import { useLocation, useNavigate } from "react-router-dom";
-import { registerUser } from "../redux/slice/auth/authSlice";
+import { registerUser } from "../../redux/slice/auth/authSlice";
 import { useDispatch } from "react-redux";
 
 export default function CompanyDetail() {

@@ -1,5 +1,5 @@
-// src/pages/AddCustomer.jsx
-import React from "react";
+// src/pages/EditCustomer.jsx
+import React, { useEffect } from "react";
 import {
   Card,
   Form,
@@ -11,44 +11,61 @@ import {
   Select,
   Typography,
 } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
-const AddCustomer = () => {
+const EditCustomer = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const { id } = useParams();
+
+  // Mock fetch data for editing
+  const customerData = {
+    code: "CUST001",
+    name: "John Doe",
+    company: "Tech Solutions",
+    email: "john@example.com",
+    phone: "9876543210",
+    companyType: "Private Limited",
+    openingBalance: 5000,
+    currentBalance: 3000,
+    status: "Active",
+  };
+
+  useEffect(() => {
+    // Set form fields with customer data
+    form.setFieldsValue(customerData);
+  }, [form]);
 
   const onFinish = (values) => {
-    console.log("New Customer:", values);
-    // API call to save customer goes here
-    navigate("/dashboard/customer"); // redirect back to customer list
+    console.log("Updated Customer:", values);
+    // API call to update customer goes here
+    navigate("/dashboard/customer"); // redirect back to list
   };
 
   return (
     <Card
-      style={{ maxWidth: 1200, margin: "0 auto" }}
-      bodyStyle={{ padding: 24 }}
+      bodyStyle={{ padding: 24, boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}
     >
-      {/* Header with Back Arrow */}
+      {/* Header with Back Button */}
       <Row align="middle" style={{ marginBottom: 24 }}>
         <Col>
           <Button
             type="text"
             icon={<ArrowLeftOutlined />}
-            onClick={() => navigate("/dashboard/customer")}
+            onClick={() => navigate("/customer")}
             style={{ marginRight: 8 }}
           />
         </Col>
         <Col>
           <Title level={3} style={{ margin: 0 }}>
-            Add Customer
+            Edit Customer
           </Title>
         </Col>
       </Row>
 
-      {/* Form */}
       <Form form={form} layout="vertical" onFinish={onFinish}>
         <Row gutter={16}>
           <Col span={8}>
@@ -152,7 +169,7 @@ const AddCustomer = () => {
             </Col>
             <Col>
               <Button type="primary" htmlType="submit">
-                Save Customer
+                Save Changes
               </Button>
             </Col>
           </Row>
@@ -162,4 +179,4 @@ const AddCustomer = () => {
   );
 };
 
-export default AddCustomer;
+export default EditCustomer;

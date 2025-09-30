@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as authService from "../auth/authService";
+import Toast from "../../../component/commonComponent/Toast";
 
-// Login thunk
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (credentials, { rejectWithValue }) => {
@@ -13,20 +13,15 @@ export const loginUser = createAsyncThunk(
   }
 );
 
-// Register thunk with auto-login
 export const registerUser = createAsyncThunk(
   "auth/register",
   async (userData, { dispatch, rejectWithValue }) => {
     try {
-      // 1. Call register API
       await authService.register(userData);
-
-      // 2. Auto-login using email + password from signup
       const loginRes = await dispatch(
         loginUser({ email: userData.email, password: userData.password })
       ).unwrap();
 
-      // Return user + token
       return { user: loginRes.user, token: loginRes.token };
     } catch (err) {
       return rejectWithValue(err.response?.data || err.message);
@@ -34,18 +29,14 @@ export const registerUser = createAsyncThunk(
   }
 );
 
-// Logout thunk
 export const logoutUser = createAsyncThunk("auth/logout", async () => {
   await authService.logout();
   return true;
 });
 
-// Load initial state from localStorage
 const initialState = {
-  user: localStorage.getItem("user")
-    ? JSON.parse(localStorage.getItem("user"))
-    : null,
-  token: localStorage.getItem("token") || null,
+  user: null,
+  token: null,
   loading: false,
   error: null,
 };
@@ -59,39 +50,33 @@ const authSlice = createSlice({
       state.token = null;
       state.error = null;
       state.loading = false;
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
     },
   },
   extraReducers: (builder) => {
     builder
-      // Register
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(registerUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
+        state.user = action.payload.data.user;
         state.token = action.payload.token;
-        localStorage.setItem("token", action.payload.token);
-        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-      // Login
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload.user;
+        state.user = action.payload.data.user;
         state.token = action.payload.token;
-        localStorage.setItem("token", action.payload.token);
-        localStorage.setItem("user", JSON.stringify(action.payload.user));
+        state.message = action.payload.message;
+        Toast.success(state.message);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
@@ -101,8 +86,6 @@ const authSlice = createSlice({
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.token = null;
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
       });
   },
 });

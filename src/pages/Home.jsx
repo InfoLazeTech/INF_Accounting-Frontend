@@ -1,6 +1,6 @@
 import React from 'react';
 import { Form, Button, Card } from 'antd';
-import CustomInput from '../component/CustomInput';
+import CustomInput from '../component/commonComponent/CustomInput';
 
 export default function Home() {
   const [form] = Form.useForm();

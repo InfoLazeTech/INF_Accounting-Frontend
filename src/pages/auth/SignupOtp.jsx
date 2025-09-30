@@ -1,8 +1,7 @@
-// src/pages/SignupOTP.jsx
-import React from 'react';
 import { Row, Col, Card, Form, Button, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import CustomInput from '../component/CustomInput';
+import CustomInput from '../../component/commonComponent/CustomInput';
+// import CustomInput from '../component/CustomInput';
 
 const { Title, Text } = Typography;
 
