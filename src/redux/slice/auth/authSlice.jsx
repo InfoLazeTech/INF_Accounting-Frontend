@@ -37,6 +37,7 @@ export const logoutUser = createAsyncThunk("auth/logout", async () => {
 const initialState = {
   user: null,
   token: null,
+  companyId: null,
   loading: false,
   error: null,
 };
@@ -48,6 +49,7 @@ const authSlice = createSlice({
     resetAuth: (state) => {
       state.user = null;
       state.token = null;
+      state.companyId = null;
       state.error = null;
       state.loading = false;
     },
@@ -74,6 +76,7 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.data.user;
+        state.companyId = action.payload.data.user.company?._id;
         state.token = action.payload.token;
         state.message = action.payload.message;
         Toast.success(state.message);

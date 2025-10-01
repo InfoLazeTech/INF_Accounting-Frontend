@@ -59,6 +59,12 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
       label: "Customer",
       path: "/customer",
     },
+     {
+      key: "6",
+      icon: <Icons.CreditCardOutlined/>,
+      label: "Item",
+      path: "/item",
+    },
   ];
 
   const handleMenuClick = ({ key }) => {

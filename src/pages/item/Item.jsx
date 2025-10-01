@@ -1,88 +1,67 @@
-import { useState } from "react";
-import {
-  Card,
-  Row,
-  Col,
-  Typography,
-  Button,
-  Input,
-  message,
-  Space,
-  Table,
-} from "antd";
+import React, { useEffect } from "react";
+import { Card, Row, Col, Button, Input, Space, message, Popconfirm } from "antd";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import CustomTable from "../../component/commonComponent/CustomTable";
 import Icons from "../../assets/icon";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  getCustomersVendors,
-  deleteCustomerVendor,
-} from "../../redux/slice/customer/customerVendorSlice";
-import { Popconfirm } from "antd";
+import { getItem, deleteItem } from "../../redux/slice/item/itemSlice";
 
-const Customer = () => {
+const Item = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { customers, loading, error } = useSelector(
-    (state) => state.customerVendor
-  );
+  const { items, loading } = useSelector((state) => state.item);
 
+ 
   useEffect(() => {
-    dispatch(getCustomersVendors());
+    dispatch(getItem());
   }, [dispatch]);
-
-  // Handle errors
-  useEffect(() => {
-    if (error) message.error(error);
-  }, [error]);
-
   const columns = [
     {
-      title: "Code",
-      dataIndex: "customerVendorId",
-      key: "customerVendorId",
+      title: "Item Code",
+      dataIndex: "itemId",
+      key: "itemId",
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
     {
-      title: "Company Name",
+      title: "Item Name",
       dataIndex: "name",
       key: "name",
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-
     {
-      title: "Email",
-      dataIndex: "email",
-      key: "email",
-      onHeaderCell: () => ({
-        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-      }),
-    },
-    {
-      title: "Customer Name",
-      dataIndex: "contactPerson",
-      key: "contactPerson",
+      title: "Category",
+      dataIndex: "category",
+      key: "category",
+      render: (cat) => cat?.name || "-",
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
     {
       title: "Status",
-      dataIndex: "status",
+      dataIndex: "isActive",
       key: "status",
+      render: (status) => (status ? "Active" : "Inactive"),
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
     {
-      title: "Work Phone",
-      dataIndex: "phone",
-      key: "phone",
+      title: "Opening Stock",
+      dataIndex: "openingStock",
+      key: "openingStock",
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
+    },
+    {
+      title: "Available Stock",
+      dataIndex: "availableStock",
+      key: "availableStock",
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
@@ -95,18 +74,18 @@ const Customer = () => {
           <Button
             type="primary"
             icon={<Icons.EditOutlined />}
-            onClick={() => navigate(`/customer/edit/${record._id}`)}
+            onClick={() => navigate(`/item/edit/${record._id}`)}
           />
-        <Popconfirm
-            title="Are you sure you want to delete this customer?"
+          <Popconfirm
+            title="Are you sure you want to delete this item?"
             okText="Yes"
             cancelText="No"
             onConfirm={async () => {
               try {
-                await dispatch(deleteCustomerVendor(record._id)).unwrap();
-                message.success("Customer deleted successfully");
+                await dispatch(deleteItem(record._id)).unwrap();
+                message.success("Item deleted successfully");
               } catch (err) {
-                message.error(err || "Failed to delete customer");
+                message.error(err || "Failed to delete item");
               }
             }}
           >
@@ -118,47 +97,37 @@ const Customer = () => {
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-
   ];
 
   return (
     <div className="m-4">
+      {/* Header */}
       <Card style={{ marginBottom: 16 }} bodyStyle={{ padding: "12px 20px" }}>
         <Row align="middle" justify="space-between">
           <Col>
-            <div className="text-xl font-semibold">View Customers</div>
+            <div className="text-xl font-semibold">View Items</div>
           </Col>
           <Col>
             <Space size="middle">
-              {/* <Button size="middle" style={{ fontSize: 16, fontWeight: 400 }}>
-                Export Customer
-              </Button>
-              <Button
-                type="primary"
-                icon={<UploadOutlined />}
-                size="middle"
-                style={{ fontSize: 16, fontWeight: 400 }}
-              >
-                Add Bulk Customer
-              </Button> */}
               <Button
                 type="primary"
                 icon={<Icons.PlusCircleOutlined />}
                 size="middle"
-                onClick={() => navigate("/customer/add")}
+                onClick={() => navigate("/item/add")}
               >
-                Add Customer
+                Add Item
               </Button>
             </Space>
           </Col>
         </Row>
       </Card>
 
+      {/* Search / Filter */}
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={10}>
             <Input
-              placeholder="Search by customer name"
+              placeholder="Search by Item name"
               suffix={
                 <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <span
@@ -168,7 +137,7 @@ const Customer = () => {
                       display: "inline-block",
                     }}
                   />
-                  <Icons.SearchOutlined className="" />
+                  <Icons.SearchOutlined />
                 </span>
               }
               style={{ borderRadius: 6, height: 36 }}
@@ -176,11 +145,7 @@ const Customer = () => {
           </Col>
           <Col span={14} style={{ textAlign: "right" }}>
             <Space>
-              <Button
-                type="primary"
-                icon={<Icons.FilterOutlined />}
-                size="middle"
-              >
+              <Button type="primary" icon={<Icons.FilterOutlined />} size="middle">
                 Apply Filter
               </Button>
             </Space>
@@ -188,18 +153,18 @@ const Customer = () => {
         </Row>
       </Card>
 
+      {/* Table */}
       <Card>
         <CustomTable
-          tableId="key"
-          data={customers}
-          loading={loading}
-          // bordered
+          tableId="itemId"
           columns={columns}
-          pagination={{ current: 1, pageSize: 10, total: 20 }}
+          data={items || []}
+          loading={loading}
+          pagination={{ current: 1, pageSize: 10, total: items?.length || 0 }}
         />
       </Card>
     </div>
   );
 };
 
-export default Customer;
+export default Item;

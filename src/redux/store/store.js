@@ -3,9 +3,17 @@ import storage from "redux-persist/lib/storage";
 import persistReducer from "redux-persist/es/persistReducer";
 import persistStore from "redux-persist/es/persistStore";
 import authReducer from "../slice/auth/authSlice";
+import customerVendorReducer from "../slice/customer/customerVendorSlice";
+import companyReducer from "../slice/company/companySlice";
+import categoryReducer from "../slice/category/categorySlice";
+import itemReducer from '../slice/item/itemSlice'
 
 const appReducer = combineReducers({
-    auth: authReducer,
+  auth: authReducer,
+  customerVendor: customerVendorReducer,
+  company: companyReducer,
+    item: itemReducer,
+    category:categoryReducer,
 });
 
 // Root reducer that can handle resetting all slices

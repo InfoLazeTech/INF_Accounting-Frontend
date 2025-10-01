@@ -1,32 +1,83 @@
-import {
-  Card,
-  Form,
-  Input,
-  InputNumber,
-  Button,
-  Row,
-  Col,
-  Select,
-  Typography,
-} from "antd";
-import { useNavigate } from "react-router-dom";
+import { Card, Form, Button, Row, Col, message, Spin, Typography } from "antd";
+import CustomInput from "../../component/commonComponent/CustomInput";
+import { useNavigate, useParams } from "react-router-dom";
 import Icons from "../../assets/icon";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addCustomerVendor,
+  getCustomerVendorById,
+  updateCustomerVendor,
+} from "../../redux/slice/customer/customerVendorSlice";
+import { useEffect } from "react";
 
 const { Title } = Typography;
 
 const AddCustomer = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const {customerId} = useParams();
+  const { customer, loading, postLoading } = useSelector(
+    (state) => state.customerVendor
+  );
 
-  const onFinish = (values) => {
-    console.log("New Customer:", values);
-    // API call to save customer goes here
-    navigate("/dashboard/customer"); // redirect back to customer list
+  useEffect(() => {
+    if (customerId) {
+      dispatch(getCustomerVendorById(customerId));
+    }
+  }, [customerId, dispatch]);
+
+  useEffect(() => {
+    if (customerId && customer) {
+      form.setFieldsValue({
+        type: customer.type?.isCustomer ? "customer" : "vendor",
+        name: customer ? customer.name : "",
+        contactPerson: customer ? customer.contactPerson : "",
+        email: customer.email || "",
+        phone: customer.phone || "",
+        gstNumber: customer.gstNumber || "",
+        creditLimit: customer.creditLimit || "",
+        paymentTerms: customer.paymentTerms || "",
+        status: customer.status || "Active",
+        billingAddress: {
+          street: customer.billingAddress?.street || "",
+          city: customer.billingAddress?.city || "",
+          state: customer.billingAddress?.state || "",
+          zip: customer.billingAddress?.zip || "",
+          country: customer.billingAddress?.country || "",
+        },
+        shippingAddress: {
+          street: customer.shippingAddress?.street || "",
+          city: customer.shippingAddress?.city || "",
+          state: customer.shippingAddress?.state || "",
+          zip: customer.shippingAddress?.zip || "",
+          country: customer.shippingAddress?.country || "",
+        },
+      });
+    }
+  }, [customerId, customer, form]);
+
+  const onFinish = async (values) => {
+    const payload = {
+      name: values.name,
+      type:
+        values.type === "customer"
+          ? { isCustomer: true, isVendor: false }
+          : { isCustomer: false, isVendor: true },
+    };
+
+      if (customerId) {
+        await dispatch(updateCustomerVendor({ customerId, data: payload })).unwrap();
+        navigate("/customer");
+      } else {
+        await dispatch(addCustomerVendor(payload)).unwrap();
+        navigate("/customer");
+      }
   };
 
   return (
     <div className="!relative">
-      <Card className="!p-3 !m-4">
+      <Card className="!p-3 !m-4 !pb-10">
         <Row align="middle" style={{ marginBottom: 24 }}>
           <Col>
             <Button
@@ -38,120 +89,226 @@ const AddCustomer = () => {
           </Col>
           <Col>
             <Title level={3} style={{ margin: 0 }}>
-              Add Customer
+              {customerId ? "Edit Customer" : "Add Customer"}
             </Title>
           </Col>
         </Row>
 
         {/* Form */}
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          className="min-h-[70vh] !px-2"
-        >
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item
-                name="code"
-                label="Customer Code"
-                rules={[
-                  { required: true, message: "Please enter customer code" },
-                ]}
-              >
-                <Input placeholder="Enter customer code" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item
-                name="name"
-                label="Customer Name"
-                rules={[
-                  { required: true, message: "Please enter customer name" },
-                ]}
-              >
-                <Input placeholder="Enter customer name" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item
-                name="company"
-                label="Company Name"
-                rules={[
-                  { required: true, message: "Please enter company name" },
-                ]}
-              >
-                <Input placeholder="Enter company name" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: "Please enter email" },
-                  { type: "email", message: "Please enter a valid email" },
-                ]}
-              >
-                <Input placeholder="Enter email address" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="phone" label="Work Phone">
-                <Input placeholder="Enter phone number" />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="companyType" label="Company Type">
-                <Select
-                  placeholder="Select company type"
+        {loading && customerId ? (
+          <div className="flex items-center justify-center h-[60vh]">
+            <Spin tip="Loading..." />
+          </div>
+        ) : (
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={onFinish}
+            className="min-h-[70vh] !px-2"
+          >
+            {/* Customer / Vendor Selection */}
+            <Row gutter={16}>
+              <Col span={24}>
+                <CustomInput
+                  type="radio"
+                  name="type"
+                  label="Type"
                   options={[
-                    { value: "Private Limited", label: "Private Limited" },
-                    { value: "Partnership", label: "Partnership" },
-                    { value: "Proprietorship", label: "Proprietorship" },
+                    { label: "Customer", value: "customer" },
+                    { label: "Vendor", value: "vendor" },
+                  ]}
+                  rules={[{ required: true, message: "Please select type" }]}
+                />
+              </Col>
+            </Row>
+
+            {/* Basic Info */}
+            <Row gutter={16}>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name="name"
+                  label="Enter Company Name"
+                  placeholder="Enter name"
+                  rules={[{ required: true, message: "Please enter name" }]}
+                />
+              </Col>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name="contactPerson"
+                  label="Contact Person"
+                  placeholder="Enter contact person"
+                />
+              </Col>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name="email"
+                  label="Email"
+                  placeholder="Enter email address"
+                  rules={[
+                    { required: true, message: "Please enter email" },
+                    { type: "email", message: "Please enter a valid email" },
                   ]}
                 />
-              </Form.Item>
-            </Col>
-          </Row>
+              </Col>
+            </Row>
 
-          <Row gutter={16}>
-            <Col span={8}>
-              <Form.Item name="openingBalance" label="Opening Balance">
-                <InputNumber
-                  placeholder="Enter opening balance"
-                  style={{ width: "100%" }}
+            <Row gutter={16}>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name="phone"
+                  label="Phone"
+                  placeholder="Enter phone number"
                 />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="currentBalance" label="Current Balance">
-                <InputNumber
-                  placeholder="Enter current balance"
-                  style={{ width: "100%" }}
+              </Col>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name="gstNumber"
+                  label="GST Number"
+                  placeholder="Enter GST number"
                 />
-              </Form.Item>
-            </Col>
-            <Col span={8}>
-              <Form.Item name="status" label="Status">
-                <Select
-                  placeholder="Select status"
+              </Col>
+              <Col span={8}>
+                <CustomInput
+                  type="number"
+                  name="creditLimit"
+                  label="Credit Limit"
+                  placeholder="Enter credit limit"
+                />
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={8}>
+                <CustomInput
+                  type="select"
+                  name="paymentTerms"
+                  label="Payment Terms"
+                  placeholder="Select payment terms"
                   options={[
-                    { value: "Active", label: "Active" },
-                    { value: "Inactive", label: "Inactive" },
+                    { value: "Prepaid", label: "Prepaid" },
+                    { value: "Net 15", label: "Net 15" },
+                    { value: "Net 30", label: "Net 30" },
+                    { value: "Custom", label: "Custom" },
                   ]}
                 />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
+              </Col>
+              <Col span={15}>
+                <CustomInput
+                  type="radio"
+                  name="status"
+                  label="Status"
+                  options={[
+                    { label: "Active", value: "Active" },
+                    { label: "Inactive", value: "Inactive" },
+                  ]}
+                  default="Active"
+                  rules={[{ required: true, message: "Please select status" }]}
+                />
+              </Col>
+            </Row>
+
+            {/* Billing Address */}
+            <Title level={4}>Billing Address</Title>
+            <Row gutter={16}>
+              <Col span={12}>
+                <CustomInput
+                  type="text"
+                  name={["billingAddress", "street"]}
+                  label="Street"
+                  placeholder="Enter street"
+                />
+              </Col>
+              <Col span={12}>
+                <CustomInput
+                  type="text"
+                  name={["billingAddress", "city"]}
+                  label="City"
+                  placeholder="Enter city"
+                />
+              </Col>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name={["billingAddress", "state"]}
+                  label="State"
+                  placeholder="Enter state"
+                />
+              </Col>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name={["billingAddress", "zip"]}
+                  label="Zip"
+                  placeholder="Enter ZIP"
+                />
+              </Col>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name={["billingAddress", "country"]}
+                  label="Country"
+                  placeholder="Enter country"
+                />
+              </Col>
+            </Row>
+
+            {/* Shipping Address */}
+            <Title level={4}>Shipping Address</Title>
+            <Row gutter={16}>
+              <Col span={12}>
+                <CustomInput
+                  type="text"
+                  name={["shippingAddress", "street"]}
+                  label="Street"
+                  placeholder="Enter street"
+                />
+              </Col>
+              <Col span={12}>
+                <CustomInput
+                  type="text"
+                  name={["shippingAddress", "city"]}
+                  label="City"
+                  placeholder="Enter city"
+                />
+              </Col>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name={["shippingAddress", "state"]}
+                  label="State"
+                  placeholder="Enter state"
+                />
+              </Col>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name={["shippingAddress", "zip"]}
+                  label="Zip"
+                  placeholder="Enter ZIP"
+                />
+              </Col>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name={["shippingAddress", "country"]}
+                  label="Country"
+                  placeholder="Enter country"
+                />
+              </Col>
+            </Row>
+          </Form>
+        )}
       </Card>
+
+      {/* Bottom Action Bar */}
       <div className="flex items-center gap-5 py-4 px-12 border-t border-l border-gray-200 w-full bg-white fixed bottom-0 shadow-[0_-1px_10px_rgba(0,0,0,0.08)] z-10">
-        <Button type="primary" htmlType="submit">
-          Save Customer
+        <Button type="primary" onClick={() => form.submit()}>
+          {postLoading ? <span>Loading...</span> : customerId ? "Update Customer" : "Save Customer"}
         </Button>
         <Button onClick={() => navigate("/customer")}>Cancel</Button>
       </div>

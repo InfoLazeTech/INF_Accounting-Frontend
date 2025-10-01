@@ -8,6 +8,8 @@ import {
   Input,
   Button,
   Typography,
+  message,
+  Spin,
   Upload,
 } from "antd";
 import {
@@ -26,32 +28,70 @@ import {
 
 const { Title, Text } = Typography;
 const { Dragger } = Upload;
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getCompany,
+  updateCompany,
+} from "../../redux/slice/company/companySlice";
+import Icons from "../../assets/icon";
 
 const Profile = () => {
   const [form] = Form.useForm();
   const [isEditing, setIsEditing] = useState(false);
-  const [companyData, setCompanyData] = useState({
-    companyName: "Demo Infolanze",
-    email: "techteam.infolanze@gmail.com",
-    phone: "7229028694",
-    logo: null,
-    signature: null,
-    gstin: "27ABCDE1234F1Z5",
-    pan: "BJPFC1243E",
-    street1: "A-807, Empire Business Hub",
-    street2: "Science City Road, Sola",
-    cityState: "Ahmedabad",
-    pin: "360004",
-    fax: "12345678",
-  });
+  const dispatch = useDispatch();
+  const { companyData, loading, postLoading } = useSelector(
+    (state) => state.company
+  );
+  const { user, companyId } = useSelector((state) => state.auth);
 
   useEffect(() => {
-    form.setFieldsValue(companyData);
-  }, [companyData, form]);
+    dispatch(getCompany(companyId));
+  }, [dispatch, companyId]);
 
-  const handleSave = (values) => {
-    setCompanyData((prev) => ({ ...prev, ...values }));
-    setIsEditing(false);
+  useEffect(() => {
+    if (companyData) {
+      form.setFieldsValue({
+        companyName: companyData.companyName || "",
+        email: companyData.email || user?.email || "",
+        phone: companyData.phone || user?.phone || "",
+        gstNo: companyData.gstNo || "",
+        panNo: companyData.panNo || "",
+        logo: companyData.logo || "",
+        signature: companyData.signature || "",
+        street1: companyData.address?.street1 || "",
+        street2: companyData.address?.street2 || "",
+        cityState: companyData.address
+          ? `${companyData.address.city}, ${companyData.address.state}`
+          : "",
+        pin: companyData.address?.pinCode || "",
+        fax: companyData.address?.faxNumber || "",
+      });
+    }
+  }, [companyData, form, user]);
+  const handleSave = async (values) => {
+    try {
+      const payload = {
+        companyName: values.companyName,
+        gstNo: values.gstNo,
+        panNo: values.panNo,
+        logo: values.logo,
+        signature: values.signature,
+        address: {
+          street1: values.street1,
+          street2: values.street2,
+          city: values.cityState?.split(",")[0]?.trim() || "",
+          state: values.cityState?.split(",")[1]?.trim() || "",
+          pinCode: values.pin,
+          faxNumber: values.fax,
+        },
+      };
+
+      await dispatch(updateCompany({ companyId, data: payload })).unwrap();
+      message.success("Company updated successfully");
+      setIsEditing(false);
+    } catch (err) {
+      message.error(err);
+    }
   };
 
   const uploadProps = (type) => ({
@@ -61,17 +101,25 @@ const Profile = () => {
     beforeUpload: (file) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setCompanyData((prev) => ({ ...prev, [type]: e.target.result }));
+        form.setFieldsValue({ [type]: e.target.result });
       };
       reader.readAsDataURL(file);
       return false;
     },
   });
 
-  // Section Title Component with Icon
   const SectionTitle = ({ icon, title, subtitle }) => (
-    <div style={{ display: "flex", alignItems: "center", marginTop: 32, marginBottom: 12 }}>
-      {React.cloneElement(icon, { style: { fontSize: 28, color: "#1890ff", marginRight: 12 } })}
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        marginTop: 32,
+        marginBottom: 12,
+      }}
+    >
+      {React.cloneElement(icon, {
+        style: { fontSize: 28, color: "#1890ff", marginRight: 12 },
+      })}
       <div>
         <Title
           level={3}
@@ -104,21 +152,54 @@ const Profile = () => {
     </div>
   );
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[90vh]">
+        <Spin tip="Loading company profile..." />;
+      </div>
+    );
+  }
+
   return (
-    <Card>
-      {/* Header */}
-      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+    <Card className="!m-4 !p-3">
+      <Row
+        justify="space-between"
+        align="middle"
+        className="border-b border-gray-200 pb-4"
+      >
         <Col>
-          <Title level={3} style={{ margin: 0 }}>Company Profile</Title>
-          <Text type="secondary">Configure your company information, tax details, and address</Text>
+          <Title level={3} style={{ margin: 0 }}>
+            Company Profile
+          </Title>
+          <Text type="secondary">
+            Configure your company information, tax details, and address
+          </Text>
         </Col>
-        <Col>
+        <Col className="!space-x-2">
+          {isEditing && (
+            <Button
+              type="default"
+              icon={<Icons.CloseOutlined />}
+              onClick={() => setIsEditing(false)}
+            >
+              Cancel
+            </Button>
+          )}
           {isEditing ? (
-            <Button type="primary" icon={<SaveOutlined />} onClick={() => form.submit()}>
+            <Button
+              type="primary"
+              icon={<SaveOutlined />}
+              loading={postLoading}
+              onClick={() => form.submit()}
+            >
               Save Changes
             </Button>
           ) : (
-            <Button icon={<EditOutlined />} type="primary" onClick={() => setIsEditing(true)}>
+            <Button
+              icon={<EditOutlined />}
+              type="primary"
+              onClick={() => setIsEditing(true)}
+            >
               Edit Profile
             </Button>
           )}
@@ -126,7 +207,6 @@ const Profile = () => {
       </Row>
 
       <Form form={form} layout="vertical" onFinish={handleSave}>
-        {/* Basic Details */}
         <SectionTitle
           icon={<UserOutlined />}
           title="Basic Details"
@@ -144,7 +224,7 @@ const Profile = () => {
           <Col span={8}>
             <Form.Item name="email" label="Email Address">
               <Input
-                disabled={!isEditing}
+                disabled
                 prefix={<MailOutlined style={{ color: "#1890ff" }} />}
               />
             </Form.Item>
@@ -152,7 +232,7 @@ const Profile = () => {
           <Col span={8}>
             <Form.Item name="phone" label="Phone Number">
               <Input
-                disabled={!isEditing}
+                disabled
                 prefix={<PhoneOutlined style={{ color: "#1890ff" }} />}
               />
             </Form.Item>
@@ -160,23 +240,32 @@ const Profile = () => {
         </Row>
 
         {/* Logo / Signature */}
+        <SectionTitle icon={<InboxOutlined />} title="Logo & Signature" />
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item label="Company Logo">
               {!isEditing ? (
-                companyData.logo ? (
+                companyData?.logo ? (
                   <img
                     src={companyData.logo}
                     alt="Logo"
-                    style={{ height: 100, border: "2px dashed #ccc", padding: 4 }}
+                    style={{
+                      height: 100,
+                      border: "2px dashed #ccc",
+                      padding: 4,
+                    }}
                   />
                 ) : (
                   <PlaceholderBox text="No logo uploaded" />
                 )
               ) : (
                 <Dragger {...uploadProps("logo")}>
-                  <p className="ant-upload-drag-icon"><InboxOutlined /></p>
-                  <p className="ant-upload-text">Click or drag logo to upload</p>
+                  <p className="ant-upload-drag-icon">
+                    <InboxOutlined />
+                  </p>
+                  <p className="ant-upload-text">
+                    Click or drag logo to upload
+                  </p>
                 </Dragger>
               )}
             </Form.Item>
@@ -184,19 +273,27 @@ const Profile = () => {
           <Col span={12}>
             <Form.Item label="Digital Signature">
               {!isEditing ? (
-                companyData.signature ? (
+                companyData?.signature ? (
                   <img
                     src={companyData.signature}
                     alt="Signature"
-                    style={{ height: 100, border: "2px dashed #ccc", padding: 4 }}
+                    style={{
+                      height: 100,
+                      border: "2px dashed #ccc",
+                      padding: 4,
+                    }}
                   />
                 ) : (
                   <PlaceholderBox text="No signature uploaded" />
                 )
               ) : (
                 <Dragger {...uploadProps("signature")}>
-                  <p className="ant-upload-drag-icon"><InboxOutlined /></p>
-                  <p className="ant-upload-text">Click or drag signature to upload</p>
+                  <p className="ant-upload-drag-icon">
+                    <InboxOutlined />
+                  </p>
+                  <p className="ant-upload-text">
+                    Click or drag signature to upload
+                  </p>
                 </Dragger>
               )}
             </Form.Item>
@@ -211,7 +308,7 @@ const Profile = () => {
         />
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="gstin" label="GSTIN">
+            <Form.Item name="gstNo" label="GSTIN">
               <Input
                 disabled={!isEditing}
                 prefix={<FileTextOutlined style={{ color: "#1890ff" }} />}
@@ -219,7 +316,7 @@ const Profile = () => {
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="pan" label="PAN Number">
+            <Form.Item name="panNo" label="PAN Number">
               <Input
                 disabled={!isEditing}
                 prefix={<IdcardOutlined style={{ color: "#1890ff" }} />}

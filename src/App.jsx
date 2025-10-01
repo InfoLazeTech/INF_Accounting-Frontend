@@ -16,6 +16,8 @@ import EditCustomer from "./pages/customer/EditCustomer";
 import Profile from "./pages/settings/Profile";
 import AppLayout from "./component/layout/AppLayout";
 import SignupOTP from "./pages/auth/SignupOtp";
+import AddItem from "./pages/item/AddItem";
+import Item from "./pages/item/Item";
 
 export default function App() {
   return (
@@ -66,8 +68,11 @@ export default function App() {
           <Route index element={<Home />} />
           <Route path="customer" element={<Customer />} />
           <Route path="customer/add" element={<AddCustomer />} />
-          <Route path="customer/edit/:id" element={<EditCustomer />} />
+          <Route path="customer/edit/:customerId" element={<AddCustomer />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="item" element={<Item />} />
+          <Route path="item/add" element={<AddItem/>}/>
+             <Route path="item/edit/:itemId" element={<AddItem/>}/>
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />
