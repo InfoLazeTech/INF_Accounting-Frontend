@@ -17,13 +17,13 @@ import Icons from "../../assets/icon";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addItem,
+  getItem,
   getItemById,
   updateItem,
 } from "../../redux/slice/item/itemSlice";
 import { addcategory, getcategory } from "../../redux/slice/category/categorySlice";
 
 const { Title } = Typography;
-
 const AddItem = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -33,6 +33,7 @@ const AddItem = () => {
   const [newCategoryName, setNewCategoryName] = useState("");
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+    const { customerId } = useParams();
   const { companyId } = useSelector((state) => state.auth);
 
   const handleAddCategory = async () => {
@@ -41,9 +42,10 @@ const AddItem = () => {
         name: newCategoryName,
         companyId,
     };
-      await dispatch(addcategory({ categorayData })).unwrap();
+      await dispatch(addcategory( categorayData)).unwrap();
       setNewCategoryName("");
       closeModal();
+       dispatch(getcategory({ companyId }))
   };
 
   const { item, loading, postLoading } = useSelector(
@@ -75,12 +77,27 @@ const AddItem = () => {
   }, [itemId, item, form]);
 
   const onFinish = async (values) => {
+      const payload = {
+    companyId,
+    sku: values.sku || "",
+    name: values.name || "",
+    description: values.description || "",
+    category: values.category || "",
+    unitOfMeasure: values.unitOfMeasure || "pcs",
+    purchasePrice: values.purchasePrice || 0,
+    salePrice: values.salePrice || 0,
+    taxRate: values.taxRate || 0,
+    openingStock: values.openingStock || 0,
+    availableStock: values.availableStock || 0,
+    reorderLevel: values.reorderLevel || 0,
+    isActive: values.isActive ?? true,
+  };
     try {
       if (itemId) {
-        await dispatch(updateItem({ id: itemId, data: values })).unwrap();
+        await dispatch(updateItem({ id: itemId, data: payload })).unwrap();
         message.success("Item updated successfully");
       } else {
-        await dispatch(addItem(values)).unwrap();
+        await dispatch(addItem(payload)).unwrap();
         message.success("Item added successfully");
       }
       navigate("/item");
@@ -89,10 +106,11 @@ const AddItem = () => {
     }
   };
   const { categorys } = useSelector((state) => state.category || {});
-
-  useEffect(() => {
-    dispatch(getcategory());
-  }, [dispatch]);
+useEffect(() => {
+  if (companyId) {
+    dispatch(getcategory({ companyId }));
+  }
+}, [dispatch, companyId]);
 
   return (
     <div className="!relative">

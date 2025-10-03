@@ -1,28 +1,25 @@
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import itemService from "./itemService";
 
-
 // Add
-export const addItem = createAsyncThunk(
-  "item/add",
-  async (data, thunkAPI) => {
-    try {
-      return await itemService.createItem(data);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
-    }
+export const addItem = createAsyncThunk("item/add", async (data, thunkAPI) => {
+  try {
+    return await itemService.createItem(data);
+  } catch (err) {
+    return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
   }
-);
+});
 
 // Get All
 export const getItem = createAsyncThunk(
   "item/getAll",
-  async (_, thunkAPI) => {
+  async (payload, thunkAPI) => {
     try {
-      return await itemService.getAllItem();
+      return await itemService.getAllItem(payload);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
@@ -34,7 +31,9 @@ export const getItemById = createAsyncThunk(
     try {
       return await itemService.getItemById(id);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
@@ -46,7 +45,9 @@ export const updateItem = createAsyncThunk(
     try {
       return await itemService.updateItem(id, data);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
@@ -58,7 +59,9 @@ export const deleteItem = createAsyncThunk(
     try {
       return await itemService.deleteItem(id);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
@@ -67,6 +70,12 @@ const itemSlice = createSlice({
   name: "item",
   initialState: {
     items: [],
+    pagination: {
+      totalPages: 1,
+      totalCount: 0,
+      limit: 10,
+      currentPage: 1,
+    },
     item: null,
     loading: false,
     postLoading: false,
@@ -88,7 +97,7 @@ const itemSlice = createSlice({
       })
       .addCase(addItem.fulfilled, (state, action) => {
         state.postLoading = false;
-        state.items.push(action.payload);
+        state.items.push(action.payload.data);
       })
       .addCase(addItem.rejected, (state, action) => {
         state.postLoading = false;
@@ -102,6 +111,12 @@ const itemSlice = createSlice({
       .addCase(getItem.fulfilled, (state, action) => {
         state.loading = false;
         state.items = action.payload.data;
+        state.pagination = {
+          currentPage: action.payload.extras.pagination.currentPage,
+          totalPages: action.payload.extras.pagination.totalPages,
+          limit: action.payload.extras.pagination.limit,
+          totalCount: action.payload.extras.pagination.totalCount,
+        };
       })
       .addCase(getItem.rejected, (state, action) => {
         state.loading = false;
@@ -129,7 +144,9 @@ const itemSlice = createSlice({
         state.postLoading = false;
         state.current = action.payload;
 
-        const index = state.items.findIndex((c) => c._id === action.payload._id);
+        const index = state.items.findIndex(
+          (c) => c._id === action.payload._id
+        );
         if (index !== -1) state.items[index] = action.payload;
       })
       .addCase(updateItem.rejected, (state, action) => {

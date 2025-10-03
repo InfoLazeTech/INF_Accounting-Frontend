@@ -6,8 +6,13 @@ const createCategory= async (data) => {
   return res.data;
 };
 
-const getAllCategory = async () => {
-  const res = await api.get("/item-category/get");
+const getAllCategory = async (payload) => {
+    const { companyId} = payload;
+    
+  const quaryParams = new URLSearchParams({
+    companyId: companyId,
+  });
+  const res = await api.get("/item-category/get",{ params: quaryParams });
   return res.data;
 };
 

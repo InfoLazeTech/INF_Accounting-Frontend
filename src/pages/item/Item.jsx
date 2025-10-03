@@ -1,20 +1,81 @@
-import React, { useEffect } from "react";
-import { Card, Row, Col, Button, Input, Space, message, Popconfirm } from "antd";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  Row,
+  Col,
+  Button,
+  Input,
+  Space,
+  message,
+  Popconfirm,
+} from "antd";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import CustomTable from "../../component/commonComponent/CustomTable";
 import Icons from "../../assets/icon";
 import { getItem, deleteItem } from "../../redux/slice/item/itemSlice";
+import { filteredURLParams, getQueryParams } from "../../utlis/services";
+
+const { Search } = Input;
 
 const Item = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { items, loading } = useSelector((state) => state.item);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { categorys } = useSelector((state) => state.category);
 
- 
+  const [filter, setFilter] = useState({
+    search: searchParams.get("search") || "",
+  });
+ const { pagination } = useSelector((state) => state.item);
+
+  const { companyId } = useSelector((state) => state.auth);
+
+  const fetchItem = (signal) => {
+    const page = parseInt(searchParams?.get("page")) || 1;
+    const pageSize = parseInt(searchParams?.get("limit")) || pagination.limit;
+
+    let payload = getQueryParams(window.location.href);
+
+    if (Object.keys(payload)?.length <= 0) {
+      payload = { companyId, page, limit: pageSize };
+    }
+
+    if (!payload?.companyId) {
+      payload = {
+        ...payload,
+        companyId,
+      };
+    }
+    dispatch(getItem({ ...payload }));
+  };
   useEffect(() => {
-    dispatch(getItem());
-  }, [dispatch]);
+    const controller = new AbortController();
+    fetchItem(controller.signal);
+    return () => controller.abort();
+  }, [dispatch, companyId, searchParams]);
+
+  const updateUrlParams = (newParams) => {
+    const params = new URLSearchParams(searchParams);
+    const filterParams = filteredURLParams(params, newParams);
+    setSearchParams(filterParams);
+  };
+const handleSearch = () => {
+  const searchValue = filter.search ? String(filter.search) : "";
+  updateUrlParams({ companyId, page: 1, limit: 10, search: searchValue });
+};
+
+  const handleClear = () => {
+    updateUrlParams({ companyId, page: 1, limit: 10, search: "" });
+    setFilter({
+      search: "",
+    });
+  };
+
+  const handlePaginationChange = (page, pageSize) => {
+    updateUrlParams({ page, limit: pageSize });
+  };
   const columns = [
     {
       title: "Item Code",
@@ -36,7 +97,11 @@ const Item = () => {
       title: "Category",
       dataIndex: "category",
       key: "category",
-      render: (cat) => cat?.name || "-",
+      render: (cat) => {
+        if (cat?.name) return cat.name;
+        const found = categorys.find((c) => c._id === cat);
+        return found ? found.name : "-";
+      },
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
@@ -126,26 +191,27 @@ const Item = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={10}>
-            <Input
-              placeholder="Search by Item name"
-              suffix={
-                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span
-                    style={{
-                      borderLeft: "1px solid #ccc",
-                      height: 20,
-                      display: "inline-block",
-                    }}
-                  />
-                  <Icons.SearchOutlined />
-                </span>
+            <Search
+              placeholder="Search..."
+              onChange={(e) =>
+                setFilter({
+                  search: e.target.value ? String(e.target.value) : "",
+                })
               }
+              allowClear
+              onSearch={handleSearch}
+              onClear={handleClear}
               style={{ borderRadius: 6, height: 36 }}
             />
           </Col>
           <Col span={14} style={{ textAlign: "right" }}>
             <Space>
-              <Button type="primary" icon={<Icons.FilterOutlined />} size="middle">
+              <Button
+                type="primary"
+                icon={<Icons.FilterOutlined />}
+                size="middle"
+                onClick={handleSearch}
+              >
                 Apply Filter
               </Button>
             </Space>
@@ -160,7 +226,12 @@ const Item = () => {
           columns={columns}
           data={items || []}
           loading={loading}
-          pagination={{ current: 1, pageSize: 10, total: items?.length || 0 }}
+          pagination={{
+            current: parseInt(searchParams?.get("page")) || 1,
+            pageSize: parseInt(searchParams?.get("limit")) || 10,
+            total: pagination.totalCount,
+            onChange: handlePaginationChange,
+          }}
         />
       </Card>
     </div>

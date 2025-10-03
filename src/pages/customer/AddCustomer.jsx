@@ -16,7 +16,8 @@ const AddCustomer = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const {customerId} = useParams();
+  const { customerId } = useParams();
+  const { companyId } = useSelector((state) => state.auth);
   const { customer, loading, postLoading } = useSelector(
     (state) => state.customerVendor
   );
@@ -31,7 +32,7 @@ const AddCustomer = () => {
     if (customerId && customer) {
       form.setFieldsValue({
         type: customer.type?.isCustomer ? "customer" : "vendor",
-        name: customer ? customer.name : "",
+        companyName: customer ? customer.companyName : "",
         contactPerson: customer ? customer.contactPerson : "",
         email: customer.email || "",
         phone: customer.phone || "",
@@ -59,20 +60,45 @@ const AddCustomer = () => {
 
   const onFinish = async (values) => {
     const payload = {
-      name: values.name,
+       companyId,
+      companyName: values.companyName || "",
+      contactPerson: values.contactPerson || "",
+      email: values.email || "",
+      phone: values.phone || "",
+      gstNumber: values.gstNumber || "",
+      creditLimit: values.creditLimit || "",
+      paymentTerms: values.paymentTerms || "",
+      status: values.status || "Active",
+
       type:
         values.type === "customer"
           ? { isCustomer: true, isVendor: false }
           : { isCustomer: false, isVendor: true },
+      billingAddress: {
+        street: values.billingAddress?.street || "",
+        city: values.billingAddress?.city || "",
+        state: values.billingAddress?.state || "",
+        zip: values.billingAddress?.zip || "",
+        country: values.billingAddress?.country || "",
+      },
+      shippingAddress: {
+        street: values.shippingAddress?.street || "",
+        city: values.shippingAddress?.city || "",
+        state: values.shippingAddress?.state || "",
+        zip: values.shippingAddress?.zip || "",
+        country: values.shippingAddress?.country || "",
+      },
     };
 
-      if (customerId) {
-        await dispatch(updateCustomerVendor({ customerId, data: payload })).unwrap();
-        navigate("/customer");
-      } else {
-        await dispatch(addCustomerVendor(payload)).unwrap();
-        navigate("/customer");
-      }
+    if (customerId) {
+      await dispatch(
+        updateCustomerVendor({ customerId, data: payload })
+      ).unwrap();
+      navigate("/customer");
+    } else {
+      await dispatch(addCustomerVendor(payload)).unwrap();
+      navigate("/customer");
+    }
   };
 
   return (
@@ -127,7 +153,7 @@ const AddCustomer = () => {
               <Col span={8}>
                 <CustomInput
                   type="text"
-                  name="name"
+                  name="companyName"
                   label="Enter Company Name"
                   placeholder="Enter name"
                   rules={[{ required: true, message: "Please enter name" }]}
@@ -308,7 +334,13 @@ const AddCustomer = () => {
       {/* Bottom Action Bar */}
       <div className="flex items-center gap-5 py-4 px-12 border-t border-l border-gray-200 w-full bg-white fixed bottom-0 shadow-[0_-1px_10px_rgba(0,0,0,0.08)] z-10">
         <Button type="primary" onClick={() => form.submit()}>
-          {postLoading ? <span>Loading...</span> : customerId ? "Update Customer" : "Save Customer"}
+          {postLoading ? (
+            <span>Loading...</span>
+          ) : customerId ? (
+            "Update Customer"
+          ) : (
+            "Save Customer"
+          )}
         </Button>
         <Button onClick={() => navigate("/customer")}>Cancel</Button>
       </div>

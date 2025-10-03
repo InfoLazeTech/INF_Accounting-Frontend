@@ -3,14 +3,13 @@ import {
   Card,
   Row,
   Col,
-  Typography,
   Button,
   Input,
   message,
   Space,
   Table,
 } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import CustomTable from "../../component/commonComponent/CustomTable";
 import Icons from "../../assets/icon";
 import { useEffect } from "react";
@@ -20,22 +19,69 @@ import {
   deleteCustomerVendor,
 } from "../../redux/slice/customer/customerVendorSlice";
 import { Popconfirm } from "antd";
+import { filteredURLParams, getQueryParams } from "../../utlis/services";
+
+const { Search } = Input;
 
 const Customer = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { customers, loading, error } = useSelector(
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filter, setFilter] = useState({
+    search: searchParams.get("search") || "",
+  });
+  const { customers, loading, pagination } = useSelector(
     (state) => state.customerVendor
   );
+  const { companyId } = useSelector((state) => state.auth);
+
+  const fetchCustomers = (signal) => {
+    const page = parseInt(searchParams?.get("page")) || 1;
+    const pageSize = parseInt(searchParams?.get("limit")) || pagination.limit;
+
+    let payload = getQueryParams(window.location.href);
+
+    if (Object.keys(payload)?.length <= 0) {
+      payload = { companyId, page, limit: pageSize };
+    }
+
+    if (!payload?.companyId) {
+      payload = {
+        ...payload,
+        companyId,
+      };
+    }
+    dispatch(getCustomersVendors({ ...payload }));
+  };
 
   useEffect(() => {
-    dispatch(getCustomersVendors());
-  }, [dispatch]);
+    const controller = new AbortController();
+    fetchCustomers(controller.signal);
+    return () => controller.abort();
+  }, [dispatch, companyId, searchParams]);
 
-  // Handle errors
-  useEffect(() => {
-    if (error) message.error(error);
-  }, [error]);
+  const updateUrlParams = (newParams) => {
+    const params = new URLSearchParams(searchParams);
+    const filterParams = filteredURLParams(params, newParams);
+    setSearchParams(filterParams);
+  };
+
+  const handleSearch = () => {
+    if (filter.search) {
+      updateUrlParams({ companyId, page: 1, limit: 10, search: filter.search });
+    }
+  };
+
+  const handleClear = () => {
+    updateUrlParams({ companyId, page: 1, limit: 10, search: "" });
+    setFilter({
+      search: "",
+    });
+  };
+
+  const handlePaginationChange = (page, pageSize) => {
+    updateUrlParams({ page, limit: pageSize });
+  };
 
   const columns = [
     {
@@ -48,8 +94,8 @@ const Customer = () => {
     },
     {
       title: "Company Name",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "companyName",
+      key: "companyName",
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
@@ -97,7 +143,7 @@ const Customer = () => {
             icon={<Icons.EditOutlined />}
             onClick={() => navigate(`/customer/edit/${record._id}`)}
           />
-        <Popconfirm
+          <Popconfirm
             title="Are you sure you want to delete this customer?"
             okText="Yes"
             cancelText="No"
@@ -118,7 +164,6 @@ const Customer = () => {
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-
   ];
 
   return (
@@ -157,20 +202,12 @@ const Customer = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={10}>
-            <Input
-              placeholder="Search by customer name"
-              suffix={
-                <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span
-                    style={{
-                      borderLeft: "1px solid #ccc",
-                      height: 20,
-                      display: "inline-block",
-                    }}
-                  />
-                  <Icons.SearchOutlined className="" />
-                </span>
-              }
+            <Search
+              placeholder="Search..."
+              onChange={(e) => setFilter({ search: e.target.value })}
+              allowClear
+              onSearch={handleSearch}
+              onClear={handleClear}
               style={{ borderRadius: 6, height: 36 }}
             />
           </Col>
@@ -180,6 +217,7 @@ const Customer = () => {
                 type="primary"
                 icon={<Icons.FilterOutlined />}
                 size="middle"
+                onClick={handleSearch}
               >
                 Apply Filter
               </Button>
@@ -193,9 +231,13 @@ const Customer = () => {
           tableId="key"
           data={customers}
           loading={loading}
-          // bordered
           columns={columns}
-          pagination={{ current: 1, pageSize: 10, total: 20 }}
+          pagination={{
+            current: parseInt(searchParams?.get("page")) || 1,
+            pageSize: parseInt(searchParams?.get("limit")) || 10,
+            total: pagination.totalCount,
+            onChange: handlePaginationChange,
+          }}
         />
       </Card>
     </div>

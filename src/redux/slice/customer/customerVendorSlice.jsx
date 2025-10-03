@@ -1,7 +1,5 @@
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import customerVendorService from "./customerService";
-
 
 // Add
 export const addCustomerVendor = createAsyncThunk(
@@ -10,7 +8,9 @@ export const addCustomerVendor = createAsyncThunk(
     try {
       return await customerVendorService.createCustomerVendor(data);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
@@ -18,11 +18,13 @@ export const addCustomerVendor = createAsyncThunk(
 // Get All
 export const getCustomersVendors = createAsyncThunk(
   "customerVendor/getAll",
-  async (_, thunkAPI) => {
+  async (paylod, thunkAPI) => {
     try {
-      return await customerVendorService.getAllCustomerVendors();
+      return await customerVendorService.getAllCustomerVendors(paylod);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
@@ -34,7 +36,9 @@ export const getCustomerVendorById = createAsyncThunk(
     try {
       return await customerVendorService.getCustomerVendorById(id);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
@@ -42,11 +46,13 @@ export const getCustomerVendorById = createAsyncThunk(
 // Update
 export const updateCustomerVendor = createAsyncThunk(
   "customerVendor/update",
-  async ({ id, data }, thunkAPI) => {
+  async ({ customerId, data }, thunkAPI) => {
     try {
-      return await customerVendorService.updateCustomerVendor(id, data);
+      return await customerVendorService.updateCustomerVendor(customerId, data);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
@@ -58,7 +64,9 @@ export const deleteCustomerVendor = createAsyncThunk(
     try {
       return await customerVendorService.deleteCustomerVendor(id);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
@@ -67,6 +75,12 @@ const customerVendorSlice = createSlice({
   name: "customerVendor",
   initialState: {
     customers: [],
+    pagination: {
+      totalPages: 1,
+      totalCount: 0,
+      limit: 10,
+      currentPage: 1,
+    },
     customer: null,
     loading: false,
     postLoading: false,
@@ -102,6 +116,12 @@ const customerVendorSlice = createSlice({
       .addCase(getCustomersVendors.fulfilled, (state, action) => {
         state.loading = false;
         state.customers = action.payload.data;
+        state.pagination = {
+          currentPage: action.payload.extras.currentPage,
+          totalPages: action.payload.extras.totalPages,
+          limit: action.payload.extras.limit,
+          totalCount: action.payload.extras.totalCount,
+        };
       })
       .addCase(getCustomersVendors.rejected, (state, action) => {
         state.loading = false;
@@ -129,7 +149,9 @@ const customerVendorSlice = createSlice({
         state.postLoading = false;
         state.current = action.payload;
         // update customers list too
-        const index = state.customers.findIndex((c) => c._id === action.payload._id);
+        const index = state.customers.findIndex(
+          (c) => c._id === action.payload._id
+        );
         if (index !== -1) state.customers[index] = action.payload;
       })
       .addCase(updateCustomerVendor.rejected, (state, action) => {
@@ -143,7 +165,9 @@ const customerVendorSlice = createSlice({
       })
       .addCase(deleteCustomerVendor.fulfilled, (state, action) => {
         state.loading = false;
-        state.customers = state.customers.filter((c) => c._id !== action.meta.arg);
+        state.customers = state.customers.filter(
+          (c) => c._id !== action.meta.arg
+        );
       })
       .addCase(deleteCustomerVendor.rejected, (state, action) => {
         state.loading = false;

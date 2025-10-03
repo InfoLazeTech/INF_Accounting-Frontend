@@ -1,4 +1,3 @@
-
 import api from "../../axiosconfig";
 
 const createItem = async (data) => {
@@ -6,8 +5,19 @@ const createItem = async (data) => {
   return res.data;
 };
 
-const getAllItem = async () => {
-  const res = await api.get("/itemMaster/getItem");
+const getAllItem = async (payload) => {
+  const { companyId, search = "", limit = 10, page = 1 } = payload;
+
+  const quaryParams = new URLSearchParams({
+    companyId: companyId,
+    limit: limit,
+    page: page,
+  });
+  if (search) {
+    quaryParams.append("search", search);
+  }
+
+  const res = await api.get("/itemMaster/getItem", { params: quaryParams });
   return res.data;
 };
 

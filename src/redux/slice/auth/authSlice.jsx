@@ -77,7 +77,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.data.user;
         state.companyId = action.payload.data.user.company?._id;
-        state.token = action.payload.token;
+        state.token = action.payload.data.token;
         state.message = action.payload.message;
         Toast.success(state.message);
       })
