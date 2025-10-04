@@ -21,7 +21,10 @@ import {
   getItemById,
   updateItem,
 } from "../../redux/slice/item/itemSlice";
-import { addcategory, getcategory } from "../../redux/slice/category/categorySlice";
+import {
+  addcategory,
+  getcategory,
+} from "../../redux/slice/category/categorySlice";
 
 const { Title } = Typography;
 const AddItem = () => {
@@ -33,19 +36,19 @@ const AddItem = () => {
   const [newCategoryName, setNewCategoryName] = useState("");
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-    const { customerId } = useParams();
+  const { customerId } = useParams();
   const { companyId } = useSelector((state) => state.auth);
 
   const handleAddCategory = async () => {
     if (!newCategoryName) return;
     const categorayData = {
-        name: newCategoryName,
-        companyId,
+      name: newCategoryName,
+      companyId,
     };
-      await dispatch(addcategory( categorayData)).unwrap();
-      setNewCategoryName("");
-      closeModal();
-       dispatch(getcategory({ companyId }))
+    await dispatch(addcategory(categorayData)).unwrap();
+    setNewCategoryName("");
+    closeModal();
+    dispatch(getcategory({ companyId }));
   };
 
   const { item, loading, postLoading } = useSelector(
@@ -64,6 +67,7 @@ const AddItem = () => {
         name: item.name || "",
         description: item.description || "",
         category: item.category?._id || "",
+        hsnCode: item.hsnCode || "",
         unitOfMeasure: item.unitOfMeasure || "pcs",
         purchasePrice: item.purchasePrice || 0,
         salePrice: item.salePrice || 0,
@@ -77,21 +81,22 @@ const AddItem = () => {
   }, [itemId, item, form]);
 
   const onFinish = async (values) => {
-      const payload = {
-    companyId,
-    sku: values.sku || "",
-    name: values.name || "",
-    description: values.description || "",
-    category: values.category || "",
-    unitOfMeasure: values.unitOfMeasure || "pcs",
-    purchasePrice: values.purchasePrice || 0,
-    salePrice: values.salePrice || 0,
-    taxRate: values.taxRate || 0,
-    openingStock: values.openingStock || 0,
-    availableStock: values.availableStock || 0,
-    reorderLevel: values.reorderLevel || 0,
-    isActive: values.isActive ?? true,
-  };
+    const payload = {
+      companyId,
+      sku: values.sku || "",
+      name: values.name || "",
+      description: values.description || "",
+      category: values.category || "",
+      hsnCode: values.hsnCode || "",
+      unitOfMeasure: values.unitOfMeasure || "pcs",
+      purchasePrice: values.purchasePrice || 0,
+      salePrice: values.salePrice || 0,
+      taxRate: values.taxRate || 0,
+      openingStock: values.openingStock || 0,
+      availableStock: values.availableStock || 0,
+      reorderLevel: values.reorderLevel || 0,
+      isActive: values.isActive ?? true,
+    };
     try {
       if (itemId) {
         await dispatch(updateItem({ id: itemId, data: payload })).unwrap();
@@ -106,11 +111,11 @@ const AddItem = () => {
     }
   };
   const { categorys } = useSelector((state) => state.category || {});
-useEffect(() => {
-  if (companyId) {
-    dispatch(getcategory({ companyId }));
-  }
-}, [dispatch, companyId]);
+  useEffect(() => {
+    if (companyId) {
+      dispatch(getcategory({ companyId }));
+    }
+  }, [dispatch, companyId]);
 
   return (
     <div className="!relative">
@@ -148,19 +153,19 @@ useEffect(() => {
               <Col span={8}>
                 <CustomInput
                   type="text"
-                  name="sku"
-                  label="SKU"
-                  placeholder="Enter SKU"
-                  rules={[{ required: true, message: "Please enter SKU" }]}
+                  name="name"
+                  label="Item Name"
+                  placeholder="Enter item name"
+                  rules={[{ required: true, message: "Please enter name" }]}
                 />
               </Col>
               <Col span={8}>
                 <CustomInput
                   type="text"
-                  name="name"
-                  label="Item Name"
-                  placeholder="Enter item name"
-                  rules={[{ required: true, message: "Please enter name" }]}
+                  name="hsnCode"
+                  label="HSN Code"
+                  placeholder="Enter HSN Code"
+                  rules={[{ required: true, message: "Please enter HSNCODE" }]}
                 />
               </Col>
               <Col span={8}>
@@ -188,6 +193,7 @@ useEffect(() => {
                     { label: "meter", value: "meter" },
                     { label: "pack", value: "pack" },
                   ]}
+                  rules={[{ required: true, message: "Please Select Unit" }]}
                 />
               </Col>
               <Col span={8}>
@@ -200,6 +206,9 @@ useEffect(() => {
                     label: cat.name,
                     value: cat._id,
                   }))}
+                  rules={[
+                    { required: true, message: "Please Select Category" },
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -218,6 +227,9 @@ useEffect(() => {
                   name="purchasePrice"
                   label="Purchase Price"
                   placeholder="Enter purchase price"
+                  rules={[
+                    { required: true, message: "Please enter Purchase Price" },
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -226,6 +238,9 @@ useEffect(() => {
                   name="salePrice"
                   label="Sale Price"
                   placeholder="Enter sale price"
+                  rules={[
+                    { required: true, message: "Please enter Sale Price" },
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -234,6 +249,7 @@ useEffect(() => {
                   name="taxRate"
                   label="Tax Rate (%)"
                   placeholder="Enter tax rate"
+                  rules={[{ required: true, message: "Please enter Tax Rate" }]}
                 />
               </Col>
             </Row>
@@ -261,6 +277,15 @@ useEffect(() => {
                   name="reorderLevel"
                   label="Reorder Level"
                   placeholder="0"
+                />
+              </Col>
+              <Col span={8}>
+                <CustomInput
+                  type="text"
+                  name="sku"
+                  label="SKU"
+                  placeholder="Enter SKU"
+                  rules={[{ required: true, message: "Please enter SKU" }]}
                 />
               </Col>
               <Col span={8}>

@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import * as authService from "../auth/authService";
-import Toast from "../../../component/commonComponent/Toast";
+// import Toast from "../../../component/commonComponent/Toast";
+import { toast } from "react-toastify";
 
 export const loginUser = createAsyncThunk(
   "auth/login",
@@ -51,6 +52,7 @@ const authSlice = createSlice({
       state.token = null;
       state.companyId = null;
       state.error = null;
+      state.message = null;
       state.loading = false;
     },
   },
@@ -64,10 +66,13 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.data.user;
         state.token = action.payload.token;
+        state.message = action.payload.message;
+        toast.success(state.message);
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload.error.message;
+        toast.error(state.error);
       })
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
@@ -79,16 +84,18 @@ const authSlice = createSlice({
         state.companyId = action.payload.data.user.company?._id;
         state.token = action.payload.data.token;
         state.message = action.payload.message;
-        Toast.success(state.message);
+        toast.success(state.message);
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload.error.message;
+        toast.error(state.error);
       })
       // Logout
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
         state.token = null;
+        toast.success("Logout successful!");
       });
   },
 });

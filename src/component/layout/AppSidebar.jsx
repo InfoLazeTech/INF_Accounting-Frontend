@@ -37,33 +37,33 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
     },
     {
       key: "2",
+      icon: <Icons.UsergroupAddOutlined />,
+      label: "Customer",
+      path: "/customer",
+    },
+    {
+      key: "3",
+      icon: <Icons.CreditCardOutlined />,
+      label: "Item",
+      path: "/item",
+    },
+    {
+      key: "4",
       icon: <Icons.BankOutlined />,
       label: "Banking",
       path: "/banking",
     },
     {
-      key: "3",
+      key: "5",
       icon: <Icons.AppstoreAddOutlined />,
       label: "Inventory",
       path: "/inventory",
     },
     {
-      key: "4",
+      key: "6",
       icon: <Icons.ShoppingCartOutlined />,
       label: "Sales",
       path: "/sales",
-    },
-    {
-      key: "5",
-      icon: <Icons.UsergroupAddOutlined />,
-      label: "Customer",
-      path: "/customer",
-    },
-     {
-      key: "6",
-      icon: <Icons.CreditCardOutlined/>,
-      label: "Item",
-      path: "/item",
     },
   ];
 
@@ -73,10 +73,10 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
   };
 
   // Map location to menu key
-const selectedKey = items.find((i) =>
-  location.pathname === i.path || location.pathname.startsWith(i.path + "/")
-)?.key;
-
+  const selectedKey = items.find(
+    (i) =>
+      location.pathname === i.path || location.pathname.startsWith(i.path + "/")
+  )?.key;
 
   return (
     <>

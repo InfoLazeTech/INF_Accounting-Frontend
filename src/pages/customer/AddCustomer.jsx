@@ -55,12 +55,17 @@ const AddCustomer = () => {
           country: customer.shippingAddress?.country || "",
         },
       });
+    } else {
+      form.setFieldsValue({
+        type: "customer",
+        status: "Active",
+      });
     }
   }, [customerId, customer, form]);
 
   const onFinish = async (values) => {
     const payload = {
-       companyId,
+      companyId,
       companyName: values.companyName || "",
       contactPerson: values.contactPerson || "",
       email: values.email || "",
@@ -99,6 +104,15 @@ const AddCustomer = () => {
       await dispatch(addCustomerVendor(payload)).unwrap();
       navigate("/customer");
     }
+  };
+
+  const copyBillingToShipping = () => {
+    const billing = form.getFieldValue("billingAddress") || {};
+    form.setFieldsValue({
+      shippingAddress: {
+        ...billing,
+      },
+    });
   };
 
   return (
@@ -143,7 +157,7 @@ const AddCustomer = () => {
                     { label: "Customer", value: "customer" },
                     { label: "Vendor", value: "vendor" },
                   ]}
-                  rules={[{ required: true, message: "Please select type" }]}
+                  rules={[{ required: true, message: "" }]}
                 />
               </Col>
             </Row>
@@ -165,6 +179,7 @@ const AddCustomer = () => {
                   name="contactPerson"
                   label="Contact Person"
                   placeholder="Enter contact person"
+                  rules={[{ required: true, message: "Please enter name" }]}
                 />
               </Col>
               <Col span={8}>
@@ -188,6 +203,14 @@ const AddCustomer = () => {
                   name="phone"
                   label="Phone"
                   placeholder="Enter phone number"
+                  maxLength={10}
+                  rules={[
+                    { required: true, message: "Please enter Phone number" },
+                    {
+                      pattern: /^[0-9]{10}$/,
+                      message: "Phone number must be digits",
+                    },
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -196,6 +219,9 @@ const AddCustomer = () => {
                   name="gstNumber"
                   label="GST Number"
                   placeholder="Enter GST number"
+                  rules={[
+                    { required: true, message: "Please enter GstNumber" },
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -233,7 +259,7 @@ const AddCustomer = () => {
                     { label: "Inactive", value: "Inactive" },
                   ]}
                   default="Active"
-                  rules={[{ required: true, message: "Please select status" }]}
+                  rules={[{ required: true, message: "" }]}
                 />
               </Col>
             </Row>
@@ -247,6 +273,9 @@ const AddCustomer = () => {
                   name={["billingAddress", "street"]}
                   label="Street"
                   placeholder="Enter street"
+                  rules={[
+                    { required: true, message: "Please enter Street Name" },
+                  ]}
                 />
               </Col>
               <Col span={12}>
@@ -255,6 +284,9 @@ const AddCustomer = () => {
                   name={["billingAddress", "city"]}
                   label="City"
                   placeholder="Enter city"
+                  rules={[
+                    { required: true, message: "Please enter City Name" },
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -263,6 +295,9 @@ const AddCustomer = () => {
                   name={["billingAddress", "state"]}
                   label="State"
                   placeholder="Enter state"
+                  rules={[
+                    { required: true, message: "Please enter State Name" },
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -271,6 +306,9 @@ const AddCustomer = () => {
                   name={["billingAddress", "zip"]}
                   label="Zip"
                   placeholder="Enter ZIP"
+                  rules={[
+                    { required: true, message: "Please enter  Zip Name" },
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -279,12 +317,25 @@ const AddCustomer = () => {
                   name={["billingAddress", "country"]}
                   label="Country"
                   placeholder="Enter country"
+                  rules={[
+                    { required: true, message: "Please enter Country Name" },
+                  ]}
                 />
               </Col>
             </Row>
 
             {/* Shipping Address */}
-            <Title level={4}>Shipping Address</Title>
+            <Title level={4}>
+              Shipping Address
+              <Button
+                type="link"
+                style={{ marginLeft: 8 }}
+                onClick={copyBillingToShipping}
+              >
+                Same as Billing
+              </Button>
+            </Title>
+
             <Row gutter={16}>
               <Col span={12}>
                 <CustomInput
@@ -292,6 +343,9 @@ const AddCustomer = () => {
                   name={["shippingAddress", "street"]}
                   label="Street"
                   placeholder="Enter street"
+                  rules={[
+                    { required: true, message: "Please enter  Street Name" },
+                  ]}
                 />
               </Col>
               <Col span={12}>
@@ -300,6 +354,9 @@ const AddCustomer = () => {
                   name={["shippingAddress", "city"]}
                   label="City"
                   placeholder="Enter city"
+                  rules={[
+                    { required: true, message: "Please enter City Name" },
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -308,6 +365,9 @@ const AddCustomer = () => {
                   name={["shippingAddress", "state"]}
                   label="State"
                   placeholder="Enter state"
+                  rules={[
+                    { required: true, message: "Please enter State Name" },
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -316,6 +376,9 @@ const AddCustomer = () => {
                   name={["shippingAddress", "zip"]}
                   label="Zip"
                   placeholder="Enter ZIP"
+                  rules={[
+                    { required: true, message: "Please enter  Zip Name" },
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -324,6 +387,9 @@ const AddCustomer = () => {
                   name={["shippingAddress", "country"]}
                   label="Country"
                   placeholder="Enter country"
+                  rules={[
+                    { required: true, message: "Please enter Country Name" },
+                  ]}
                 />
               </Col>
             </Row>

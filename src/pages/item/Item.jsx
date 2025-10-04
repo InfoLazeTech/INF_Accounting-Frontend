@@ -21,14 +21,14 @@ const { Search } = Input;
 const Item = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { items, loading } = useSelector((state) => state.item);
+  const { items, loading, deleteLoading } = useSelector((state) => state.item);
   const [searchParams, setSearchParams] = useSearchParams();
   const { categorys } = useSelector((state) => state.category);
 
   const [filter, setFilter] = useState({
     search: searchParams.get("search") || "",
   });
- const { pagination } = useSelector((state) => state.item);
+  const { pagination } = useSelector((state) => state.item);
 
   const { companyId } = useSelector((state) => state.auth);
 
@@ -61,10 +61,10 @@ const Item = () => {
     const filterParams = filteredURLParams(params, newParams);
     setSearchParams(filterParams);
   };
-const handleSearch = () => {
-  const searchValue = filter.search ? String(filter.search) : "";
-  updateUrlParams({ companyId, page: 1, limit: 10, search: searchValue });
-};
+  const handleSearch = () => {
+    const searchValue = filter.search ? String(filter.search) : "";
+    updateUrlParams({ companyId, page: 1, limit: 10, search: searchValue });
+  };
 
   const handleClear = () => {
     updateUrlParams({ companyId, page: 1, limit: 10, search: "" });
@@ -137,6 +137,12 @@ const handleSearch = () => {
       render: (_, record) => (
         <Space>
           <Button
+            type="default"
+            icon={<Icons.EyeOutlined />}
+            onClick={() => navigate(`/item/view/${record._id}`)}
+          />
+
+          <Button
             type="primary"
             icon={<Icons.EditOutlined />}
             onClick={() => navigate(`/item/edit/${record._id}`)}
@@ -144,6 +150,7 @@ const handleSearch = () => {
           <Popconfirm
             title="Are you sure you want to delete this item?"
             okText="Yes"
+            okButtonProps={{ loading: deleteLoading }}
             cancelText="No"
             onConfirm={async () => {
               try {

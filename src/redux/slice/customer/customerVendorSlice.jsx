@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import customerVendorService from "./customerService";
+import { toast } from "react-toastify";
 
 // Add
 export const addCustomerVendor = createAsyncThunk(
@@ -51,7 +52,7 @@ export const updateCustomerVendor = createAsyncThunk(
       return await customerVendorService.updateCustomerVendor(customerId, data);
     } catch (err) {
       return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
+        err.response?.data?.message || err?.message
       );
     }
   }
@@ -84,6 +85,7 @@ const customerVendorSlice = createSlice({
     customer: null,
     loading: false,
     postLoading: false,
+    deleteLoading: false,
     error: null,
   },
   reducers: {
@@ -92,6 +94,7 @@ const customerVendorSlice = createSlice({
       state.customer = null;
       state.loading = false;
       state.error = null;
+      state.message = null;
     },
   },
   extraReducers: (builder) => {
@@ -103,10 +106,13 @@ const customerVendorSlice = createSlice({
       .addCase(addCustomerVendor.fulfilled, (state, action) => {
         state.postLoading = false;
         state.customers.push(action.payload);
+        state.message = action.payload?.message;
+        toast.success(state.message);
       })
       .addCase(addCustomerVendor.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload;
+        state.error = action.payload.error.message;
+        toast.error(state.error);
       })
 
       // Get All
@@ -125,7 +131,8 @@ const customerVendorSlice = createSlice({
       })
       .addCase(getCustomersVendors.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.payload.error.message;
+        toast.error(state.error);
       })
 
       // Get By ID
@@ -135,6 +142,7 @@ const customerVendorSlice = createSlice({
       .addCase(getCustomerVendorById.fulfilled, (state, action) => {
         state.loading = false;
         state.customer = action.payload.data;
+        toast.error(state.customer);
       })
       .addCase(getCustomerVendorById.rejected, (state, action) => {
         state.loading = false;
@@ -153,25 +161,30 @@ const customerVendorSlice = createSlice({
           (c) => c._id === action.payload._id
         );
         if (index !== -1) state.customers[index] = action.payload;
+        toast.success(action.payload?.message);
       })
       .addCase(updateCustomerVendor.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload;
+        state.error = action.payload.error.message;
+        toast.error(state.error);
       })
 
       // Delete
       .addCase(deleteCustomerVendor.pending, (state) => {
-        state.loading = true;
+        state.deleteLoading = true;
       })
       .addCase(deleteCustomerVendor.fulfilled, (state, action) => {
-        state.loading = false;
+        state.deleteLoading = false;
         state.customers = state.customers.filter(
           (c) => c._id !== action.meta.arg
         );
+        state.message = action.payload?.message;
+        toast.success(state.message);
       })
       .addCase(deleteCustomerVendor.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
+        state.deleteLoading = false;
+        state.error = action.payload.error.message;
+        toast.error(state.error);
       });
   },
 });

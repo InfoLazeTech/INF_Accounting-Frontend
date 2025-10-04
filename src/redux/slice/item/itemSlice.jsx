@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import itemService from "./itemService";
+import { toast } from "react-toastify";
 
 // Add
 export const addItem = createAsyncThunk("item/add", async (data, thunkAPI) => {
@@ -79,6 +80,7 @@ const itemSlice = createSlice({
     item: null,
     loading: false,
     postLoading: false,
+    deleteLoading: false,
     error: null,
   },
   reducers: {
@@ -87,6 +89,7 @@ const itemSlice = createSlice({
       state.item = null;
       state.loading = false;
       state.error = null;
+      state.message = null;
     },
   },
   extraReducers: (builder) => {
@@ -98,10 +101,13 @@ const itemSlice = createSlice({
       .addCase(addItem.fulfilled, (state, action) => {
         state.postLoading = false;
         state.items.push(action.payload.data);
+        state.message = action.payload?.message;
+        toast.success(state.message);
       })
       .addCase(addItem.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload;
+        state.error = action.error.message;
+        toast.error(state.error);
       })
 
       // Get All
@@ -121,6 +127,7 @@ const itemSlice = createSlice({
       .addCase(getItem.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        toast.error(state.error);
       })
 
       // Get By ID
@@ -134,6 +141,7 @@ const itemSlice = createSlice({
       .addCase(getItemById.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        toast.error(state.error);
       })
 
       // Update
@@ -148,23 +156,28 @@ const itemSlice = createSlice({
           (c) => c._id === action.payload._id
         );
         if (index !== -1) state.items[index] = action.payload;
+        toast.success(action.payload?.message);
       })
       .addCase(updateItem.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload;
+        state.error = action.error.message;
+        toast.error(state.error);
       })
 
       // Delete
       .addCase(deleteItem.pending, (state) => {
-        state.loading = true;
+        state.deleteLoading = true;
       })
       .addCase(deleteItem.fulfilled, (state, action) => {
-        state.loading = false;
+        state.deleteLoading = false;
         state.items = state.items.filter((c) => c._id !== action.meta.arg);
+        state.message = action.payload?.message;
+        toast.success(state.message);
       })
       .addCase(deleteItem.rejected, (state, action) => {
-        state.loading = false;
+        state.deleteLoading = false;
         state.error = action.payload;
+        toast.error(action.payload);
       });
   },
 });

@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  Card,
-  Row,
-  Col,
-  Button,
-  Input,
-  message,
-  Space,
-  Table,
-} from "antd";
+import { Card, Row, Col, Button, Input, message, Space, Table } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import CustomTable from "../../component/commonComponent/CustomTable";
 import Icons from "../../assets/icon";
@@ -30,7 +21,7 @@ const Customer = () => {
   const [filter, setFilter] = useState({
     search: searchParams.get("search") || "",
   });
-  const { customers, loading, pagination } = useSelector(
+  const { customers, loading, pagination, deleteLoading } = useSelector(
     (state) => state.customerVendor
   );
   const { companyId } = useSelector((state) => state.auth);
@@ -139,6 +130,12 @@ const Customer = () => {
       render: (_, record) => (
         <Space>
           <Button
+            type="default"
+            icon={<Icons.EyeOutlined />}
+            onClick={() => navigate(`/customer/view/${record._id}`)}
+          />
+
+          <Button
             type="primary"
             icon={<Icons.EditOutlined />}
             onClick={() => navigate(`/customer/edit/${record._id}`)}
@@ -147,6 +144,7 @@ const Customer = () => {
             title="Are you sure you want to delete this customer?"
             okText="Yes"
             cancelText="No"
+            okButtonProps={{ loading: deleteLoading }}
             onConfirm={async () => {
               try {
                 await dispatch(deleteCustomerVendor(record._id)).unwrap();
