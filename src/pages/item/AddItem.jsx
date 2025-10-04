@@ -36,7 +36,6 @@ const AddItem = () => {
   const [newCategoryName, setNewCategoryName] = useState("");
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-  const { customerId } = useParams();
   const { companyId } = useSelector((state) => state.auth);
 
   const handleAddCategory = async () => {
@@ -261,6 +260,11 @@ const AddItem = () => {
                   name="openingStock"
                   label="Opening Stock"
                   placeholder="0"
+                  onChange={(value) => {
+                    const numericValue = Number(value) || 0;
+                    form.setFieldsValue({ availableStock: numericValue });
+                  }}
+                  disabled={itemId}
                 />
               </Col>
               <Col span={8}>
@@ -269,6 +273,7 @@ const AddItem = () => {
                   name="availableStock"
                   label="Available Stock"
                   placeholder="0"
+                  disabled
                 />
               </Col>
               <Col span={8}>
