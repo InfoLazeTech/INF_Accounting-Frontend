@@ -87,7 +87,6 @@ const Profile = () => {
       };
 
       await dispatch(updateCompany({ companyId, data: payload })).unwrap();
-      message.success("Company updated successfully");
       setIsEditing(false);
     } catch (err) {
       message.error(err);
@@ -214,7 +213,11 @@ const Profile = () => {
         />
         <Row gutter={16}>
           <Col span={8}>
-            <Form.Item name="companyName" label="Company Name">
+            <Form.Item
+              name="companyName"
+              label="Company Name"
+              rules={[{ required: true, message: "Please enter company name" }]}
+            >
               <Input
                 disabled={!isEditing}
                 prefix={<UserOutlined style={{ color: "#1890ff" }} />}
@@ -222,7 +225,14 @@ const Profile = () => {
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="email" label="Email Address">
+            <Form.Item
+              name="email"
+              label="Email Address"
+              rules={[
+                { required: true, message: "Please enter email address" },
+                { type: "email", message: "Please enter a valid email" },
+              ]}
+            >
               <Input
                 disabled
                 prefix={<MailOutlined style={{ color: "#1890ff" }} />}
@@ -230,7 +240,14 @@ const Profile = () => {
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="phone" label="Phone Number">
+            <Form.Item
+              name="phone"
+              label="Phone Number"
+              rules={[
+                { required: true, message: "Please enter phone number" },
+                { len: 10, message: "Phone number must be 10 digits" },
+              ]}
+            >
               <Input
                 disabled
                 prefix={<PhoneOutlined style={{ color: "#1890ff" }} />}
@@ -308,7 +325,11 @@ const Profile = () => {
         />
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="gstNo" label="GSTIN">
+            <Form.Item
+              name="gstNo"
+              label="GSTIN"
+              rules={[{ required: true, message: "Please enter GST number" }]}
+            >
               <Input
                 disabled={!isEditing}
                 prefix={<FileTextOutlined style={{ color: "#1890ff" }} />}
@@ -316,7 +337,11 @@ const Profile = () => {
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="panNo" label="PAN Number">
+            <Form.Item
+              name="panNo"
+              label="PAN Number"
+              rules={[{ required: true, message: "Please enter PAN number" }]}
+            >
               <Input
                 disabled={!isEditing}
                 prefix={<IdcardOutlined style={{ color: "#1890ff" }} />}
@@ -333,7 +358,13 @@ const Profile = () => {
         />
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="street1" label="Street Address 1">
+            <Form.Item
+              name="street1"
+              label="Street Address 1"
+              rules={[
+                { required: true, message: "Please enter street address" },
+              ]}
+            >
               <Input
                 disabled={!isEditing}
                 prefix={<EnvironmentOutlined style={{ color: "#1890ff" }} />}
@@ -341,7 +372,13 @@ const Profile = () => {
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="street2" label="Street Address 2">
+            <Form.Item
+              name="street2"
+              label="Street Address 2"
+              rules={[
+                { required: true, message: "Please enter street address" },
+              ]}
+            >
               <Input
                 disabled={!isEditing}
                 prefix={<EnvironmentOutlined style={{ color: "#1890ff" }} />}
@@ -351,7 +388,13 @@ const Profile = () => {
         </Row>
         <Row gutter={16}>
           <Col span={8}>
-            <Form.Item name="cityState" label="City & State">
+            <Form.Item
+              name="cityState"
+              label="City & State"
+              rules={[
+                { required: true, message: "Please enter City And State" },
+              ]}
+            >
               <Input
                 disabled={!isEditing}
                 prefix={<HomeOutlined style={{ color: "#1890ff" }} />}
@@ -359,7 +402,11 @@ const Profile = () => {
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="pin" label="PIN Code">
+            <Form.Item
+              name="pin"
+              label="PIN Code"
+              rules={[{ required: true, message: "Please enter PIN code" }]}
+            >
               <Input
                 disabled={!isEditing}
                 prefix={<LockOutlined style={{ color: "#1890ff" }} />}
@@ -367,7 +414,11 @@ const Profile = () => {
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item name="fax" label="Fax Number">
+            <Form.Item
+              name="fax"
+              label="Fax Number"
+              rules={[{ required: true, message: "Please enter fax number" }]}
+            >
               <Input
                 disabled={!isEditing}
                 prefix={<PhoneOutlined style={{ color: "#1890ff" }} />}

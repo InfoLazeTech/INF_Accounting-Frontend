@@ -1,6 +1,6 @@
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import companyService from "./companyService";
+import { toast } from "react-toastify";
 
 // Get company
 export const getCompany = createAsyncThunk(
@@ -9,7 +9,9 @@ export const getCompany = createAsyncThunk(
     try {
       return await companyService.getCompany(companyId);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
@@ -21,7 +23,9 @@ export const updateCompany = createAsyncThunk(
     try {
       return await companyService.updateCompany(companyId, data);
     } catch (err) {
-      return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+      return thunkAPI.rejectWithValue(
+        err.response?.data?.message || err.message
+      );
     }
   }
 );
@@ -39,6 +43,7 @@ const companySlice = createSlice({
       state.data = null;
       state.loading = false;
       state.error = null;
+      state.message = null;
     },
   },
   extraReducers: (builder) => {
@@ -49,6 +54,7 @@ const companySlice = createSlice({
       .addCase(getCompany.fulfilled, (state, action) => {
         state.loading = false;
         state.companyData = action.payload.data;
+
       })
       .addCase(getCompany.rejected, (state, action) => {
         state.loading = false;
@@ -59,11 +65,14 @@ const companySlice = createSlice({
       })
       .addCase(updateCompany.fulfilled, (state, action) => {
         state.postLoading = false;
-        // state.data = action.payload.data; 
+        // state.data = action.payload.data;
+         state.message = action.payload?.message;
+        toast.success(state.message);
       })
       .addCase(updateCompany.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload;
+          state.error = action.payload.error.message;
+        toast.error(state.error);
       });
   },
 });
