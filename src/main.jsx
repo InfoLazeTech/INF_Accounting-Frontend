@@ -7,6 +7,9 @@ import { persistor, store } from "./redux/store/store.js";
 import "antd/dist/reset.css";
 import { PersistGate } from "redux-persist/integration/react";
 import ThemeProvider from "./component/commonComponent/ThemeProvider.jsx";
+import { setAxiosStore } from "./redux/axiosconfig.js";
+
+setAxiosStore(store)
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>

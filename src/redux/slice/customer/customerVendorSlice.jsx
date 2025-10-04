@@ -131,7 +131,7 @@ const customerVendorSlice = createSlice({
       })
       .addCase(getCustomersVendors.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.error.message;
+        state.error = action.payload;
         toast.error(state.error);
       })
 
