@@ -1,7 +1,7 @@
 import api from "../../axiosconfig";
 
 const createItem = async (data) => {
-  const res = await api.post("/itemMaster/createItem", data);
+  const res = await api.post("/item-master/createItem", data);
   return res.data;
 };
 
@@ -17,22 +17,22 @@ const getAllItem = async (payload) => {
     quaryParams.append("search", search);
   }
 
-  const res = await api.get("/itemMaster/getItem", { params: quaryParams });
+  const res = await api.get("/item-master/getItem", { params: quaryParams });
   return res.data;
 };
 
 const getItemById = async (id) => {
-  const res = await api.get(`/itemMaster/${id}`);
+  const res = await api.get(`/item-master/${id}`);
   return res.data;
 };
 
 const updateItem = async (id, data) => {
-  const res = await api.put(`/itemMaster/${id}`, data);
+  const res = await api.put(`/item-master/${id}`, data);
   return res.data;
 };
 
 const deleteItem = async (id) => {
-  const res = await api.delete(`/itemMaster/${id}`);
+  const res = await api.delete(`/item-master/${id}`);
   return res.data;
 };
 

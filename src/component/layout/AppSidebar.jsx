@@ -49,15 +49,15 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
     },
     {
       key: "4",
-      icon: <Icons.BankOutlined />,
-      label: "Banking",
-      path: "/banking",
+      icon: <Icons.BuildOutlined />,
+      label: "Bill ",
+      path: "/bill",
     },
     {
       key: "5",
-      icon: <Icons.AppstoreAddOutlined />,
-      label: "Inventory",
-      path: "/inventory",
+      icon: <Icons.InboxOutlined />,
+      label: "Invoice",
+      path: "/invoice",
     },
     {
       key: "6",

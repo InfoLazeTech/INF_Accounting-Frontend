@@ -7,6 +7,8 @@ import customerVendorReducer from "../slice/customer/customerVendorSlice";
 import companyReducer from "../slice/company/companySlice";
 import categoryReducer from "../slice/category/categorySlice";
 import itemReducer from '../slice/item/itemSlice'
+import billReducer from '../slice/bill/billSlice'
+import invoiceReducer from '../slice/invoice/invoiceSlice'
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -14,6 +16,8 @@ const appReducer = combineReducers({
   company: companyReducer,
     item: itemReducer,
     category:categoryReducer,
+    bill: billReducer,
+    invoice:invoiceReducer,
 });
 
 // Root reducer that can handle resetting all slices
