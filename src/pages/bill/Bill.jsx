@@ -209,6 +209,7 @@ const Bill = () => {
                 })
               }
               allowClear
+              onClear={handleClear}
               onSearch={handleSearch}
               style={{ borderRadius: 6, height: 36 }}
             />

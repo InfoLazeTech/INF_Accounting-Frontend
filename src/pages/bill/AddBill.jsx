@@ -26,6 +26,7 @@ import {
 } from "../../redux/slice/bill/billSlice";
 import { getItem } from "../../redux/slice/item/itemSlice";
 import { getCustomersVendors } from "../../redux/slice/customer/customerVendorSlice";
+import { getCompany } from "../../redux/slice/company/companySlice";
 
 const { Title } = Typography;
 
@@ -38,6 +39,8 @@ const AddBill = () => {
   const { bill, loading, postLoading } = useSelector((state) => state.bill);
   const { items: itemList } = useSelector((state) => state.item);
   const { customers } = useSelector((state) => state.customerVendor);
+
+  const { companyData } = useSelector((state) => state.company);
   const [items, setItems] = useState([
     {
       id: Date.now(),
@@ -56,7 +59,12 @@ const AddBill = () => {
     shipping: 0,
     other: 0,
   });
+
   const [selectedVendorId, setSelectedVendorId] = useState(null);
+  const [vendorState, setVendorState] = useState("");
+  const [companyState, setCompanyState] = useState("");
+  const [isSameState, setIsSameState] = useState(true);
+
 
   // Fetch bill data for editing
   useEffect(() => {
@@ -70,12 +78,22 @@ const AddBill = () => {
     if (companyId) {
       dispatch(getItem({ companyId }));
       dispatch(getCustomersVendors({ companyId }));
+       dispatch(getCompany(companyId));
+         if (billId) {
+        dispatch(getBillById({ companyId, billId }));
+      }
     } else {
       console.error("companyId is undefined");
       message.error("Company ID is missing. Please log in again.");
       navigate("/login");
     }
-  }, [dispatch, companyId, navigate]);
+  }, [dispatch, companyId,billId, navigate]);
+    useEffect(() => {
+    if (companyData) {
+      setCompanyState(companyData.address?.state || "");
+    }
+  }, [companyData]);
+
 
   // Populate form with bill data when editing
   useEffect(() => {
@@ -111,6 +129,11 @@ const AddBill = () => {
     }
   }, [billId, bill, form]);
 
+    useEffect(() => {
+    if (vendorState && companyState) {
+      setIsSameState(vendorState === companyState);
+    }
+  }, [vendorState, companyState]);
   // Handle vendor selection
   const handleVendorSelect = (value) => {
     const selected = customers.find((v) => (v.name || v.vendorName) === value);
@@ -119,7 +142,11 @@ const AddBill = () => {
     form.setFieldsValue({
       vendorName: selected.name || selected.vendorName || "",
     });
+    setVendorState(
+      selected.billingAddress?.state || selected.shippingAddress?.state || ""
+    );
   };
+
 
   // Handle item selection
   const handleItemSelect = (value, index) => {
@@ -180,24 +207,32 @@ const AddBill = () => {
   };
 
   // Calculate totals
-  const totals = items.reduce(
+const totals = items.reduce(
     (acc, item) => {
       const qty = item.quantity || 0;
       const price = item.unitPrice || 0;
       const subtotal = qty * price;
       const tax = (subtotal * (item.taxRate || 0)) / 100;
-      const sgst = tax / 2;
-      const cgst = tax / 2;
       acc.subtotal += subtotal;
       acc.totalTax += tax;
-      acc.sgst += sgst;
-      acc.cgst += cgst;
+      if (isSameState) {
+        acc.sgst += tax / 2;
+        acc.cgst += tax / 2;
+      } else {
+        acc.igst += tax;
+      }
       acc.grandTotal += subtotal + tax;
       return acc;
     },
-    { subtotal: 0, totalTax: 0, sgst: 0, cgst: 0, grandTotal: 0 }
+    {
+      subtotal: 0,
+      totalTax: 0,
+      sgst: 0,
+      cgst: 0,
+      igst: 0,
+      grandTotal: 0,
+    }
   );
-
   const finalGrandTotal =
     totals.grandTotal +
     Number(extraCharges.shipping) +
@@ -516,7 +551,7 @@ const AddBill = () => {
               </Col>
 
               {/* Summary Box */}
-              <Col span={8}>
+             <Col span={8}>
                 <Card bordered className="!shadow-md !rounded-2xl">
                   <Title level={5}>Summary</Title>
                   <div className="space-y-2">
@@ -524,14 +559,23 @@ const AddBill = () => {
                       <Col>Subtotal</Col>
                       <Col>₹{totals.subtotal.toFixed(2)}</Col>
                     </Row>
-                    <Row justify="space-between">
-                      <Col>SGST</Col>
-                      <Col>₹{totals.sgst.toFixed(2)}</Col>
-                    </Row>
-                    <Row justify="space-between">
-                      <Col>CGST</Col>
-                      <Col>₹{totals.cgst.toFixed(2)}</Col>
-                    </Row>
+                    {isSameState ? (
+                      <>
+                        <Row justify="space-between">
+                          <Col>SGST</Col>
+                          <Col>₹{totals.sgst.toFixed(2)}</Col>
+                        </Row>
+                        <Row justify="space-between">
+                          <Col>CGST</Col>
+                          <Col>₹{totals.cgst.toFixed(2)}</Col>
+                        </Row>
+                      </>
+                    ) : (
+                      <Row justify="space-between">
+                        <Col>IGST</Col>
+                        <Col>₹{totals.igst.toFixed(2)}</Col>
+                      </Row>
+                    )}
                     <Row justify="space-between">
                       <Col>Total Tax</Col>
                       <Col>₹{totals.totalTax.toFixed(2)}</Col>

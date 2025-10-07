@@ -88,18 +88,18 @@ const Invoice = () => {
     },
     {
       title: "Invoice Date",
-      dataIndex: "issueDate",
-      key: "issueDate",
+      dataIndex: "invoiceDate",
+      key: "invoiceDate",
       render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-    {
+   {
       title: "Customer Name",
-      dataIndex: "customer",
+      dataIndex: "customerName",
       key: "customerName",
-      render: (customer) => (customer?.name ? customer.name : "-"),
+      render: (name) => (name ? name : "-"),
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
@@ -122,20 +122,20 @@ const Invoice = () => {
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-    {
+     {
       title: "Total Amount",
-      dataIndex: "totalAmount",
+      dataIndex: ["totals", "grandTotal"],
       key: "totalAmount",
-      render: (amount) => (amount ? `$${amount.toFixed(2)}` : "$0.00"),
+      render: (amount) => (amount ? `₹${amount.toFixed(2)}` : "₹0.00"),
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
     {
       title: "Balance Due",
-      dataIndex: "balanceDue",
+      dataIndex: "remainingAmount",
       key: "balanceDue",
-      render: (amount) => (amount ? `$${amount.toFixed(2)}` : "$0.00"),
+      render: (amount) => (amount ? `₹${amount.toFixed(2)}` : "₹0.00"),
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
@@ -215,6 +215,7 @@ const Invoice = () => {
                 })
               }
               allowClear
+              onClear={handleClear}
               onSearch={handleSearch}
               style={{ borderRadius: 6, height: 36 }}
             />

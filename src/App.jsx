@@ -22,7 +22,7 @@ import CustomerView from "./pages/customer/CustomerView";
 import ItemView from "./pages/item/ItemView";
 import Bill from "./pages/bill/bill";
 import AddBill from "./pages/bill/AddBill";
-// import BillView from "./pages/bill/BillView";
+import BillView from "./pages/bill/BillView";
 import Invoice from "./pages/invoice/Invoice";
 import AddInvoice from "./pages/invoice/AddInvoice";
 import InvoiceView from "./pages/invoice/InvoiceView";
@@ -88,7 +88,7 @@ export default function App() {
           <Route path="bill" element={<Bill />} />
           <Route path="bill/add" element={<AddBill />} />
           <Route path="bill/edit/:billId" element={<AddBill />} />
-          {/* <Route path="/bill/view/:billId" element={<BillView />} /> */}
+          <Route path="/bill/view/:billId" element={<BillView />} />
 
           
           <Route path="invoice" element={<Invoice/>} />

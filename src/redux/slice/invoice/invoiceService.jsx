@@ -43,13 +43,13 @@ const getInvoiceById = async (payload) => {
   return res.data;
 };
 
-const updateInvoice = async (id, data) => {
-  const res = await api.put(`/invoice/${id}`, data);
+const updateInvoice = async (invoiceId, data) => {
+  const res = await api.put(`/invoice/${invoiceId}`, data);
   return res.data;
 };
 
-const deleteInvoice = async (id) => {
-  const res = await api.delete(`/invoice/${id}`);
+const deleteInvoice = async (invoiceId) => {
+  const res = await api.delete(`/invoice/${invoiceId}`);
   return res.data;
 };
 

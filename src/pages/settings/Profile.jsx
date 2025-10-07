@@ -29,11 +29,18 @@ import {
 const { Title, Text } = Typography;
 const { Dragger } = Upload;
 import { useDispatch, useSelector } from "react-redux";
+import CustomInput from "../../component/commonComponent/CustomInput";
+import {IndianStates}from '../../utlis/state.js'
 import {
   getCompany,
   updateCompany,
 } from "../../redux/slice/company/companySlice";
 import Icons from "../../assets/icon";
+
+const stateOptions = Object.values(IndianStates).map((stateName ) => ({
+  value: stateName,
+  label: stateName,
+}));
 
 const Profile = () => {
   const [form] = Form.useForm();
@@ -60,9 +67,8 @@ const Profile = () => {
         signature: companyData.signature || "",
         street1: companyData.address?.street1 || "",
         street2: companyData.address?.street2 || "",
-        cityState: companyData.address
-          ? `${companyData.address.city}, ${companyData.address.state}`
-          : "",
+        city: companyData.address?.city || "",
+        state: companyData.address?.state || "",
         pin: companyData.address?.pinCode || "",
         fax: companyData.address?.faxNumber || "",
       });
@@ -79,8 +85,8 @@ const Profile = () => {
         address: {
           street1: values.street1,
           street2: values.street2,
-          city: values.cityState?.split(",")[0]?.trim() || "",
-          state: values.cityState?.split(",")[1]?.trim() || "",
+          city: values.city,
+          state: values.state,
           pinCode: values.pin,
           faxNumber: values.fax,
         },
@@ -213,46 +219,43 @@ const Profile = () => {
         />
         <Row gutter={16}>
           <Col span={8}>
-            <Form.Item
+         <CustomInput
+              type="text"
               name="companyName"
               label="Company Name"
+              placeholder="Enter company name"
+              disabled={!isEditing}
+              prefix={<UserOutlined style={{ color: "#1890ff" }} />}
               rules={[{ required: true, message: "Please enter company name" }]}
-            >
-              <Input
-                disabled={!isEditing}
-                prefix={<UserOutlined style={{ color: "#1890ff" }} />}
-              />
-            </Form.Item>
+            />
           </Col>
           <Col span={8}>
-            <Form.Item
+           <CustomInput
+              type="text"
               name="email"
               label="Email Address"
+              placeholder="Enter email address"
+              disabled
+              prefix={<MailOutlined style={{ color: "#1890ff" }} />}
               rules={[
                 { required: true, message: "Please enter email address" },
                 { type: "email", message: "Please enter a valid email" },
               ]}
-            >
-              <Input
-                disabled
-                prefix={<MailOutlined style={{ color: "#1890ff" }} />}
-              />
-            </Form.Item>
+            />
           </Col>
           <Col span={8}>
-            <Form.Item
+           <CustomInput
+              type="text"
               name="phone"
               label="Phone Number"
+              placeholder="Enter phone number"
+              disabled
+              prefix={<PhoneOutlined style={{ color: "#1890ff" }} />}
               rules={[
                 { required: true, message: "Please enter phone number" },
                 { len: 10, message: "Phone number must be 10 digits" },
               ]}
-            >
-              <Input
-                disabled
-                prefix={<PhoneOutlined style={{ color: "#1890ff" }} />}
-              />
-            </Form.Item>
+            />
           </Col>
         </Row>
 
@@ -325,28 +328,26 @@ const Profile = () => {
         />
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item
+            <CustomInput
+              type="text"
               name="gstNo"
               label="GSTIN"
+              placeholder="Enter GST number"
+              disabled={!isEditing}
+              prefix={<FileTextOutlined style={{ color: "#1890ff" }} />}
               rules={[{ required: true, message: "Please enter GST number" }]}
-            >
-              <Input
-                disabled={!isEditing}
-                prefix={<FileTextOutlined style={{ color: "#1890ff" }} />}
-              />
-            </Form.Item>
+            />
           </Col>
           <Col span={12}>
-            <Form.Item
+              <CustomInput
+              type="text"
               name="panNo"
               label="PAN Number"
+              placeholder="Enter PAN number"
+              disabled={!isEditing}
+              prefix={<IdcardOutlined style={{ color: "#1890ff" }} />}
               rules={[{ required: true, message: "Please enter PAN number" }]}
-            >
-              <Input
-                disabled={!isEditing}
-                prefix={<IdcardOutlined style={{ color: "#1890ff" }} />}
-              />
-            </Form.Item>
+            />
           </Col>
         </Row>
 
@@ -358,72 +359,77 @@ const Profile = () => {
         />
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item
+             <CustomInput
+              type="text"
               name="street1"
               label="Street Address 1"
+              placeholder="Enter street address"
+              disabled={!isEditing}
+              prefix={<EnvironmentOutlined style={{ color: "#1890ff" }} />}
               rules={[
                 { required: true, message: "Please enter street address" },
               ]}
-            >
-              <Input
-                disabled={!isEditing}
-                prefix={<EnvironmentOutlined style={{ color: "#1890ff" }} />}
-              />
-            </Form.Item>
+            />
           </Col>
           <Col span={12}>
-            <Form.Item
+            <CustomInput
+              type="text"
               name="street2"
               label="Street Address 2"
+              placeholder="Enter street address"
+              disabled={!isEditing}
+              prefix={<EnvironmentOutlined style={{ color: "#1890ff" }} />}
               rules={[
                 { required: true, message: "Please enter street address" },
               ]}
-            >
-              <Input
-                disabled={!isEditing}
-                prefix={<EnvironmentOutlined style={{ color: "#1890ff" }} />}
-              />
-            </Form.Item>
+            />
           </Col>
         </Row>
         <Row gutter={16}>
           <Col span={8}>
-            <Form.Item
-              name="cityState"
-              label="City & State"
-              rules={[
-                { required: true, message: "Please enter City And State" },
-              ]}
-            >
-              <Input
-                disabled={!isEditing}
-                prefix={<HomeOutlined style={{ color: "#1890ff" }} />}
-              />
-            </Form.Item>
+            <CustomInput
+              type="text"
+              name="city"
+              label="City"
+              placeholder="Enter city"
+              disabled={!isEditing}
+              prefix={<HomeOutlined style={{ color: "#1890ff" }} />}
+              rules={[{ required: true, message: "Please enter city" }]}
+            />
+          </Col>
+           <Col span={8}>
+            <CustomInput
+              type="select"
+              name="state"
+              label="State"
+              placeholder="Select state"
+              disabled={!isEditing}
+              prefix={<HomeOutlined style={{ color: "#1890ff" }} />}
+              options={stateOptions}
+              rules={[{ required: true, message: "Please select state" }]}
+            />
           </Col>
           <Col span={8}>
-            <Form.Item
+           <CustomInput
+              type="text"
               name="pin"
               label="PIN Code"
+              placeholder="Enter PIN code"
+              disabled={!isEditing}
+              prefix={<LockOutlined style={{ color: "#1890ff" }} />}
               rules={[{ required: true, message: "Please enter PIN code" }]}
-            >
-              <Input
-                disabled={!isEditing}
-                prefix={<LockOutlined style={{ color: "#1890ff" }} />}
-              />
-            </Form.Item>
+            />
           </Col>
           <Col span={8}>
-            <Form.Item
+            <CustomInput
+              type="text"
               name="fax"
               label="Fax Number"
+              placeholder="Enter fax number"
+              disabled={!isEditing}
+              prefix={<PhoneOutlined style={{ color: "#1890ff" }} />}
               rules={[{ required: true, message: "Please enter fax number" }]}
-            >
-              <Input
-                disabled={!isEditing}
-                prefix={<PhoneOutlined style={{ color: "#1890ff" }} />}
-              />
-            </Form.Item>
+            />
           </Col>
         </Row>
       </Form>
