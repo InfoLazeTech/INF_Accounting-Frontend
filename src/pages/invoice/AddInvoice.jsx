@@ -108,7 +108,7 @@ const AddInvoice = () => {
           unitPrice: item.unitPrice,
           discount: item.discount || 0,
           taxRate: item.taxRate || 0,
-          lineTotal: item.lineTotal,
+            lineTotal: item.quantity * item.unitPrice,
         }))
       );
       setExtraCharges({
@@ -132,7 +132,7 @@ const AddInvoice = () => {
     if (!selected) return;
     const updated = [...items];
     const subtotal = 1 * (selected.salePrice || 0); // Quantity = 1 initially
-    const tax = (subtotal * (selected.taxRate || 0)) / 100;
+    // const tax = (subtotal * (selected.taxRate || 0)) / 100;
     updated[index] = {
       ...updated[index],
       itemId: selected._id,
@@ -144,7 +144,7 @@ const AddInvoice = () => {
       taxRate: selected.taxRate || 0,
       quantity: 1,
       discount: 0,
-      lineTotal: subtotal + tax,
+      lineTotal: subtotal ,
     };
     setItems(updated);
   };
@@ -156,8 +156,8 @@ const AddInvoice = () => {
 
     if (!selected) return;
     form.setFieldsValue({
-      customerId: selected._id,
-      customerName: selected.name || selected.companyName,
+      // customerId: selected._id,
+      customerName: selected.companyName,
     });
     setCustomerState(
       selected.billingAddress?.state || selected.shippingAddress?.state || ""
@@ -176,7 +176,7 @@ const AddInvoice = () => {
     } = updated[index];
     const subtotal = quantity * unitPrice - discount;
     const tax = (subtotal * taxRate) / 100;
-    updated[index].lineTotal = subtotal + tax;
+    updated[index].lineTotal = subtotal ;
     setItems(updated);
   };
 
@@ -395,32 +395,31 @@ const AddInvoice = () => {
         />
       ),
     },
+    // {
+    //   title: "Discount",
+    //   dataIndex: "discount",
+    //   render: (_, record, index) => (
+    //     <InputNumber
+    //       min={0}
+    //       value={record.discount}
+    //       onChange={(val) => handleItemChange(index, "discount", val)}
+    //     />
+    //   ),
+    // },
     {
-      title: "Discount",
-      dataIndex: "discount",
-      render: (_, record, index) => (
-        <InputNumber
-          min={0}
-          value={record.discount}
-          onChange={(val) => handleItemChange(index, "discount", val)}
-        />
-      ),
-    },
-    {
-      title: "Tax (%)",
-      dataIndex: "taxRate",
-      render: (_, record, index) => (
-        <InputNumber
-          min={0}
-          value={record.taxRate}
-          onChange={(val) => handleItemChange(index, "taxRate", val)}
-        />
-      ),
+      title: "Tax Details",
+      dataIndex: "taxDetails",
+      render: (_, record) => {
+        const taxAmount =
+          (record.quantity * record.unitPrice * record.taxRate) / 100 || 0;
+        const taxRate = record.taxRate ? record.taxRate.toFixed(2) : "0.00";
+        return `${taxRate}% (₹${taxAmount.toFixed(2)})`;
+      },
     },
     {
       title: "Amount",
       dataIndex: "lineTotal",
-      render: (val) => val.toFixed(2),
+      render: (val) => (val ? val.toFixed(2) : "0.00"),
     },
     {
       title: "Action",
@@ -488,7 +487,6 @@ const AddInvoice = () => {
                 name="invoiceDate"
                 label="Invoice Date"
                 placeholder="Select invoice date"
-
                 format="YYYY-MM-DD"
                 rules={[
                   { required: true, message: "Please select an invoice date" },

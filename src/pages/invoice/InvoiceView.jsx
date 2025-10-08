@@ -1,9 +1,10 @@
-import { Card, Row, Col, Button, Spin, Typography, Descriptions, Table, Divider } from "antd";
-import Icons from "../../assets/icon"; // Ensure this is correctly set up
+import { Card, Row, Col, Button, Spin, Typography, Table } from "antd";
+import Icons from "../../assets/icon";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { getInvoiceById } from "../../redux/slice/invoice/invoiceSlice"; // Adjust path as needed
+import { getInvoiceById } from "../../redux/slice/invoice/invoiceSlice";
+import { getCompany } from "../../redux/slice/company/companySlice";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import moment from "moment";
@@ -14,30 +15,111 @@ const InvoiceView = () => {
   const navigate = useNavigate();
   const { invoiceId } = useParams();
   const dispatch = useDispatch();
-    const { companyId } = useSelector((state) => state.auth);
-  const { invoice, loading, error } = useSelector((state) => state.invoice);
+  const { companyId } = useSelector((state) => state.auth);
+  const {
+    invoice,
+    loading: invoiceLoading,
+    error: invoiceError,
+  } = useSelector((state) => state.invoice);
+  const {
+    companyData: company,
+    loading: companyLoading,
+    error: companyError,
+  } = useSelector((state) => state.company);
 
-  // Fetch invoice data on mount
   useEffect(() => {
-    dispatch(getInvoiceById({ invoiceId, companyId}));
-  }, [dispatch, invoiceId]);
+    if (companyId && invoiceId) {
+      dispatch(getInvoiceById({ invoiceId, companyId }));
+      dispatch(getCompany(companyId));
+    }
+  }, [dispatch, invoiceId, companyId]);
 
-  // Handle PDF download
   const handleDownload = () => {
     const input = document.getElementById("invoice-download-section");
-    html2canvas(input, { scale: 2 }).then((canvas) => {
+    const originalStyles = {};
+    const elements = input.querySelectorAll("*");
+    elements.forEach((el) => {
+      const computedStyle = window.getComputedStyle(el);
+      originalStyles[el] = {
+        backgroundColor: computedStyle.backgroundColor,
+        color: computedStyle.color,
+      };
+      if (computedStyle.backgroundColor.includes("oklch")) {
+        el.style.backgroundColor = "#ffffff";
+      }
+      if (computedStyle.color.includes("oklch")) {
+        el.style.color = "#000000";
+      }
+    });
+    const originalWidth = input.style.width;
+    const originalHeight = input.style.height;
+  const originalOverflow = input.style.overflow;
+  input.style.width = "210mm";
+  input.style.height = "auto";
+  input.style.overflow = "visible";
+html2canvas(input, {
+    scale: 2,
+    useCORS: true,
+    logging: true,
+  })
+    .then((canvas) => {
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+   const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pdfHeight;
+      while (heightLeft > 0) {
+        pdf.addPage();
+        position = - (imgHeight - heightLeft);
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+      }
+
+        // Restore original styles and dimensions
+      elements.forEach((el) => {
+        if (originalStyles[el]) {
+          el.style.backgroundColor = originalStyles[el].backgroundColor;
+          el.style.color = originalStyles[el].color;
+        }
+      });
+      input.style.width = originalWidth;
+      input.style.height = originalHeight;
+      input.style.overflow = originalOverflow;
+
       pdf.save(`invoice-${invoice?.invoiceNumber || "INV"}.pdf`);
+    })
+      .catch((error) => {
+      console.error("Error in html2canvas or jsPDF:", error);
+      // Restore styles and dimensions on error
+      elements.forEach((el) => {
+        if (originalStyles[el]) {
+          el.style.backgroundColor = originalStyles[el].backgroundColor;
+          el.style.color = originalStyles[el].color;
+        }
+      });
+      input.style.width = originalWidth;
+      input.style.height = originalHeight;
+      input.style.overflow = originalOverflow;
     });
   };
 
   // Table columns for items
   const columns = [
+    {
+      title: "#",
+      dataIndex: "id",
+      key: "id",
+      render: (text, record, index) => index + 1,
+    },
     {
       title: "Item Name",
       dataIndex: "itemName",
@@ -49,7 +131,12 @@ const InvoiceView = () => {
       key: "description",
     },
     {
-      title: "Quantity",
+      title: "HSN/SAC",
+      dataIndex: "hsnCode",
+      key: "hsnCode",
+    },
+    {
+      title: "Qty",
       dataIndex: "quantity",
       key: "quantity",
     },
@@ -60,26 +147,82 @@ const InvoiceView = () => {
       render: (value) => `₹${value.toFixed(2)}`,
     },
     {
-      title: "Discount",
-      dataIndex: "discount",
-      key: "discount",
-      render: (value, record) => `${value}${record.discountType === "percentage" ? "%" : "₹"}`,
-    },
-    {
-      title: "Tax Rate",
+      title: "Tax Rate(%)",
       dataIndex: "taxRate",
       key: "taxRate",
       render: (value) => `${value}%`,
     },
     {
-      title: "Line Total",
+      title: "Amount",
       dataIndex: "lineTotal",
       key: "lineTotal",
       render: (value) => `₹${value.toFixed(2)}`,
     },
   ];
 
-  if (loading) {
+  const isInterState =
+    invoice?.deliveryAddress?.state && company?.address?.state
+      ? invoice.deliveryAddress.state !== company.address.state
+      : false;
+  const taxSummary = invoice?.items?.length
+    ? [
+        ...Object.values(
+          invoice.items.reduce((acc, item) => {
+            const hsnSac = item.hsnCode;
+            if (!acc[hsnSac]) {
+              acc[hsnSac] = {
+                hsnSac,
+                quantity: 0,
+                taxableValue: 0,
+                cgstTax: isInterState
+                  ? { rate: "", amount: 0 }
+                  : { rate: item.taxRate / 2, amount: 0 },
+                sgstTax: isInterState
+                  ? { rate: "", amount: 0 }
+                  : { rate: item.taxRate / 2, amount: 0 },
+                igstTax: isInterState
+                  ? { rate: item.taxRate, amount: 0 }
+                  : { rate: "", amount: 0 },
+                totalTax: 0,
+              };
+            }
+            acc[hsnSac].quantity += item.quantity;
+            acc[hsnSac].taxableValue += item.lineTotal;
+            if (isInterState) {
+              acc[hsnSac].igstTax.amount +=
+                (item.lineTotal * item.taxRate) / 100;
+            } else {
+              acc[hsnSac].cgstTax.amount +=
+                (item.lineTotal * item.taxRate) / 200;
+              acc[hsnSac].sgstTax.amount +=
+                (item.lineTotal * item.taxRate) / 200;
+            }
+            acc[hsnSac].totalTax += (item.lineTotal * item.taxRate) / 100;
+            return acc;
+          }, {})
+        ),
+        {
+          hsnSac: "Total",
+          quantity:
+            invoice.items.reduce(
+              (sum, item) => sum + (item.quantity || 0),
+              0
+            ) || 0,
+          taxableValue: invoice?.totals?.subtotal || 0,
+          cgstTax: isInterState
+            ? { rate: "", amount: 0 }
+            : { rate: "", amount: invoice?.totals?.cgst || 0 },
+          sgstTax: isInterState
+            ? { rate: "", amount: 0 }
+            : { rate: "", amount: invoice?.totals?.sgst || 0 },
+          igstTax: isInterState
+            ? { rate: "", amount: invoice?.totals?.totalTax || 0 }
+            : { rate: "", amount: 0 },
+          totalTax: invoice?.totals?.totalTax || 0,
+        },
+      ]
+    : [];
+  if (invoiceLoading || companyLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Spin size="large" />
@@ -87,173 +230,302 @@ const InvoiceView = () => {
     );
   }
 
-  if (error) {
+  if (invoiceError || companyError) {
     return (
       <div className="text-center text-red-500">
-        Error: {error}
+        Error: {invoiceError || companyError}
       </div>
     );
   }
 
-  if (!invoice) {
-    return (
-      <div className="text-center">
-        No invoice data found.
-      </div>
-    );
+  if (!invoice || !company) {
+    return <div className="text-center">No data found.</div>;
   }
 
   return (
-    <div className="p-4 bg-gray-100 min-h-screen">
+    <div className="p-4 bg-gray-100 !space-y-4">
       {/* Header Card */}
-      <Card className="p-4 m-4 shadow-lg rounded-lg">
-        <Row align="middle" justify="space-between">
-          <Col>
-            <Row align="middle" gutter={8}>
-              <Col>
-                <Button
-                  type="text"
-                  icon={<Icons.ArrowLeftOutlined />}
-                  onClick={() => navigate("/invoice")}
-                />
-              </Col>
-              <Col>
-                <Title level={4} className="mb-0">
-                  Invoice #{invoice.invoiceNumber}
-                </Title>
-              </Col>
-            </Row>
-          </Col>
-          <Col>
-            <Row gutter={8}>
-              <Col>
-                <Button
-                  type="primary"
-                  icon={<Icons.EditOutlined />}
-                  onClick={() => navigate(`/invoice/edit/${invoiceId}`)}
-                  className="bg-blue-500 hover:bg-blue-600"
-                >
-                  Edit
-                </Button>
-              </Col>
-              <Col>
-                <Button
-                  onClick={() => navigate("/invoice")}
-                  className="border-gray-300"
-                >
-                  Cancel
-                </Button>
-              </Col>
-              <Col>
-                <Button
-                  type="primary"
-                  onClick={handleDownload}
-                  className="bg-green-500 hover:bg-green-600"
-                >
-                  Download PDF
-                </Button>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-      </Card>
+      <div className="p-3 bg-white shadow-lg rounded-lg">
+        <div className="flex items-center gap-2">
+          <Button
+            type="text"
+            icon={<Icons.ArrowLeftOutlined />}
+            onClick={() => navigate("/invoice")}
+          />
+          <div className="text-xl font-semibold">
+            Invoice #{invoice.invoiceNumber}
+          </div>
+        </div>
+      </div>
 
       {/* Downloadable Invoice Section */}
-      <div id="invoice-download-section" className="bg-white p-8 m-4 rounded-lg shadow-lg">
-        <Row justify="space-between" className="mb-6">
-          <Col>
-            <Title level={3} className="mb-2">Invoice</Title>
-            <Text strong>Invoice Number: </Text>
-            <Text>{invoice.invoiceNumber}</Text>
-            <br />
-            <Text strong>Company: </Text>
-            <Text>{invoice.companyId.companyName}</Text>
-          </Col>
-          <Col>
-            <Text strong>Invoice Date: </Text>
-            <Text>{moment(invoice.invoiceDate).format("DD MMM YYYY")}</Text>
-            <br />
-            <Text strong>Due Date: </Text>
-            <Text>{moment(invoice.dueDate).format("DD MMM YYYY")}</Text>
-            <br />
-            <Text strong>Status: </Text>
-            <Text className={invoice.status === "draft" ? "text-yellow-500" : "text-green-500"}>
-              {invoice.status.toUpperCase()}
-            </Text>
-            <br />
-            <Text strong>Payment Status: </Text>
-            <Text className={invoice.paymentStatus === "unpaid" ? "text-red-500" : "text-green-500"}>
-              {invoice.paymentStatus.toUpperCase()}
-            </Text>
-          </Col>
-        </Row>
-
-        <Divider />
-
-        {/* Customer Information */}
-        <Descriptions
-          title="Customer Information"
-          bordered
-          column={1}
-          className="mb-6"
-          labelStyle={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}
+      <div className="grid grid-cols-5 gap-x-4">
+        <div
+          id="invoice-download-section"
+          className="bg-white p-5 rounded-lg shadow-lg !w-full col-span-4"
         >
-          <Descriptions.Item label="Customer Name">{invoice.customerName}</Descriptions.Item>
-          <Descriptions.Item label="Contact Person">{invoice.customerId.contactPerson}</Descriptions.Item>
-          <Descriptions.Item label="Email">{invoice.customerId.email}</Descriptions.Item>
-          <Descriptions.Item label="Phone">{invoice.customerId.phone}</Descriptions.Item>
-          <Descriptions.Item label="Delivery Address">
-            {`${invoice.deliveryAddress.street}, ${invoice.deliveryAddress.city}, ${invoice.deliveryAddress.state}, ${invoice.deliveryAddress.pincode}, ${invoice.deliveryAddress.country}`}
-          </Descriptions.Item>
-        </Descriptions>
+          <div className="border p-4 rounded-md">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h2 className="text-xl font-bold border-b border-black pb-2">
+                  Tax Invoice
+                </h2>
+                <table className="mt-2">
+                  <tr>
+                    <td className="pr-4">Invoice No</td>
+                    <td>: {invoice.invoiceNumber}</td>
+                  </tr>
+                  <tr>
+                    <td className="pr-4">Cust. Code</td>
+                    <td>: {invoice.customerId._id}</td>
+                  </tr>
+                  <tr>
+                    <td className="pr-4">Cust. Name</td>
+                    <td>: {invoice.customerName}</td>
+                  </tr>
+                  <tr>
+                    <td className="pr-4">Cust. Contact No</td>
+                    <td>: {invoice.customerId.phone}</td>
+                  </tr>
+                  <tr>
+                    <td className="pr-4">Date</td>
+                    <td>
+                      : {moment(invoice.invoiceDate).format("DD/MM/YYYY")}
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold">
+                  <img className="h-20  w-60" src={company.logo} alt="" />
+                </div>
+                <p>
+                  {company.address?.street1 || "A-807, Empire Business Hub"}
+                  <br />
+                  {company.address?.street2 || "Science City Road, Sola"}
+                  <br />
+                  {company.address?.city || "Ahmedabad"}, [
+                  {company.address?.state || "GJ"}] -{" "}
+                  {company.address?.pinCode || "360004"}
+                  <br />
+                  GSTIN: {company.gstNo || "27ABCDE1234F1Z5"}
+                  <br />
+                  PAN No: {company.panNo || "BJPFC1243E"}
+                  <br />
+                  Contact No: {invoice.customerId.phone || "7229028694"}
+                </p>
+              </div>
+            </div>
+            <div className="mb-6">
+              <table className="w-full">
+                <tr>
+                  <td className="border border-black p-2">
+                    Bill To
+                    <br />
+                    {invoice.customerName}
+                    <br />
+                    {invoice.deliveryAddress.street},{" "}
+                    {invoice.deliveryAddress.city}
+                  </td>
+                  <td className="border border-black p-2">
+                    Ship To
+                    <br />
+                    {invoice.customerName}
+                    <br />
+                    {invoice.deliveryAddress.street},{" "}
+                    {invoice.deliveryAddress.city}
+                  </td>
+                  <td className="border border-black p-2">
+                    Other Information
+                    <br />
+                    Payment Terms:{" "}
+                    {invoice.paymentTerms.paymentTerms || "Due On Receipt"}
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <div className="mb-6">
+              <Table
+                columns={columns}
+                dataSource={invoice.items}
+                pagination={false}
+                bordered
+                rowKey="itemId"
+              />
+            </div>
+            <div className="mb-6 flex">
+              <table className="border-collapse  mr-2">
+                <thead>
+                  <tr className="bg-gray-200">
+                    <th className="border text-xs border-black p-2" rowSpan="2">
+                      HSN/SAC
+                    </th>
+                    <th className="border border-black p-2" rowSpan="2">
+                      Qty
+                    </th>
+                    <th className="border border-black p-2" rowSpan="2">
+                      Taxable value
+                    </th>
+                    {isInterState ? (
+                      <th className="border border-black p-2" colSpan="2">
+                        IGST
+                      </th>
+                    ) : (
+                      <>
+                        <th className="border border-black p-2" colSpan="2">
+                          CGST
+                        </th>
+                        <th className="border border-black p-2" colSpan="2">
+                          SGST
+                        </th>
+                      </>
+                    )}
+                    <th className="border text-xs border-black p-2" rowSpan="2">
+                      Total Tax
+                    </th>
+                  </tr>
+                  <tr className="bg-gray-200">
+                    {isInterState ? (
+                      <>
+                        <th className="border border-black p-2">Rate</th>
+                        <th className="border border-black p-2">Amount</th>
+                      </>
+                    ) : (
+                      <>
+                        <th className="border border-black p-2">Rate</th>
+                        <th className="border border-black p-2">Amount</th>
+                        <th className="border border-black p-2">Rate</th>
+                        <th className="border border-black p-2">Amount</th>
+                      </>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {taxSummary.map((item, index) => (
+                    <tr key={index}>
+                      <td className="border border-black p-2">{item.hsnSac}</td>
+                      <td className="border border-black p-2">
+                        {item.quantity}
+                      </td>
+                      <td className="border border-black p-2">
+                        ₹{item.taxableValue.toFixed(2)}
+                      </td>
+                      {isInterState ? (
+                        <>
+                          <td className="border border-black p-2">
+                            {item.igstTax.rate}%
+                          </td>
+                          <td className="border border-black p-2">
+                            ₹{item.igstTax.amount.toFixed(2)}
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="border border-black p-2">
+                            {item.cgstTax.rate}%
+                          </td>
+                          <td className="border border-black p-2">
+                            ₹{item.cgstTax.amount.toFixed(2)}
+                          </td>
+                          <td className="border border-black p-2">
+                            {item.sgstTax.rate}%
+                          </td>
+                          <td className="border border-black p-2">
+                            ₹{item.sgstTax.amount.toFixed(2)}
+                          </td>
+                        </>
+                      )}
+                      <td className="border border-black p-2">
+                        ₹{item.totalTax.toFixed(2)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <table className="w-1/2 border-collapse">
+                <tbody>
+                  <tr>
+                    <td className="border border-black p-2">Basic Amount</td>
+                    <td className="border border-black p-2">
+                      ₹{invoice.totals.subtotal.toFixed(2)}
+                    </td>
+                  </tr>
+                  {isInterState ? (
+                    <tr>
+                      <td className="border border-black p-2">IGST</td>
+                      <td className="border border-black p-2">
+                        ₹{(invoice.totals.totalTax || 0).toFixed(2)}
+                      </td>
+                    </tr>
+                  ) : (
+                    <>
+                      <tr>
+                        <td className="border border-black p-2">CGST</td>
+                        <td className="border border-black p-2">
+                          ₹{(invoice.totals.cgst || 0).toFixed(2)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="border border-black p-2">SGST</td>
+                        <td className="border border-black p-2">
+                          ₹{(invoice.totals.sgst || 0).toFixed(2)}
+                        </td>
+                      </tr>
+                    </>
+                  )}
+                  <tr>
+                    <td className="border border-black p-2">Total Tax</td>
+                    <td className="border border-black p-2">
+                      ₹{invoice.totals.totalTax.toFixed(2)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-black p-2">Document Total</td>
+                    <td className="border border-black p-2">
+                      ₹{invoice.totals.grandTotal.toFixed(2)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-        {/* Items Table */}
-        <Table
-          columns={columns}
-          dataSource={invoice.items}
-          pagination={false}
-          className="mb-6"
-          rowKey="itemId"
-          bordered
-          title={() => <Title level={5}>Items</Title>}
-        />
-
-        {/* Totals */}
-        <Row justify="end" className="mb-6">
-          <Col span={12}>
-            <Descriptions
-              bordered
-              column={1}
-              labelStyle={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}
-            >
-              <Descriptions.Item label="Subtotal">₹{invoice.totals.subtotal.toFixed(2)}</Descriptions.Item>
-              <Descriptions.Item label="Total Discount">₹{invoice.totals.totalDiscount.toFixed(2)}</Descriptions.Item>
-              <Descriptions.Item label="SGST">₹{invoice.totals.sgst.toFixed(2)}</Descriptions.Item>
-              <Descriptions.Item label="CGST">₹{invoice.totals.cgst.toFixed(2)}</Descriptions.Item>
-              <Descriptions.Item label="IGST">₹{invoice.totals.igst.toFixed(2)}</Descriptions.Item>
-              <Descriptions.Item label="Total Tax">₹{invoice.totals.totalTax.toFixed(2)}</Descriptions.Item>
-              <Descriptions.Item label="Shipping Charges">₹{invoice.totals.shippingCharges.toFixed(2)}</Descriptions.Item>
-              <Descriptions.Item label="Other Charges">₹{invoice.totals.otherCharges.toFixed(2)}</Descriptions.Item>
-              <Descriptions.Item label="Grand Total">
-                <Text strong className="text-lg">₹{invoice.totals.grandTotal.toFixed(2)}</Text>
-              </Descriptions.Item>
-            </Descriptions>
-          </Col>
-        </Row>
-
-        {/* Payment Terms and Notes */}
-        <Descriptions
-          title="Payment Terms & Notes"
-          bordered
-          column={1}
-          labelStyle={{ fontWeight: "bold", backgroundColor: "#f5f5f5" }}
-        >
-          <Descriptions.Item label="Payment Method">{invoice.paymentTerms.paymentMethod.replace("_", " ").toUpperCase()}</Descriptions.Item>
-          <Descriptions.Item label="Payment Terms">{invoice.paymentTerms.paymentTerms}</Descriptions.Item>
-          <Descriptions.Item label="Notes">{invoice.paymentTerms.notes}</Descriptions.Item>
-          <Descriptions.Item label="Delivery Notes">{invoice.deliveryNotes}</Descriptions.Item>
-          <Descriptions.Item label="Terms & Conditions">{invoice.termsAndConditions}</Descriptions.Item>
-        </Descriptions>
+            <div className="flex justify-between">
+              <div className="">
+                <p>
+                  Terms & Conditions:
+                  <br />
+                  {company.termsAndConditions || "1) Advance Payment"}
+                </p>
+              </div>
+              <div className="text-end">
+                <p>For {company.companyName}</p>
+                <div className="text-2xl font-bold">
+                  <img className="h-20 w-40" src={company.signature} alt="" /></div>
+                <p className="mt-2">Authorized Signatory</p>
+              </div>
+            </div>
+          </div>
+          <p className="pt-5 px-5">Powered by ABSS</p>
+        </div>
+        <div className="bg-white p-4 rounded-lg shadow-lg h-max !space-y-3">
+          <Button type="primary" onClick={handleDownload} className="w-full">
+            Download PDF
+          </Button>
+          <Button
+            type="primary"
+            icon={<Icons.EditOutlined />}
+            onClick={() => navigate(`/invoice/edit/${invoiceId}`)}
+            className="bg-blue-500 hover:bg-blue-600 w-full"
+          >
+            Edit
+          </Button>
+          <Button
+            onClick={() => navigate("/invoice")}
+            className="border-gray-300 w-full"
+          >
+            Cancel
+          </Button>
+        </div>
       </div>
     </div>
   );

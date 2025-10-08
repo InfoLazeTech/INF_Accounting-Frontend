@@ -136,11 +136,11 @@ const AddBill = () => {
   }, [vendorState, companyState]);
   // Handle vendor selection
   const handleVendorSelect = (value) => {
-    const selected = customers.find((v) => (v.name || v.vendorName) === value);
+    const selected = customers.find((v) => v._id === value);
     if (!selected) return;
     setSelectedVendorId(selected._id);
     form.setFieldsValue({
-      vendorName: selected.name || selected.vendorName || "",
+      vendorName: selected.companyName || "",
     });
     setVendorState(
       selected.billingAddress?.state || selected.shippingAddress?.state || ""
@@ -368,17 +368,26 @@ const totals = items.reduce(
         />
       ),
     },
+    // {
+    //   title: "Tax Rate",
+    //   dataIndex: "taxRate",
+    //   render: (_, record, index) => (
+    //     <InputNumber
+    //       min={0}
+    //       value={record.taxRate}
+    //       onChange={(val) => handleItemChange(index, "taxRate", val)}
+    //     />
+    //   ),
+    // },
     {
-      title: "Tax (%)",
-      dataIndex: "taxRate",
-      render: (_, record, index) => (
-        <InputNumber
-          min={0}
-          value={record.taxRate}
-          onChange={(val) => handleItemChange(index, "taxRate", val)}
-        />
-      ),
+    title: "Tax Details",
+    dataIndex: "taxDetails",
+    render: (_, record) => {
+      const taxAmount = ((record.quantity * record.unitPrice * record.taxRate) / 100) || 0;
+      const taxRate = record.taxRate ? record.taxRate.toFixed(2) : "0.00";
+      return `${taxRate}% (₹${taxAmount.toFixed(2)})`;
     },
+  },
     {
       title: "Amount",
       dataIndex: "lineTotal",
@@ -440,8 +449,8 @@ const totals = items.reduce(
                   options={
                     customers && customers.length > 0
                       ? customers.map((vendor) => ({
-                          label: vendor.name || vendor.vendorName,
-                          value: vendor.name || vendor.vendorName,
+                          label: vendor.companyName, 
+                          value: vendor._id ,
                         }))
                       : [
                           {

@@ -91,28 +91,42 @@ const Profile = () => {
           faxNumber: values.fax,
         },
       };
-
-      await dispatch(updateCompany({ companyId, data: payload })).unwrap();
+console.log("Payload sent to updateCompany:", payload); 
+      // await dispatch(updateCompany({ companyId, data: payload })).unwrap();
+       const response = await dispatch(updateCompany({ companyId, data: payload })).unwrap();
+       console.log("Backend response:", response);
       setIsEditing(false);
+        dispatch(getCompany(companyId));
     } catch (err) {
+       console.error("Update error:", err);
       message.error(err);
     }
   };
-
   const uploadProps = (type) => ({
     accept: "image/*",
-    listType: "picture-card",
+    listType: "picture",
     maxCount: 1,
+    showUploadList: false,
     beforeUpload: (file) => {
+      const isImage = file.type.startsWith("image/");
+      const isLt2M = file.size / 1024 / 1024 < 2; // Limit to 2MB
+      if (!isImage) {
+        message.error("You can only upload image files!");
+        return Upload.LIST_IGNORE;
+      }
+      if (!isLt2M) {
+        message.error("Image must be smaller than 2MB!");
+        return Upload.LIST_IGNORE;
+      }
       const reader = new FileReader();
       reader.onload = (e) => {
         form.setFieldsValue({ [type]: e.target.result });
+        console.log(`Uploaded ${type}:`, e.target.result); // Debug uploaded data URL
       };
       reader.readAsDataURL(file);
       return false;
     },
   });
-
   const SectionTitle = ({ icon, title, subtitle }) => (
     <div
       style={{
@@ -263,58 +277,86 @@ const Profile = () => {
         <SectionTitle icon={<InboxOutlined />} title="Logo & Signature" />
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item label="Company Logo">
-              {!isEditing ? (
-                companyData?.logo ? (
-                  <img
-                    src={companyData.logo}
-                    alt="Logo"
-                    style={{
-                      height: 100,
-                      border: "2px dashed #ccc",
-                      padding: 4,
-                    }}
-                  />
-                ) : (
-                  <PlaceholderBox text="No logo uploaded" />
-                )
+            <Form.Item label="Company Logo" name="logo">
+              {isEditing ? (
+                <>
+                  <Dragger {...uploadProps("logo")}>
+                    <p className="ant-upload-drag-icon">
+                      <InboxOutlined />
+                    </p>
+                    <p className="ant-upload-text">
+                      Click or drag logo to upload
+                    </p>
+                  </Dragger>
+                  {form.getFieldValue("logo") ? (
+                    <img
+                      src={form.getFieldValue("logo")}
+                      alt="Uploaded Logo"
+                      style={{
+                        height: 100,
+                        border: "2px dashed #ccc",
+                        padding: 4,
+                        marginTop: 8,
+                      }}
+                    />
+                  ) : (
+                    <PlaceholderBox text="No logo selected" />
+                  )}
+                </>
+              ) : companyData?.logo ? (
+                <img
+                  src={companyData.logo}
+                  alt="Logo"
+                  style={{
+                    height: 100,
+                    border: "2px dashed #ccc",
+                    padding: 4,
+                  }}
+                />
               ) : (
-                <Dragger {...uploadProps("logo")}>
-                  <p className="ant-upload-drag-icon">
-                    <InboxOutlined />
-                  </p>
-                  <p className="ant-upload-text">
-                    Click or drag logo to upload
-                  </p>
-                </Dragger>
+                <PlaceholderBox text="No logo uploaded" />
               )}
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label="Digital Signature">
-              {!isEditing ? (
-                companyData?.signature ? (
-                  <img
-                    src={companyData.signature}
-                    alt="Signature"
-                    style={{
-                      height: 100,
-                      border: "2px dashed #ccc",
-                      padding: 4,
-                    }}
-                  />
-                ) : (
-                  <PlaceholderBox text="No signature uploaded" />
-                )
+            <Form.Item label="Digital Signature" name="signature">
+              {isEditing ? (
+                <>
+                  <Dragger {...uploadProps("signature")}>
+                    <p className="ant-upload-drag-icon">
+                      <InboxOutlined />
+                    </p>
+                    <p className="ant-upload-text">
+                      Click or drag signature to upload
+                    </p>
+                  </Dragger>
+                  {form.getFieldValue("signature") ? (
+                    <img
+                      src={form.getFieldValue("signature")}
+                      alt="Uploaded Signature"
+                      style={{
+                        height: 100,
+                        border: "2px dashed #ccc",
+                        padding: 4,
+                        marginTop: 8,
+                      }}
+                    />
+                  ) : (
+                    <PlaceholderBox text="No signature selected" />
+                  )}
+                </>
+              ) : companyData?.signature ? (
+                <img
+                  src={companyData.signature}
+                  alt="Signature"
+                  style={{
+                    height: 100,
+                    border: "2px dashed #ccc",
+                    padding: 4,
+                  }}
+                />
               ) : (
-                <Dragger {...uploadProps("signature")}>
-                  <p className="ant-upload-drag-icon">
-                    <InboxOutlined />
-                  </p>
-                  <p className="ant-upload-text">
-                    Click or drag signature to upload
-                  </p>
-                </Dragger>
+                <PlaceholderBox text="No signature uploaded" />
               )}
             </Form.Item>
           </Col>
