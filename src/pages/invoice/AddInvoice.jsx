@@ -115,6 +115,9 @@ const AddInvoice = () => {
         shipping: invoice.totals?.shippingCharges || 0,
         other: invoice.totals?.otherCharges || 0,
       });
+      setCustomerState(invoice.customerAddress?.state || "");
+    // Determine isSameState based on stored tax values
+    setIsSameState(invoice.totals?.igst ? false : true);
     } else {
       form.setFieldsValue({
         customerName: "",

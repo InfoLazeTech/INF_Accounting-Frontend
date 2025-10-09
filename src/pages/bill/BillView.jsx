@@ -16,9 +16,11 @@ const BillView = () => {
   const { billId } = useParams();
   const dispatch = useDispatch();
   const { companyId } = useSelector((state) => state.auth);
-  const { bill, loading: billLoading, error: billError } = useSelector(
-    (state) => state.bill
-  ); // Changed from bills to bill
+  const {
+    bill,
+    loading: billLoading,
+    error: billError,
+  } = useSelector((state) => state.bill); 
   const {
     companyData: company,
     loading: companyLoading,
@@ -31,14 +33,8 @@ const BillView = () => {
       dispatch(getCompany(companyId));
     }
   }, [dispatch, billId, companyId]);
-
   const handleDownload = () => {
     const input = document.getElementById("bill-download-section");
-    if (!input) {
-      console.error("Element with ID 'bill-download-section' not found.");
-      return;
-    }
-
     const originalStyles = {};
     const elements = input.querySelectorAll("*");
     elements.forEach((el) => {
@@ -54,66 +50,65 @@ const BillView = () => {
         el.style.color = "#000000";
       }
     });
-
     const originalWidth = input.style.width;
     const originalHeight = input.style.height;
+    const originalOverflow = input.style.overflow;
     input.style.width = "210mm";
-    input.style.height = ""; // Let content determine height
-    input.style.overflow = "hidden";
-
+    input.style.height = "auto";
+    input.style.overflow = "visible";
     html2canvas(input, {
       scale: 2,
-      useCors: true,
+      useCORS: true,
       logging: true,
-      windowWidth: 210,
-    }).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-      const pdfWidth = 210;
-      const pdfHeight = 297;
-      let position = 0;
-
-      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-      position -= 297;
-
-      const contentHeight = canvas.height / 2; // Adjust for scale
-      const pagesNeeded = Math.ceil(contentHeight / pdfHeight);
-
-      if (pagesNeeded > 1) {
-        for (let i = 1; i < pagesNeeded; i++) {
+    })
+      .then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4",
+        });
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pdfWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+        while (heightLeft > 0) {
           pdf.addPage();
-          pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
-          position -= 297;
+          position = -(imgHeight - heightLeft);
+          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+          heightLeft -= pdfHeight;
         }
-      }
 
-      elements.forEach((el) => {
-        if (originalStyles[el]) {
-          el.style.backgroundColor = originalStyles[el].backgroundColor;
-          el.style.color = originalStyles[el].color;
-        }
-      });
-      input.style.width = originalWidth;
-      input.style.height = originalHeight;
-      input.style.overflow = "";
+        // Restore original styles and dimensions
+        elements.forEach((el) => {
+          if (originalStyles[el]) {
+            el.style.backgroundColor = originalStyles[el].backgroundColor;
+            el.style.color = originalStyles[el].color;
+          }
+        });
+        input.style.width = originalWidth;
+        input.style.height = originalHeight;
+        input.style.overflow = originalOverflow;
 
-      pdf.save(`bill-${bill?.billNumber || "Bill"}.pdf`);
-    }).catch((error) => {
-      console.error("Error in html2canvas or jsPDF:", error);
-      elements.forEach((el) => {
-        if (originalStyles[el]) {
-          el.style.backgroundColor = originalStyles[el].backgroundColor;
-          el.style.color = originalStyles[el].color;
-        }
+        pdf.save(`bill-${bill?.billNumber || "Bill"}.pdf`);
+      })
+      .catch((error) => {
+        console.error("Error in html2canvas or jsPDF:", error);
+        // Restore styles and dimensions on error
+        elements.forEach((el) => {
+          if (originalStyles[el]) {
+            el.style.backgroundColor = originalStyles[el].backgroundColor;
+            el.style.color = originalStyles[el].color;
+          }
+        });
+        input.style.width = originalWidth;
+        input.style.height = originalHeight;
+        input.style.overflow = originalOverflow;
       });
-      input.style.width = originalWidth;
-      input.style.height = originalHeight;
-      input.style.overflow = "";
-    });
   };
 
   const columns = [
@@ -162,38 +157,68 @@ const BillView = () => {
       render: (value) => `₹${value.toFixed(2)}`,
     },
   ];
-
-  const taxSummary = [
-    {
-      hsnSac: bill?.items[0]?.hsnCode || "",
-      quantity: bill?.items[0]?.quantity || 0,
-      taxableValue: bill?.totals?.subtotal || 0,
-      cgstTax: {
-        rate:
-          bill?.totals?.cgst > 0
-            ? (bill.totals.cgst / (bill.totals.subtotal / 100)).toFixed(2)
-            : 0,
-        amount: bill?.totals?.cgst || 0,
-      },
-      sgstTax: {
-        rate:
-          bill?.totals?.sgst > 0
-            ? (bill.totals.sgst / (bill.totals.subtotal / 100)).toFixed(2)
-            : 0,
-        amount: bill?.totals?.sgst || 0,
-      },
-      totalTax: bill?.totals?.totalTax || 0,
-    },
-    {
-      hsnSac: "Total",
-      quantity:
-        bill?.items?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0,
-      taxableValue: bill?.totals?.subtotal || 0,
-      cgstTax: { rate: "", amount: bill?.totals?.cgst || 0 },
-      sgstTax: { rate: "", amount: bill?.totals?.sgst || 0 },
-      totalTax: bill?.totals?.totalTax || 0,
-    },
-  ];
+  const isInterState =
+    (bill?.totals?.igst > 0) ||
+    (bill?.totals?.totalTax > 0 && bill?.totals?.sgst === 0 && bill?.totals?.cgst === 0) ||
+    (bill?.vendorId?.address?.state &&
+      company?.address?.state &&
+      bill.vendorId.address.state !== company.address.state);
+  const taxSummary = bill?.items?.length
+    ? [
+        ...Object.values(
+          bill.items.reduce((acc, item) => {
+            const hsnSac = item.hsnCode;
+            if (!acc[hsnSac]) {
+              acc[hsnSac] = {
+                hsnSac,
+                quantity: 0,
+                taxableValue: 0,
+                cgstTax: isInterState
+                  ? { rate: "", amount: 0 }
+                  : { rate: item.taxRate / 2, amount: 0 },
+                sgstTax: isInterState
+                  ? { rate: "", amount: 0 }
+                  : { rate: item.taxRate / 2, amount: 0 },
+                igstTax: isInterState
+                  ? { rate: item.taxRate, amount: 0 }
+                  : { rate: "", amount: 0 },
+                totalTax: 0,
+              };
+            }
+            acc[hsnSac].quantity += item.quantity;
+            acc[hsnSac].taxableValue += item.lineTotal;
+            if (isInterState) {
+              acc[hsnSac].igstTax.amount +=
+                (item.lineTotal * item.taxRate) / 100;
+            } else {
+              acc[hsnSac].cgstTax.amount +=
+                (item.lineTotal * item.taxRate) / 200;
+              acc[hsnSac].sgstTax.amount +=
+                (item.lineTotal * item.taxRate) / 200;
+            }
+            acc[hsnSac].totalTax += (item.lineTotal * item.taxRate) / 100;
+            return acc;
+          }, {})
+        ),
+        {
+          hsnSac: "Total",
+          quantity:
+            bill.items.reduce((sum, item) => sum + (item.quantity || 0), 0) ||
+            0,
+          taxableValue: bill?.totals?.subtotal || 0,
+          cgstTax: isInterState
+            ? { rate: "", amount: 0 }
+            : { rate: "", amount: bill?.totals?.cgst || 0 },
+          sgstTax: isInterState
+            ? { rate: "", amount: 0 }
+            : { rate: "", amount: bill?.totals?.sgst || 0 },
+          igstTax: isInterState
+            ? { rate: "", amount: bill?.totals?.totalTax || 0 }
+            : { rate: "", amount: 0 },
+          totalTax: bill?.totals?.totalTax || 0,
+        },
+      ]
+    : [];
 
   if (billLoading || companyLoading) {
     return (
@@ -266,7 +291,7 @@ const BillView = () => {
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold">
-                  {company.companyName || "ABSS"}
+                  <img className="h-20 w-60" src={company.logo} alt="" />
                 </div>
                 <p>
                   {company.address?.street1 || "A-807, Empire Business Hub"}
@@ -288,24 +313,27 @@ const BillView = () => {
             <div className="mb-6">
               <table className="w-full">
                 <tr>
-                  <td className="border border-black p-2">
+                  <td className="border border-[#e9e9e9] p-2">
                     Bill To
                     <br />
                     {bill.vendorName}
                     <br />
-                    {bill.vendorId.name || bill.vendorId.contactPerson}
+                    {bill.vendorId.address?.street || "N/A"},{" "}
+                    {bill.vendorId.address?.city || "N/A"}
                   </td>
-                  <td className="border border-black p-2">
+                  <td className="border border-[#e9e9e9] p-2">
                     Ship To
                     <br />
                     {bill.vendorName}
                     <br />
-                    {bill.vendorId.name || bill.vendorId.contactPerson}
+                    {bill.vendorId.address?.street || "N/A"},{" "}
+                    {bill.vendorId.address?.city || "N/A"}
                   </td>
-                  <td className="border border-black p-2">
+                  <td className="border border-[#e9e9e9] p-2">
                     Other Information
                     <br />
-                    Payment Terms: {bill.paymentTerms.paymentTerms || "Due On Receipt"}
+                    Payment Terms:{" "}
+                    {bill.paymentTerms?.paymentTerms || "Due On Receipt"}
                   </td>
                 </tr>
               </table>
@@ -320,71 +348,142 @@ const BillView = () => {
               />
             </div>
             <div className="mb-6 flex">
-              <table className="border-collapse mr-2">
+              <table className="border-collapse table-fixed w-2/3 mr-2 border border-[#e9e9e9]">
                 <thead>
-                  <tr className="bg-gray-200">
-                    <th className="border border-black p-2">HSN/SAC</th>
-                    <th className="border border-black p-2">Qty</th>
-                    <th className="border border-black p-2">Taxable value</th>
-                    <th className="border border-black p-2">CGST Tax</th>
-                    <th className="border border-black p-2">SGST Tax</th>
-                    <th className="border border-black p-2">Total Tax</th>
+                  <tr className="bg-[#fafafa]">
+                    <th className="border border-[#e9e9e9] p-1 text-xs">
+                      HSN/SAC
+                    </th>
+                    <th className="border border-[#e9e9e9] p-1 text-xs">Qty</th>
+                    <th className="border border-[#e9e9e9] p-1 text-xs">
+                      Taxable value
+                    </th>
+                    {isInterState ? (
+                      <>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">
+                          IGST Rate
+                        </th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">
+                          IGST Amount
+                        </th>
+                      </>
+                    ) : (
+                      <>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">
+                          CGST Rate
+                        </th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">
+                          CGST Amount
+                        </th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">
+                          SGST Rate
+                        </th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">
+                          SGST Amount
+                        </th>
+                      </>
+                    )}
+                    <th className="border border-[#e9e9e9] p-1 text-xs">
+                      Total Tax
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {taxSummary.map((item, index) => (
-                    <tr key={index}>
-                      <td className="border border-black p-2">{item.hsnSac}</td>
-                      <td className="border border-black p-2">{item.quantity}</td>
-                      <td className="border border-black p-2">
+                    <tr key={index} className="border border-[#e9e9e9]">
+                      <td className="border border-[#e9e9e9] p-1 text-xs">
+                        {item.hsnSac}
+                      </td>
+                      <td className="border border-[#e9e9e9] p-1 text-xs">
+                        {item.quantity}
+                      </td>
+                      <td className="border border-[#e9e9e9] p-1 text-xs">
                         ₹{item.taxableValue.toFixed(2)}
                       </td>
-                      <td className="border border-black p-2">
-                        Rate: {item.cgstTax.rate}%
-                        {item.cgstTax.rate ? <br /> : ""}Amount: ₹
-                        {item.cgstTax.amount.toFixed(2)}
-                      </td>
-                      <td className="border border-black p-2">
-                        Rate: {item.sgstTax.rate}%
-                        {item.sgstTax.rate ? <br /> : ""}Amount: ₹
-                        {item.sgstTax.amount.toFixed(2)}
-                      </td>
-                      <td className="border border-black p-2">
+                      {isInterState ? (
+                        <>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
+                            {item.igstTax.rate}%
+                          </td>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
+                            ₹{item.igstTax.amount.toFixed(2)}
+                          </td>
+                        </>
+                      ) : (
+                        <>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
+                            {item.cgstTax.rate}%
+                          </td>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
+                            ₹{item.cgstTax.amount.toFixed(2)}
+                          </td>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
+                            {item.sgstTax.rate}%
+                          </td>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
+                            ₹{item.sgstTax.amount.toFixed(2)}
+                          </td>
+                        </>
+                      )}
+                      <td className="border border-[#e9e9e9] p-1 text-xs">
                         ₹{item.totalTax.toFixed(2)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <table className="w-1/2 border-collapse">
-                <tbody>
+              <table className="border-collapse table-fixed w-1/3">
+                <tbody className="border border-[#e9e9e9]">
                   <tr>
-                    <td className="border border-black p-2">Basic Amount</td>
-                    <td className="border border-black p-2">
+                    <th className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs">
+                      Basic Amount
+                    </th>
+                    <td className="border border-[#e9e9e9] p-1 text-xs">
                       ₹{bill.totals.subtotal.toFixed(2)}
                     </td>
                   </tr>
+                  {isInterState ? (
+                    <tr>
+                      <th className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs">
+                        IGST
+                      </th>
+                      <td className="border border-[#e9e9e9] p-1 text-xs">
+                        ₹{(bill.totals.totalTax || 0).toFixed(2)}
+                      </td>
+                    </tr>
+                  ) : (
+                    <>
+                      <tr>
+                        <th className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs">
+                          CGST
+                        </th>
+                        <td className="border border-[#e9e9e9] p-1 text-xs">
+                          ₹{(bill.totals.cgst || 0).toFixed(2)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs">
+                          SGST
+                        </th>
+                        <td className="border border-[#e9e9e9] p-1 text-xs">
+                          ₹{(bill.totals.sgst || 0).toFixed(2)}
+                        </td>
+                      </tr>
+                    </>
+                  )}
                   <tr>
-                    <td className="border border-black p-2">CGST</td>
-                    <td className="border border-black p-2">
-                      ₹{bill.totals.cgst.toFixed(2)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-black p-2">SGST</td>
-                    <td className="border border-black p-2">
-                      ₹{bill.totals.sgst.toFixed(2)}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="border border-black p-2">Total Tax</td>
-                    <td className="border border-black p-2">
+                    <th className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs">
+                      Total Tax
+                    </th>
+                    <td className="border border-[#e9e9e9] p-1 text-xs">
                       ₹{bill.totals.totalTax.toFixed(2)}
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-black p-2">Document Total</td>
-                    <td className="border border-black p-2">
+                    <th className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs">
+                      Document Total
+                    </th>
+                    <td className="border border-[#e9e9e9] p-1 text-xs">
                       ₹{bill.totals.grandTotal.toFixed(2)}
                     </td>
                   </tr>
@@ -397,19 +496,23 @@ const BillView = () => {
                 <p>
                   Terms & Conditions:
                   <br />
-                  {company.termsAndConditions || bill.termsAndConditions || "1) Advance Payment"}
+                  {company.termsAndConditions ||
+                    bill.termsAndConditions ||
+                    "1) Advance Payment"}
                 </p>
               </div>
               <div className="text-end">
                 <p>For {company.companyName}</p>
-                <div className="text-2xl font-bold">{company.companyName}</div>
+                <div className="text-2xl font-bold">
+                  <img className="h-20 w-40" src={company.signature} alt="" />
+                </div>
                 <p className="mt-2">Authorized Signatory</p>
               </div>
             </div>
           </div>
           <p className="pt-5 px-5">Powered by ABSS</p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow-lg h-max !space-y-3 col-span-1">
+        <div className="bg-white p-4 rounded-lg shadow-lg h-max !space-y-3">
           <Button type="primary" onClick={handleDownload} className="w-full">
             Download PDF
           </Button>

@@ -65,7 +65,6 @@ const AddBill = () => {
   const [companyState, setCompanyState] = useState("");
   const [isSameState, setIsSameState] = useState(true);
 
-
   // Fetch bill data for editing
   useEffect(() => {
     if (billId) {
@@ -78,8 +77,8 @@ const AddBill = () => {
     if (companyId) {
       dispatch(getItem({ companyId }));
       dispatch(getCustomersVendors({ companyId }));
-       dispatch(getCompany(companyId));
-         if (billId) {
+      dispatch(getCompany(companyId));
+      if (billId) {
         dispatch(getBillById({ companyId, billId }));
       }
     } else {
@@ -87,13 +86,12 @@ const AddBill = () => {
       message.error("Company ID is missing. Please log in again.");
       navigate("/login");
     }
-  }, [dispatch, companyId,billId, navigate]);
-    useEffect(() => {
+  }, [dispatch, companyId, billId, navigate]);
+  useEffect(() => {
     if (companyData) {
       setCompanyState(companyData.address?.state || "");
     }
   }, [companyData]);
-
 
   // Populate form with bill data when editing
   useEffect(() => {
@@ -119,17 +117,20 @@ const AddBill = () => {
           quantity: item.quantity,
           unitPrice: item.unitPrice,
           taxRate: item.taxRate,
-          lineTotal: item.quantity * item.unitPrice, // Set lineTotal to subtotal only
+          lineTotal: item.quantity * item.unitPrice || item.lineTotal,
         })) || items
       );
       setExtraCharges({
         shipping: bill.totals?.shippingCharges || 0,
         other: bill.totals?.otherCharges || 0,
       });
+      setVendorState(bill.vendorAddress?.state || "");
+
+      setIsSameState(bill.totals?.igst ? false : true);
     }
   }, [billId, bill, form]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (vendorState && companyState) {
       setIsSameState(vendorState === companyState);
     }
@@ -146,7 +147,6 @@ const AddBill = () => {
       selected.billingAddress?.state || selected.shippingAddress?.state || ""
     );
   };
-
 
   // Handle item selection
   const handleItemSelect = (value, index) => {
@@ -207,7 +207,7 @@ const AddBill = () => {
   };
 
   // Calculate totals
-const totals = items.reduce(
+  const totals = items.reduce(
     (acc, item) => {
       const qty = item.quantity || 0;
       const price = item.unitPrice || 0;
@@ -293,10 +293,10 @@ const totals = items.reduce(
         lineTotal: item.lineTotal, // Subtotal only
       })),
       totals: {
-        subtotal: totals.subtotal,
-        sgst: totals.sgst,
-        cgst: totals.cgst,
-        igst: 0,
+       subtotal: totals.subtotal,
+      sgst: isSameState ? totals.sgst : 0,
+      cgst: isSameState ? totals.cgst : 0,
+      igst: isSameState ? 0 : totals.igst,
         totalTax: totals.totalTax,
         shippingCharges: extraCharges.shipping,
         otherCharges: extraCharges.other,
@@ -380,14 +380,15 @@ const totals = items.reduce(
     //   ),
     // },
     {
-    title: "Tax Details",
-    dataIndex: "taxDetails",
-    render: (_, record) => {
-      const taxAmount = ((record.quantity * record.unitPrice * record.taxRate) / 100) || 0;
-      const taxRate = record.taxRate ? record.taxRate.toFixed(2) : "0.00";
-      return `${taxRate}% (₹${taxAmount.toFixed(2)})`;
+      title: "Tax Details",
+      dataIndex: "taxDetails",
+      render: (_, record) => {
+        const taxAmount =
+          (record.quantity * record.unitPrice * record.taxRate) / 100 || 0;
+        const taxRate = record.taxRate ? record.taxRate.toFixed(2) : "0.00";
+        return `${taxRate}% (₹${taxAmount.toFixed(2)})`;
+      },
     },
-  },
     {
       title: "Amount",
       dataIndex: "lineTotal",
@@ -449,8 +450,8 @@ const totals = items.reduce(
                   options={
                     customers && customers.length > 0
                       ? customers.map((vendor) => ({
-                          label: vendor.companyName, 
-                          value: vendor._id ,
+                          label: vendor.companyName,
+                          value: vendor._id,
                         }))
                       : [
                           {
@@ -560,7 +561,7 @@ const totals = items.reduce(
               </Col>
 
               {/* Summary Box */}
-             <Col span={8}>
+              <Col span={8}>
                 <Card bordered className="!shadow-md !rounded-2xl">
                   <Title level={5}>Summary</Title>
                   <div className="space-y-2">

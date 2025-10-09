@@ -53,63 +53,63 @@ const InvoiceView = () => {
     });
     const originalWidth = input.style.width;
     const originalHeight = input.style.height;
-  const originalOverflow = input.style.overflow;
-  input.style.width = "210mm";
-  input.style.height = "auto";
-  input.style.overflow = "visible";
-html2canvas(input, {
-    scale: 2,
-    useCORS: true,
-    logging: true,
-  })
-    .then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
-      });
-   const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-      heightLeft -= pdfHeight;
-      while (heightLeft > 0) {
-        pdf.addPage();
-        position = - (imgHeight - heightLeft);
+    const originalOverflow = input.style.overflow;
+    input.style.width = "210mm";
+    input.style.height = "auto";
+    input.style.overflow = "visible";
+    html2canvas(input, {
+      scale: 2,
+      useCORS: true,
+      logging: true,
+    })
+      .then((canvas) => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: "a4",
+        });
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pdfWidth;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pdfHeight;
-      }
+        while (heightLeft > 0) {
+          pdf.addPage();
+          position = -(imgHeight - heightLeft);
+          pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+          heightLeft -= pdfHeight;
+        }
 
         // Restore original styles and dimensions
-      elements.forEach((el) => {
-        if (originalStyles[el]) {
-          el.style.backgroundColor = originalStyles[el].backgroundColor;
-          el.style.color = originalStyles[el].color;
-        }
-      });
-      input.style.width = originalWidth;
-      input.style.height = originalHeight;
-      input.style.overflow = originalOverflow;
+        elements.forEach((el) => {
+          if (originalStyles[el]) {
+            el.style.backgroundColor = originalStyles[el].backgroundColor;
+            el.style.color = originalStyles[el].color;
+          }
+        });
+        input.style.width = originalWidth;
+        input.style.height = originalHeight;
+        input.style.overflow = originalOverflow;
 
-      pdf.save(`invoice-${invoice?.invoiceNumber || "INV"}.pdf`);
-    })
+        pdf.save(`invoice-${invoice?.invoiceNumber || "INV"}.pdf`);
+      })
       .catch((error) => {
-      console.error("Error in html2canvas or jsPDF:", error);
-      // Restore styles and dimensions on error
-      elements.forEach((el) => {
-        if (originalStyles[el]) {
-          el.style.backgroundColor = originalStyles[el].backgroundColor;
-          el.style.color = originalStyles[el].color;
-        }
+        console.error("Error in html2canvas or jsPDF:", error);
+        // Restore styles and dimensions on error
+        elements.forEach((el) => {
+          if (originalStyles[el]) {
+            el.style.backgroundColor = originalStyles[el].backgroundColor;
+            el.style.color = originalStyles[el].color;
+          }
+        });
+        input.style.width = originalWidth;
+        input.style.height = originalHeight;
+        input.style.overflow = originalOverflow;
       });
-      input.style.width = originalWidth;
-      input.style.height = originalHeight;
-      input.style.overflow = originalOverflow;
-    });
   };
 
   // Table columns for items
@@ -319,7 +319,7 @@ html2canvas(input, {
             <div className="mb-6">
               <table className="w-full">
                 <tr>
-                  <td className="border border-black p-2">
+                  <td className="border border-[#e9e9e9] p-2">
                     Bill To
                     <br />
                     {invoice.customerName}
@@ -327,7 +327,7 @@ html2canvas(input, {
                     {invoice.deliveryAddress.street},{" "}
                     {invoice.deliveryAddress.city}
                   </td>
-                  <td className="border border-black p-2">
+                  <td className="border border-[#e9e9e9] p-2">
                     Ship To
                     <br />
                     {invoice.customerName}
@@ -335,7 +335,7 @@ html2canvas(input, {
                     {invoice.deliveryAddress.street},{" "}
                     {invoice.deliveryAddress.city}
                   </td>
-                  <td className="border border-black p-2">
+                  <td className="border border-[#e9e9e9] p-2">
                     Other Information
                     <br />
                     Payment Terms:{" "}
@@ -354,134 +354,133 @@ html2canvas(input, {
               />
             </div>
             <div className="mb-6 flex">
-              <table className="border-collapse  mr-2">
+              <table className="border-collapse table-fixed w-2/3 mr-2 border border-[#e9e9e9]">
                 <thead>
-                  <tr className="bg-gray-200">
-                    <th className="border text-xs border-black p-2" rowSpan="2">
-                      HSN/SAC
-                    </th>
-                    <th className="border border-black p-2" rowSpan="2">
-                      Qty
-                    </th>
-                    <th className="border border-black p-2" rowSpan="2">
-                      Taxable value
-                    </th>
-                    {isInterState ? (
-                      <th className="border border-black p-2" colSpan="2">
-                        IGST
-                      </th>
-                    ) : (
-                      <>
-                        <th className="border border-black p-2" colSpan="2">
-                          CGST
-                        </th>
-                        <th className="border border-black p-2" colSpan="2">
-                          SGST
-                        </th>
-                      </>
-                    )}
-                    <th className="border text-xs border-black p-2" rowSpan="2">
-                      Total Tax
-                    </th>
-                  </tr>
-                  <tr className="bg-gray-200">
+                  <tr className="bg-[#fafafa]">
+                    <th className="border border-[#e9e9e9] p-1 text-xs">HSN/SAC</th>
+                    <th className="border border-[#e9e9e9] p-1 text-xs">Qty</th>
+                    <th className="border border-[#e9e9e9] p-1 text-xs">Taxable value</th>
                     {isInterState ? (
                       <>
-                        <th className="border border-black p-2">Rate</th>
-                        <th className="border border-black p-2">Amount</th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">IGST Rate</th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">IGST Amount</th>
                       </>
                     ) : (
                       <>
-                        <th className="border border-black p-2">Rate</th>
-                        <th className="border border-black p-2">Amount</th>
-                        <th className="border border-black p-2">Rate</th>
-                        <th className="border border-black p-2">Amount</th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">CGST Rate</th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">CGST Amount</th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">SGST Rate</th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs">SGST Amount</th>
                       </>
                     )}
+                    <th className="border border-[#e9e9e9] p-1 text-xs">Total Tax</th>
                   </tr>
                 </thead>
                 <tbody>
                   {taxSummary.map((item, index) => (
-                    <tr key={index}>
-                      <td className="border border-black p-2">{item.hsnSac}</td>
-                      <td className="border border-black p-2">
-                        {item.quantity}
-                      </td>
-                      <td className="border border-black p-2">
+                    <tr key={index} className="border border-[#e9e9e9]">
+                      <td className="border border-[#e9e9e9] p-1 text-xs">{item.hsnSac}</td>
+                      <td className="border border-[#e9e9e9] p-1 text-xs">{item.quantity}</td>
+                      <td className="border border-[#e9e9e9] p-1 text-xs">
                         ₹{item.taxableValue.toFixed(2)}
                       </td>
                       {isInterState ? (
                         <>
-                          <td className="border border-black p-2">
-                            {item.igstTax.rate}%
-                          </td>
-                          <td className="border border-black p-2">
+                          <td className="border border-[#e9e9e9] p-1 text-xs">{item.igstTax.rate}%</td>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
                             ₹{item.igstTax.amount.toFixed(2)}
                           </td>
                         </>
                       ) : (
                         <>
-                          <td className="border border-black p-2">
-                            {item.cgstTax.rate}%
-                          </td>
-                          <td className="border border-black p-2">
+                          <td className="border border-[#e9e9e9] p-1 text-xs">{item.cgstTax.rate}%</td>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
                             ₹{item.cgstTax.amount.toFixed(2)}
                           </td>
-                          <td className="border border-black p-2">
-                            {item.sgstTax.rate}%
-                          </td>
-                          <td className="border border-black p-2">
+                          <td className="border border-[#e9e9e9] p-1 text-xs">{item.sgstTax.rate}%</td>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
                             ₹{item.sgstTax.amount.toFixed(2)}
                           </td>
                         </>
                       )}
-                      <td className="border border-black p-2">
+                      <td className="border border-[#e9e9e9] p-1 text-xs">
                         ₹{item.totalTax.toFixed(2)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-              <table className="w-1/2 border-collapse">
-                <tbody>
+              <table
+                className="border-collapse table-fixed w-1/3 "
+              >
+                <tbody className="border border-[#e9e9e9]">
                   <tr>
-                    <td className="border border-black p-2">Basic Amount</td>
-                    <td className="border border-black p-2">
+                    <th
+                      className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs"
+                    >
+                      Basic Amount
+                    </th>
+                    <td className="border border-[#e9e9e9]  p-1 text-xs">
                       ₹{invoice.totals.subtotal.toFixed(2)}
                     </td>
                   </tr>
                   {isInterState ? (
                     <tr>
-                      <td className="border border-black p-2">IGST</td>
-                      <td className="border border-black p-2">
+                      <th
+                        className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs"
+                        
+                      >
+                        IGST
+                      </th>
+                      <td className="border border-[#e9e9e9] p-1 text-xs">
                         ₹{(invoice.totals.totalTax || 0).toFixed(2)}
                       </td>
                     </tr>
                   ) : (
                     <>
                       <tr>
-                        <td className="border border-black p-2">CGST</td>
-                        <td className="border border-black p-2">
+                        <th
+                          className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs"
+                          
+                        >
+                          CGST
+                        </th>
+                        <td className="border border-[#e9e9e9] p-1 text-xs">
                           ₹{(invoice.totals.cgst || 0).toFixed(2)}
                         </td>
                       </tr>
                       <tr>
-                        <td className="border border-black p-2">SGST</td>
-                        <td className="border border-black p-2">
+                        <th
+                          className="border border-[#e9e9e9] p-1 bg-[#fafafa] text-xs"
+                          
+                        >
+                          SGST
+                        </th>
+                        <td className="border border-[#e9e9e9] p-1 text-xs">
                           ₹{(invoice.totals.sgst || 0).toFixed(2)}
                         </td>
                       </tr>
                     </>
                   )}
                   <tr>
-                    <td className="border border-black p-2">Total Tax</td>
-                    <td className="border border-black p-2">
+                    <th
+                      className="border border-[#e9e9e9] p-1 bg-[#fafafa] text-xs"
+                      
+                    >
+                      Total Tax
+                    </th>
+                    <td className="border border-[#e9e9e9] p-1 text-xs">
                       ₹{invoice.totals.totalTax.toFixed(2)}
                     </td>
                   </tr>
                   <tr>
-                    <td className="border border-black p-2">Document Total</td>
-                    <td className="border border-black p-2">
+                    <th
+                      className="border border-[#e9e9e9] p-1 bg-[#fafafa] text-xs"
+                      
+                    >
+                      Document Total
+                    </th>
+                    <td className="border border-[#e9e9e9] p-1 text-xs">
                       ₹{invoice.totals.grandTotal.toFixed(2)}
                     </td>
                   </tr>
@@ -500,7 +499,8 @@ html2canvas(input, {
               <div className="text-end">
                 <p>For {company.companyName}</p>
                 <div className="text-2xl font-bold">
-                  <img className="h-20 w-40" src={company.signature} alt="" /></div>
+                  <img className="h-20 w-40" src={company.signature} alt="" />
+                </div>
                 <p className="mt-2">Authorized Signatory</p>
               </div>
             </div>
