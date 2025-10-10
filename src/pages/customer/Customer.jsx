@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { Card, Row, Col, Button, Input, message, Space, Table } from "antd";
+import {
+  Card,
+  Row,
+  Col,
+  Button,
+  Input,
+  message,
+  Space,
+  Table,
+  Tag,
+} from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import CustomTable from "../../component/commonComponent/CustomTable";
 import Icons from "../../assets/icon";
@@ -11,8 +21,8 @@ import {
 } from "../../redux/slice/customer/customerVendorSlice";
 import { Popconfirm } from "antd";
 import { filteredURLParams, getQueryParams } from "../../utlis/services";
-
-const { Search } = Input;
+import FilterInput from "../../component/commonComponent/FilterInput";
+import { filterInputEnum } from "../../utlis/constants";
 
 const Customer = () => {
   const navigate = useNavigate();
@@ -20,6 +30,7 @@ const Customer = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filter, setFilter] = useState({
     search: searchParams.get("search") || "",
+    type: searchParams.get("type") || "",
   });
   const { customers, loading, pagination, deleteLoading } = useSelector(
     (state) => state.customerVendor
@@ -63,10 +74,21 @@ const Customer = () => {
     }
   };
 
+  const handleFilter = () => {
+    updateUrlParams({
+      companyId,
+      page: 1,
+      limit: 10,
+      search: filter.search,
+      type: filter.type,
+    });
+  };
+
   const handleClear = () => {
-    updateUrlParams({ companyId, page: 1, limit: 10, search: "" });
+    updateUrlParams({ companyId, page: 1, limit: 10, search: "", type: "" });
     setFilter({
       search: "",
+      type: "",
     });
   };
 
@@ -79,6 +101,19 @@ const Customer = () => {
       title: "Code",
       dataIndex: "customerVendorId",
       key: "customerVendorId",
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
+    },
+    {
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
+      render: (type) => (
+        <Tag color="blue" className="">
+          {type?.isCustomer ? "Customer" : "Vendor"}
+        </Tag>
+      ),
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
@@ -200,22 +235,59 @@ const Customer = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={10}>
-            <Search
+            {/* <Search
               placeholder="Search..."
               onChange={(e) => setFilter({ search: e.target.value })}
               allowClear
               onSearch={handleSearch}
               onClear={handleClear}
               style={{ borderRadius: 6, height: 36 }}
+            /> */}
+            <FilterInput
+              type={filterInputEnum?.SEARCH}
+              name={"search"}
+              placeHolder="Search..."
+              value={filter?.search}
+              setFilter={setFilter}
+              onSerch={handleSearch}
+              onClear={handleClear}
             />
           </Col>
           <Col span={14} style={{ textAlign: "right" }}>
             <Space>
+              <div className="w-28">
+              <FilterInput
+                type={filterInputEnum?.SELECT}
+                name={"type"}
+                className="!w-full"
+                placeHolder={"Select Type"}
+                selectionOptions={[
+                  {
+                    label: "Customer",
+                    value: "customer",
+                  },
+                   {
+                    label: "Vendor",
+                    value: "vendor",
+                  },
+                ]}
+                value={filter?.type}
+                setFilter={setFilter}
+              />
+              </div>
+              <Button
+                type="default"
+                icon={<Icons.ClearOutlined />}
+                size="middle"
+                onClick={handleClear}
+              >
+                Clear All
+              </Button>
               <Button
                 type="primary"
                 icon={<Icons.FilterOutlined />}
                 size="middle"
-                onClick={handleSearch}
+                onClick={handleFilter}
               >
                 Apply Filter
               </Button>
