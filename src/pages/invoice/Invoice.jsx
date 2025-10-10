@@ -16,6 +16,8 @@ import CustomTable from "../../component/commonComponent/CustomTable";
 import Icons from "../../assets/icon";
 import { getInvoices, deleteInvoice } from "../../redux/slice/invoice/invoiceSlice";
 import { filteredURLParams, getQueryParams } from "../../utlis/services";
+import { filterInputEnum } from "../../utlis/constants";
+import FilterInput from "../../component/commonComponent/FilterInput";
 
 const { Search } = Input;
 
@@ -206,18 +208,15 @@ const Invoice = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={10}>
-            <Search
-              placeholder="Search invoices..."
-              value={filter.search}
-              onChange={(e) =>
-                setFilter({
-                  search: e.target.value ? String(e.target.value) : "",
-                })
-              }
-              allowClear
+          
+              <FilterInput
+              type={filterInputEnum?.SEARCH}
+              name={"search"}
+              placeHolder="Search..."
+              value={filter?.search}
+              setFilter={setFilter}
+              onSerch={handleSearch}
               onClear={handleClear}
-              onSearch={handleSearch}
-              style={{ borderRadius: 6, height: 36 }}
             />
           </Col>
           <Col span={14} style={{ textAlign: "right" }}>
