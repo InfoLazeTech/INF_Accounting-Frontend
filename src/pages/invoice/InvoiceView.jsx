@@ -58,9 +58,11 @@ const InvoiceView = () => {
     input.style.height = "auto";
     input.style.overflow = "visible";
     html2canvas(input, {
-      scale: 2,
+      scale: 3,
       useCORS: true,
       logging: true,
+      windowWidth: document.documentElement.scrollWidth,
+      windowHeight: document.documentElement.scrollHeight,
     })
       .then((canvas) => {
         const imgData = canvas.toDataURL("image/png");
@@ -319,8 +321,16 @@ const InvoiceView = () => {
             <div className="mb-6">
               <table className="w-full">
                 <tr>
-                  <td className="border border-[#e9e9e9] p-2">
-                    Bill To
+                  <td className="border  border-[#e9e9e9] p-2 ">
+                    <span className="font-semibold">Bill To:</span>
+                    <br />
+                    {invoice.customerName}
+                    <br />
+                    {invoice.deliveryAddress.street},{" "}
+                    {invoice.deliveryAddress.city}
+                  </td>
+                  <td className="border  border-[#e9e9e9] p-2">
+                    <span className="font-semibold">Ship To:</span>
                     <br />
                     {invoice.customerName}
                     <br />
@@ -328,15 +338,7 @@ const InvoiceView = () => {
                     {invoice.deliveryAddress.city}
                   </td>
                   <td className="border border-[#e9e9e9] p-2">
-                    Ship To
-                    <br />
-                    {invoice.customerName}
-                    <br />
-                    {invoice.deliveryAddress.street},{" "}
-                    {invoice.deliveryAddress.city}
-                  </td>
-                  <td className="border border-[#e9e9e9] p-2">
-                    Other Information
+                    <span className="font-semibold ">Other Information:</span>
                     <br />
                     Payment Terms:{" "}
                     {invoice.paymentTerms.paymentTerms || "Due On Receipt"}
@@ -354,50 +356,118 @@ const InvoiceView = () => {
               />
             </div>
             <div className="mb-6 flex">
-              <table className="border-collapse table-fixed w-2/3 mr-2 border border-[#e9e9e9]">
+              <table className="border-collapse  w-2/3 mr-2 border border-[#e9e9e9]">
                 <thead>
                   <tr className="bg-[#fafafa]">
-                    <th className="border border-[#e9e9e9] p-1 text-xs">HSN/SAC</th>
-                    <th className="border border-[#e9e9e9] p-1 text-xs">Qty</th>
-                    <th className="border border-[#e9e9e9] p-1 text-xs">Taxable value</th>
+                    <th
+                      className="border border-[#e9e9e9] p-1 relative text-xs "
+                      rowSpan="2"
+                    >
+                      HSN/SAC
+                    </th>
+                    <th
+                      className="border border-[#e9e9e9] p-1 relative text-xs "
+                      rowSpan="2"
+                    >
+                      Qty
+                    </th>
+                    <th
+                      className="border border-[#e9e9e9] p-1  relative text-xs "
+                      rowSpan="2"
+                    >
+                      Taxable value
+                    </th>
+                    {isInterState ? (
+                      <th
+                        className="border border-[#e9e9e9] p-1  text-xs "
+                        colSpan="2"
+                      >
+                        IGST{" "}
+                      </th>
+                    ) : (
+                      <>
+                        <th
+                          className="border border-[#e9e9e9] p-1  text-xs "
+                          colSpan="2"
+                        >
+                          CGST{" "}
+                        </th>
+
+                        <th
+                          className="border border-[#e9e9e9] p-1  text-xs "
+                          colSpan="2"
+                        >
+                          SGST{" "}
+                        </th>
+                      </>
+                    )}
+                    <th
+                      className="border border-[#e9e9e9] p-1 relative text-xs "
+                      rowSpan="2"
+                    >
+                      Total Tax
+                    </th>
+                  </tr>
+                  <tr className="bg-[#fafafa]">
                     {isInterState ? (
                       <>
-                        <th className="border border-[#e9e9e9] p-1 text-xs">IGST Rate</th>
-                        <th className="border border-[#e9e9e9] p-1 text-xs">IGST Amount</th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs ">
+                          Rate
+                        </th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs ">
+                          Amount
+                        </th>
                       </>
                     ) : (
                       <>
-                        <th className="border border-[#e9e9e9] p-1 text-xs">CGST Rate</th>
-                        <th className="border border-[#e9e9e9] p-1 text-xs">CGST Amount</th>
-                        <th className="border border-[#e9e9e9] p-1 text-xs">SGST Rate</th>
-                        <th className="border border-[#e9e9e9] p-1 text-xs">SGST Amount</th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs ">
+                          Rate
+                        </th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs ">
+                          Amount
+                        </th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs ">
+                          Rate
+                        </th>
+                        <th className="border border-[#e9e9e9] p-1 text-xs ">
+                          Amount
+                        </th>
                       </>
                     )}
-                    <th className="border border-[#e9e9e9] p-1 text-xs">Total Tax</th>
                   </tr>
                 </thead>
                 <tbody>
                   {taxSummary.map((item, index) => (
                     <tr key={index} className="border border-[#e9e9e9]">
-                      <td className="border border-[#e9e9e9] p-1 text-xs">{item.hsnSac}</td>
-                      <td className="border border-[#e9e9e9] p-1 text-xs">{item.quantity}</td>
+                      <td className="border border-[#e9e9e9] p-1 text-xs">
+                        {item.hsnSac}
+                      </td>
+                      <td className="border border-[#e9e9e9] p-1 text-xs">
+                        {item.quantity}
+                      </td>
                       <td className="border border-[#e9e9e9] p-1 text-xs">
                         ₹{item.taxableValue.toFixed(2)}
                       </td>
-                      {isInterState ? (
+                       {isInterState ? (
                         <>
-                          <td className="border border-[#e9e9e9] p-1 text-xs">{item.igstTax.rate}%</td>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
+                            {item.igstTax.rate}%
+                          </td>
                           <td className="border border-[#e9e9e9] p-1 text-xs">
                             ₹{item.igstTax.amount.toFixed(2)}
                           </td>
                         </>
                       ) : (
                         <>
-                          <td className="border border-[#e9e9e9] p-1 text-xs">{item.cgstTax.rate}%</td>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
+                            {item.cgstTax.rate}%
+                          </td>
                           <td className="border border-[#e9e9e9] p-1 text-xs">
                             ₹{item.cgstTax.amount.toFixed(2)}
                           </td>
-                          <td className="border border-[#e9e9e9] p-1 text-xs">{item.sgstTax.rate}%</td>
+                          <td className="border border-[#e9e9e9] p-1 text-xs">
+                            {item.sgstTax.rate}%
+                          </td>
                           <td className="border border-[#e9e9e9] p-1 text-xs">
                             ₹{item.sgstTax.amount.toFixed(2)}
                           </td>
@@ -410,14 +480,10 @@ const InvoiceView = () => {
                   ))}
                 </tbody>
               </table>
-              <table
-                className="border-collapse table-fixed w-1/3 "
-              >
+              <table className="border-collapse  w-1/3 ">
                 <tbody className="border border-[#e9e9e9]">
                   <tr>
-                    <th
-                      className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs"
-                    >
+                    <th className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs">
                       Basic Amount
                     </th>
                     <td className="border border-[#e9e9e9]  p-1 text-xs">
@@ -426,10 +492,7 @@ const InvoiceView = () => {
                   </tr>
                   {isInterState ? (
                     <tr>
-                      <th
-                        className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs"
-                        
-                      >
+                      <th className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs">
                         IGST
                       </th>
                       <td className="border border-[#e9e9e9] p-1 text-xs">
@@ -439,10 +502,7 @@ const InvoiceView = () => {
                   ) : (
                     <>
                       <tr>
-                        <th
-                          className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs"
-                          
-                        >
+                        <th className="border border-[#e9e9e9] bg-[#fafafa] p-1 text-xs">
                           CGST
                         </th>
                         <td className="border border-[#e9e9e9] p-1 text-xs">
@@ -450,10 +510,7 @@ const InvoiceView = () => {
                         </td>
                       </tr>
                       <tr>
-                        <th
-                          className="border border-[#e9e9e9] p-1 bg-[#fafafa] text-xs"
-                          
-                        >
+                        <th className="border border-[#e9e9e9] p-1 bg-[#fafafa] text-xs">
                           SGST
                         </th>
                         <td className="border border-[#e9e9e9] p-1 text-xs">
@@ -463,10 +520,7 @@ const InvoiceView = () => {
                     </>
                   )}
                   <tr>
-                    <th
-                      className="border border-[#e9e9e9] p-1 bg-[#fafafa] text-xs"
-                      
-                    >
+                    <th className="border border-[#e9e9e9] p-1 bg-[#fafafa] text-xs">
                       Total Tax
                     </th>
                     <td className="border border-[#e9e9e9] p-1 text-xs">
@@ -474,10 +528,7 @@ const InvoiceView = () => {
                     </td>
                   </tr>
                   <tr>
-                    <th
-                      className="border border-[#e9e9e9] p-1 bg-[#fafafa] text-xs"
-                      
-                    >
+                    <th className="border border-[#e9e9e9] p-1 bg-[#fafafa] text-xs">
                       Document Total
                     </th>
                     <td className="border border-[#e9e9e9] p-1 text-xs">
@@ -505,7 +556,7 @@ const InvoiceView = () => {
               </div>
             </div>
           </div>
-          <p className="pt-5 px-5">Powered by ABSS</p>
+          <p className="pt-5 px-5">Powered by INF</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow-lg h-max !space-y-3">
           <Button type="primary" onClick={handleDownload} className="w-full">
