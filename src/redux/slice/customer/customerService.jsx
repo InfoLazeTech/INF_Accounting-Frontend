@@ -7,15 +7,18 @@ const createCustomerVendor = async (data) => {
 };
 
 const getAllCustomerVendors = async (paylod) => {
-  const { companyId, search = "", limit = 10, page = 1 } = paylod;
+  const { companyId, search = "", limit = 10, page = 1, type = "" } = paylod;
 
   const quaryParams = new URLSearchParams({
     companyId: companyId,
     limit: limit,
     page: page,
   });
-  if(search) {
-    quaryParams.append('search', search)
+  if (search) {
+    quaryParams.append("search", search);
+  }
+  if (type) {
+    quaryParams.append("role", type);
   }
 
   const res = await api.get("/customer/get", { params: quaryParams });
