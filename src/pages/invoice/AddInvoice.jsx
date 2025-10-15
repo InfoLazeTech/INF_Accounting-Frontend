@@ -21,6 +21,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   addInvoice,
   getInvoiceById,
+  updateInvoice,
 } from "../../redux/slice/invoice/invoiceSlice";
 import { getCustomersVendors } from "../../redux/slice/customer/customerVendorSlice";
 import { getItem } from "../../redux/slice/item/itemSlice";
@@ -108,7 +109,7 @@ const AddInvoice = () => {
           unitPrice: item.unitPrice,
           discount: item.discount || 0,
           taxRate: item.taxRate || 0,
-            lineTotal: item.quantity * item.unitPrice,
+          lineTotal: item.quantity * item.unitPrice,
         }))
       );
       setExtraCharges({
@@ -116,8 +117,8 @@ const AddInvoice = () => {
         other: invoice.totals?.otherCharges || 0,
       });
       setCustomerState(invoice.customerAddress?.state || "");
-    // Determine isSameState based on stored tax values
-    setIsSameState(invoice.totals?.igst ? false : true);
+      // Determine isSameState based on stored tax values
+      setIsSameState(invoice.totals?.igst ? false : true);
     } else {
       form.setFieldsValue({
         customerName: "",
@@ -147,7 +148,7 @@ const AddInvoice = () => {
       taxRate: selected.taxRate || 0,
       quantity: 1,
       discount: 0,
-      lineTotal: subtotal ,
+      lineTotal: subtotal,
     };
     setItems(updated);
   };
@@ -179,7 +180,7 @@ const AddInvoice = () => {
     } = updated[index];
     const subtotal = quantity * unitPrice - discount;
     const tax = (subtotal * taxRate) / 100;
-    updated[index].lineTotal = subtotal ;
+    updated[index].lineTotal = subtotal;
     setItems(updated);
   };
 
@@ -344,9 +345,18 @@ const AddInvoice = () => {
         attachments: [],
       };
       console.log("Submitting payload:", payload);
-
-      await dispatch(addInvoice(payload)).unwrap();
-      message.success("Invoice created successfully");
+      let result;
+      if (invoiceId) {
+        // EDIT MODE
+        result = await dispatch(
+          updateInvoice({ invoiceId, data: payload })
+        ).unwrap();
+        message.success("Invoice updated successfully");
+      } else {
+        // CREATE MODE
+        result = await dispatch(addInvoice(payload)).unwrap();
+        message.success("Invoice created successfully");
+      }
       navigate("/invoice");
     } catch (err) {
       console.error("Error submitting invoice:", err);
