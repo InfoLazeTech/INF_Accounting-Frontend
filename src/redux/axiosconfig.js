@@ -8,7 +8,7 @@ export const setAxiosStore = (reduxStore) => {
 
 const api = axios.create({
   // baseURL: "http://localhost:5000/",
-  baseURL: "https://inf-accounting-backend.vercel.app",
+  baseURL: "https://inf-accounting-backend.vercel.app/",
   headers: {
     "Content-Type": "application/json",
   },

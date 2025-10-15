@@ -106,16 +106,16 @@ const Bill = () => {
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) =>
-        status ? status.charAt(0).toUpperCase() + status.slice(1) : "N/A",
-      onHeaderCell: () => ({
-        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-      }),
-    },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   render: (status) =>
+    //     status ? status.charAt(0).toUpperCase() + status.slice(1) : "N/A",
+    //   onHeaderCell: () => ({
+    //     style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+    //   }),
+    // },
     {
       title: "Total Amount",
       dataIndex: "totals",

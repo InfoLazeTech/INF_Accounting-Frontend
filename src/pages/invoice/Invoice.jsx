@@ -106,15 +106,15 @@ const Invoice = () => {
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (status ? status : "N/A"),
-      onHeaderCell: () => ({
-        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-      }),
-    },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   render: (status) => (status ? status : "N/A"),
+    //   onHeaderCell: () => ({
+    //     style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+    //   }),
+    // },
     {
       title: "Due Date",
       dataIndex: "dueDate",
