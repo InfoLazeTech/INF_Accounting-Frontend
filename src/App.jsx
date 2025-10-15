@@ -20,7 +20,7 @@ import AddItem from "./pages/item/AddItem";
 import Item from "./pages/item/Item";
 import CustomerView from "./pages/customer/CustomerView";
 import ItemView from "./pages/item/ItemView";
-import Bill from "./pages/bill/bill";
+import Bill from "./pages/bill/Bill";
 import AddBill from "./pages/bill/AddBill";
 import BillView from "./pages/bill/BillView";
 import Invoice from "./pages/invoice/Invoice";
