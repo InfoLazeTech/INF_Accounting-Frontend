@@ -72,10 +72,40 @@ export const deleteCustomerVendor = createAsyncThunk(
   }
 );
 
+export const getCustomerDropdown = createAsyncThunk(
+  "customerVendor/getCustomerDropdown",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await customerVendorService.getCustomerDropdown(
+        payload
+      );
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const getVendorDropdown = createAsyncThunk(
+  "customerVendor/getVendorDropdown",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await customerVendorService.getVendorDropdown(
+        payload
+      );
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 const customerVendorSlice = createSlice({
   name: "customerVendor",
   initialState: {
     customers: [],
+    dropdownCustomers: [],
+    dropdownVendors: [],
     pagination: {
       totalPages: 1,
       totalCount: 0,
@@ -84,6 +114,7 @@ const customerVendorSlice = createSlice({
     },
     customer: null,
     loading: false,
+    dropLoading: false,
     postLoading: false,
     deleteLoading: false,
     error: null,
@@ -185,6 +216,32 @@ const customerVendorSlice = createSlice({
         state.deleteLoading = false;
         state.error = action.payload.error.message;
         toast.error(state.error);
+      })
+      .addCase(getCustomerDropdown.pending, (state) => {
+        state.dropLoading = true;
+      })
+      .addCase(getCustomerDropdown.fulfilled, (state, action) => {
+        state.dropLoading = false;
+        state.dropdownCustomers = action.payload.data.customers;
+        state.error = null;
+      })
+      .addCase(getCustomerDropdown.rejected, (state, action) => {
+        state.dropLoading = false;
+        state.dropdownCustomers = [];
+        state.error = action.payload?.message;
+      })
+      .addCase(getVendorDropdown.pending, (state) => {
+        state.dropLoading = true;
+      })
+      .addCase(getVendorDropdown.fulfilled, (state, action) => {
+        state.dropLoading = false;
+        state.dropdownVendors = action.payload.data.customers;
+        state.error = null;
+      })
+      .addCase(getVendorDropdown.rejected, (state, action) => {
+        state.dropLoading = false;
+        state.dropdownVendors = [];
+        state.error = action.payload?.message;
       });
   },
 });

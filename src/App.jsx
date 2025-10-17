@@ -26,6 +26,12 @@ import BillView from "./pages/bill/BillView";
 import Invoice from "./pages/invoice/Invoice";
 import AddInvoice from "./pages/invoice/AddInvoice";
 import InvoiceView from "./pages/invoice/InvoiceView";
+import PaymentReceived from "./pages/paymentreceived/PaymentReceived";
+import AddPaymentReceived from "./pages/paymentreceived/AddPaymentReceived";
+import ViewPaymentReceived from "./pages/paymentreceived/ViewPaymentReceived";
+import PaymentMade from "./pages/paymentmade/PaymentMade";
+import AddPaymentMade from "./pages/paymentmade/AddPaymentMade";
+import ViewPaymentMade from "./pages/paymentmade/ViewPaymentMade";
 
 export default function App() {
   return (
@@ -95,6 +101,17 @@ export default function App() {
           <Route path="invoice/add" element={<AddInvoice />} />
           <Route path="invoice/edit/:invoiceId" element={<AddInvoice />} />
           <Route path="/invoice/view/:invoiceId" element={<InvoiceView />} />
+
+          <Route path="/payment-received" element={<PaymentReceived/>} />
+          <Route path="/payment-received/add"  element={<AddPaymentReceived/>} />
+          <Route path="/payment-received/edit/:paymentId"  element={<AddPaymentReceived/>} />
+          <Route path="/payment-received/view/:paymentId"  element={<ViewPaymentReceived/>} />
+
+          
+          <Route path="/payment-made" element={<PaymentMade/>} />
+          <Route path="/payment-made/add"  element={<AddPaymentMade/>} />
+          <Route path="/payment-made/edit/:paymentId"  element={<AddPaymentMade/>} />
+          <Route path="/payment-made/view/:paymentId"  element={<ViewPaymentMade/>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />
