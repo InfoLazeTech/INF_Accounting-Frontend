@@ -59,11 +59,17 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
       label: "Invoice",
       path: "/invoice",
     },
-    {
+      {
       key: "6",
-      icon: <Icons.ShoppingCartOutlined />,
-      label: "Sales",
-      path: "/sales",
+      icon: <Icons.DollarOutlined />,
+      label: "Payment Received",
+      path: "/payment-received",
+    },
+     {
+      key: "7",
+      icon: <Icons.DollarOutlined />,
+      label: "Payment Made",
+      path: "/payment-made",
     },
   ];
 
