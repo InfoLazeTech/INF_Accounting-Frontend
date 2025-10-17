@@ -150,7 +150,7 @@ const ViewPaymentReceived = () => {
               <Descriptions.Item label="Charges">
                 ₹ {payment?.charges?.toLocaleString("en-IN") }
               </Descriptions.Item>
-              <Descriptions.Item label="Net Amount" span={2}>
+              {/* <Descriptions.Item label="Net Amount" span={2}>
                 <strong
                   style={{
                     color: "#52c41a",
@@ -160,7 +160,7 @@ const ViewPaymentReceived = () => {
                 >
                   ₹ {payment?.netAmount?.toLocaleString("en-IN")}
                 </strong>
-              </Descriptions.Item>
+              </Descriptions.Item> */}
             </Descriptions>
 
             <Descriptions

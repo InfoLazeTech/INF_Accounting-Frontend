@@ -57,14 +57,14 @@ const AddPaymentMade = () => {
         paymentMode: payment.paymentMode,
         amount: payment.amount,
         charges: payment.charges || 0,
-        status: payment.status,
+        // status: payment.status,
         notes: payment.notes,
       });
     } else {
       form.setFieldsValue({
         paymentDate: dayjs(),
         paymentMode: "bank",
-        status: "completed",
+        // status: "completed",
         charges: 0,
       });
     }
@@ -81,7 +81,7 @@ const AddPaymentMade = () => {
         amount: values.amount || 0,
         charges: values.charges || 0,
         paymentMode: values.paymentMode,
-        status: values.status,
+        // status: values.status,
         notes: values.notes || "",
       };
 
@@ -213,7 +213,7 @@ const AddPaymentMade = () => {
               </Col>
             </Row>
 
-            <Row gutter={16}>
+            {/* <Row gutter={16}>
               <Col span={24}>
                 <CustomInput
                   type="select"
@@ -229,7 +229,7 @@ const AddPaymentMade = () => {
                   rules={[{ required: true, message: "Please select status" }]}
                 />
               </Col>
-            </Row>
+            </Row> */}
 
             <Row gutter={16} style={{ marginTop: 24 }}>
               <Col span={24}>
