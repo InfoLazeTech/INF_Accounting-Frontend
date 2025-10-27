@@ -24,6 +24,8 @@ import {
   updateInvoice,
 } from "../../redux/slice/invoice/invoiceSlice";
 import { getCustomersVendors } from "../../redux/slice/customer/customerVendorSlice";
+
+import { getCustomerDropdown } from "../../redux/slice/customer/customerVendorSlice";
 import { getItem } from "../../redux/slice/item/itemSlice";
 import { getCompany } from "../../redux/slice/company/companySlice";
 
@@ -70,8 +72,11 @@ const AddInvoice = () => {
   const [customerState, setCustomerState] = useState("");
   const [companyState, setCompanyState] = useState("");
   const [isSameState, setIsSameState] = useState(true);
+    const { dropdownCustomers, dropLoading } = useSelector(
+      (state) => state.customerVendor
+    );
   useEffect(() => {
-    dispatch(getCustomersVendors({ companyId }));
+    dispatch(getCustomerDropdown({ companyId }));
     dispatch(getItem({ companyId }));
     dispatch(getCompany(companyId));
     if (invoiceId) {
@@ -480,7 +485,7 @@ const AddInvoice = () => {
                 name="customerId"
                 label="Customer Name"
                 placeholder="Select Customer"
-                options={customers.map((customer) => ({
+                options={dropdownCustomers.map((customer) => ({
                   value: customer._id,
                   label: customer.companyName,
                 }))}

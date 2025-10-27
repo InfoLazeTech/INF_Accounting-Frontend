@@ -25,7 +25,9 @@ import {
   updateBill,
 } from "../../redux/slice/bill/billSlice";
 import { getItem } from "../../redux/slice/item/itemSlice";
-import { getCustomersVendors } from "../../redux/slice/customer/customerVendorSlice";
+// import { getCustomersVendors } from "../../redux/slice/customer/customerVendorSlice";
+
+import { getVendorDropdown } from "../../redux/slice/customer/customerVendorSlice";
 import { getCompany } from "../../redux/slice/company/companySlice";
 
 const { Title } = Typography;
@@ -39,6 +41,10 @@ const AddBill = () => {
   const { bill, loading, postLoading } = useSelector((state) => state.bill);
   const { items: itemList } = useSelector((state) => state.item);
   const { customers } = useSelector((state) => state.customerVendor);
+
+  const { dropdownVendors, dropLoading } = useSelector(
+    (state) => state.customerVendor
+  );
 
   const { companyData } = useSelector((state) => state.company);
   const [items, setItems] = useState([
@@ -76,7 +82,7 @@ const AddBill = () => {
   useEffect(() => {
     if (companyId) {
       dispatch(getItem({ companyId }));
-      dispatch(getCustomersVendors({ companyId }));
+      dispatch(getVendorDropdown({ companyId }));
       dispatch(getCompany(companyId));
       if (billId) {
         dispatch(getBillById({ companyId, billId }));
@@ -293,10 +299,10 @@ const AddBill = () => {
         lineTotal: item.lineTotal, // Subtotal only
       })),
       totals: {
-       subtotal: totals.subtotal,
-      sgst: isSameState ? totals.sgst : 0,
-      cgst: isSameState ? totals.cgst : 0,
-      igst: isSameState ? 0 : totals.igst,
+        subtotal: totals.subtotal,
+        sgst: isSameState ? totals.sgst : 0,
+        cgst: isSameState ? totals.cgst : 0,
+        igst: isSameState ? 0 : totals.igst,
         totalTax: totals.totalTax,
         shippingCharges: extraCharges.shipping,
         otherCharges: extraCharges.other,
@@ -448,9 +454,9 @@ const AddBill = () => {
                   label="Vendor Name"
                   placeholder="Select vendor"
                   options={
-                    customers && customers.length > 0
-                      ? customers.map((vendor) => ({
-                          label: vendor.companyName,
+                    dropdownVendors && dropdownVendors.length > 0
+                      ? dropdownVendors.map((vendor) => ({
+                          label: vendor.companyName|| vendor.name,
                           value: vendor._id,
                         }))
                       : [

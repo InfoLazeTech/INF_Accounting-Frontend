@@ -4,10 +4,10 @@ import {
   Row,
   Col,
   Button,
-  Input,
   Space,
   message,
   Popconfirm,
+  Select,
 } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,23 +17,28 @@ import { getBills, deleteBill } from "../../redux/slice/bill/billSlice";
 import { filteredURLParams, getQueryParams } from "../../utlis/services";
 import FilterInput from "../../component/commonComponent/FilterInput";
 import { filterInputEnum } from "../../utlis/constants";
-
-const { Search } = Input;
+import { getVendorDropdown } from "../../redux/slice/customer/customerVendorSlice";
 
 const Bill = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const { bills, loading, deleteLoading, pagination } = useSelector(
     (state) => state.bill
   );
-  const { customers } = useSelector((state) => state.customerVendor);
+  const { dropdownVendors, dropLoading } = useSelector(
+    (state) => state.customerVendor
+  );
+  const { companyId } = useSelector((state) => state.auth);
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const { companyId } = useSelector((state) => state.auth);
 
   const [filter, setFilter] = useState({
     search: searchParams.get("search") || "",
+    vendorId: searchParams.get("vendorId") || "",
   });
+
+  // Fetch bills
   const fetchBills = (signal) => {
     const page = parseInt(searchParams?.get("page")) || 1;
     const pageSize = parseInt(searchParams?.get("limit")) || pagination.limit;
@@ -45,40 +50,82 @@ const Bill = () => {
     }
 
     if (!payload?.companyId) {
-      payload = {
-        ...payload,
-        companyId,
-      };
+      payload = { ...payload, companyId };
+    }
+
+    if (filter.vendorId) {
+      payload = { ...payload, vendorId: filter.vendorId };
     }
 
     dispatch(getBills({ ...payload }));
   };
+
+  // Fetch vendor dropdown
+  const fetchVendors = (signal) => {
+    dispatch(getVendorDropdown({ companyId, signal }));
+  };
+
   useEffect(() => {
     const controller = new AbortController();
     fetchBills(controller.signal);
+    fetchVendors(controller.signal);
     return () => controller.abort();
-  }, [dispatch, companyId, searchParams]);
+  }, [dispatch, companyId, searchParams, filter.vendorId]);
 
+  // Update URL params
   const updateUrlParams = (newParams) => {
     const params = new URLSearchParams(searchParams);
     const filterParams = filteredURLParams(params, newParams);
     setSearchParams(filterParams);
   };
+
+  // Search and Clear Handlers
   const handleSearch = () => {
     const searchValue = filter.search ? String(filter.search) : "";
-    updateUrlParams({ companyId, page: 1, limit: 10, search: searchValue });
-  };
-
-  const handleClear = () => {
-    updateUrlParams({ companyId, page: 1, limit: 10, search: "" });
-    setFilter({
-      search: "",
+    const vendorValue = filter.vendorId ? String(filter.vendorId) : "";
+    updateUrlParams({
+      companyId,
+      page: 1,
+      limit: 10,
+      search: searchValue,
+      vendorId: vendorValue,
     });
   };
 
-  const handlePaginationChange = (page, pageSize) => {
-    updateUrlParams({ page, limit: pageSize });
+  const handleClear = () => {
+    // Reset filters
+    setFilter({ search: "", vendorId: "" });
+
+    // Reset URL params
+    updateUrlParams({
+      companyId,
+      page: 1,
+      limit: 10,
+      search: "",
+      vendorId: "",
+    });
   };
+
+  // Pagination
+  const handlePaginationChange = (page, pageSize) => {
+    updateUrlParams({ page, limit: pageSize, vendorId: filter.vendorId });
+  };
+
+  // Vendor change (improved)
+  const handleVendorChange = (value) => {
+    setFilter((prev) => ({ ...prev, vendorId: value || "" }));
+
+    // optional: auto-update bills when vendor changes
+    updateUrlParams({
+      companyId,
+      vendorId: value || "",
+      page: 1,
+      limit: 10,
+      search: filter.search || "",
+    });
+  };
+
+  // Table columns
   const columns = [
     {
       title: "Bill Number",
@@ -106,16 +153,6 @@ const Bill = () => {
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-    // {
-    //   title: "Status",
-    //   dataIndex: "status",
-    //   key: "status",
-    //   render: (status) =>
-    //     status ? status.charAt(0).toUpperCase() + status.slice(1) : "N/A",
-    //   onHeaderCell: () => ({
-    //     style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-    //   }),
-    // },
     {
       title: "Total Amount",
       dataIndex: "totals",
@@ -126,7 +163,7 @@ const Bill = () => {
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-  {
+    {
       title: "Balance Due",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
@@ -145,7 +182,6 @@ const Bill = () => {
             icon={<Icons.EyeOutlined />}
             onClick={() => navigate(`/bill/view/${record._id}`)}
           />
-
           <Button
             type="primary"
             icon={<Icons.EditOutlined />}
@@ -200,21 +236,65 @@ const Bill = () => {
 
       {/* Search / Filter */}
       <Card style={{ marginBottom: 16 }}>
-        <Row gutter={16} align="middle">
-          <Col span={10}>
-            
+        <Row align="middle" justify="space-between" gutter={[16, 16]}>
+          {/* Left Side - Search Input */}
+          <Col flex="auto">
             <FilterInput
-              type={filterInputEnum?.SEARCH}
-              name={"search"}
+              type={filterInputEnum.SEARCH}
+              name="search"
               placeHolder="Search..."
-              value={filter?.search}
+              value={filter.search}
               setFilter={setFilter}
               onSerch={handleSearch}
               onClear={handleClear}
             />
           </Col>
-          <Col span={14} style={{ textAlign: "right" }}>
+
+          {/* Right Side - Select Vendor + Buttons */}
+          <Col>
             <Space>
+              <div className="w-44">
+                <Select
+                  showSearch
+                  placeholder="Select Vendor"
+                  loading={dropLoading}
+                  className="w-full"
+                  value={filter.vendorId || undefined}
+                  onChange={handleVendorChange}
+                  allowClear
+                  size="large"
+                  optionFilterProp="label" 
+                  filterOption={(input, option) =>
+                    option?.label?.toLowerCase().includes(input.toLowerCase())
+                  }
+                  dropdownStyle={{ textAlign: "left" }}
+                  style={{ textAlign: "left" }}
+                  options={
+                    dropdownVendors?.length
+                      ? dropdownVendors.map((vendor) => ({
+                          label: vendor.companyName || vendor.name,
+                          value: vendor._id,
+                        }))
+                      : [
+                          {
+                            label: "No vendors available",
+                            value: "",
+                            disabled: true,
+                          },
+                        ]
+                  }
+                />
+              </div>
+
+              <Button
+                type="default"
+                icon={<Icons.ClearOutlined />}
+                size="middle"
+                onClick={handleClear}
+              >
+                Clear All
+              </Button>
+
               <Button
                 type="primary"
                 icon={<Icons.FilterOutlined />}
