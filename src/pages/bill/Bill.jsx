@@ -121,7 +121,7 @@ const Bill = () => {
       dataIndex: "totals",
       key: "grandTotal",
       render: (totals) =>
-        totals?.grandTotal ? `$${totals.grandTotal.toFixed(2)}` : "-",
+        totals?.grandTotal ? `₹${totals.grandTotal.toFixed(2)}` : "-",
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
@@ -130,7 +130,7 @@ const Bill = () => {
       title: "Balance Due",
       dataIndex: "remainingAmount",
       key: "remainingAmount",
-      render: (amount) => (amount ? `$${amount.toFixed(2)}` : "-"),
+      render: (amount) => (amount ? `₹${amount.toFixed(2)}` : "-"),
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
