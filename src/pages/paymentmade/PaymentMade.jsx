@@ -231,6 +231,7 @@ const PaymentMade = () => {
             okText="Yes"
             okButtonProps={{ loading: deleteLoading }}
             cancelText="No"
+            disabled
             onConfirm={() => handleDelete(record._id)}
           >
             <Button type="default" danger icon={<Icons.DeleteOutlined />} />

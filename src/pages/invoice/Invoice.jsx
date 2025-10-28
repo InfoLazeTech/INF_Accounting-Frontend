@@ -176,15 +176,15 @@ const Invoice = () => {
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-    {
-      title: "Balance Due",
-      dataIndex: "remainingAmount",
-      key: "balanceDue",
-      render: (amount) => (amount ? `₹${amount.toFixed(2)}` : "₹0.00"),
-      onHeaderCell: () => ({
-        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-      }),
-    },
+    // {
+    //   title: "Balance Due",
+    //   dataIndex: "remainingAmount",
+    //   key: "balanceDue",
+    //   render: (amount) => (amount ? `₹${amount.toFixed(2)}` : "₹0.00"),
+    //   onHeaderCell: () => ({
+    //     style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+    //   }),
+    // },
     {
       title: "Action",
       key: "action",
@@ -205,6 +205,7 @@ const Invoice = () => {
             okText="Yes"
             okButtonProps={{ loading: deleteLoading }}
             cancelText="No"
+            disabled
             onConfirm={async () => {
               try {
                 await dispatch(deleteInvoice(record._id)).unwrap();

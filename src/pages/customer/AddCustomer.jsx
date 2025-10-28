@@ -129,7 +129,7 @@ const AddCustomer = () => {
           </Col>
           <Col>
             <Title level={3} style={{ margin: 0 }}>
-              {customerId ? "Edit Customer" : "Add Customer"}
+              {customerId ? "Edit Customer / Vendor" : "Add Customer / Vendor"}
             </Title>
           </Col>
         </Row>

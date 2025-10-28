@@ -229,6 +229,7 @@ const PaymentReceived = () => {
           <Popconfirm
             title="Are you sure you want to delete this Payment?"
             okText="Yes"
+            disabled
             okButtonProps={{ loading: deleteLoading }}
             cancelText="No"
             onConfirm={() => handleDelete(record._id)}
