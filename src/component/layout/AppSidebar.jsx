@@ -71,6 +71,18 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
       label: "Payment Made",
       path: "/payment-made",
     },
+    {
+      key: "8",
+      icon: <Icons.RiseOutlined />,
+      label: "Customer Report",
+      path: "/customer-report",
+    },
+    {
+      key: "9",
+      icon: <Icons.RiseOutlined />,
+      label: "Vendor Report",
+      path: "/vendor-report",
+    },
   ];
 
   const handleMenuClick = ({ key }) => {
