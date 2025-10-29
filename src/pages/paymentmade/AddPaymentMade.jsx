@@ -21,6 +21,7 @@ const AddPaymentMade = () => {
   const { paymentId } = useParams();
   const dispatch = useDispatch();
   const { companyId } = useSelector((state) => state.auth);
+  const [vendorShippingAddress, setVendorShippingAddress] = useState({});
   const { dropdownVendors, dropLoading } = useSelector(
     (state) => state.customerVendor
   );
@@ -40,7 +41,7 @@ const AddPaymentMade = () => {
         })
       );
     }
-  }, [companyId, dispatch]); 
+  }, [companyId, dispatch]);
 
   useEffect(() => {
     if (paymentId && companyId) {
@@ -100,10 +101,24 @@ const AddPaymentMade = () => {
     }
   };
 
+  useEffect(() => {
+    if (paymentId && payment?.partyId?._id) {
+      handleVendorSelect(payment?.partyId?._id);
+    }
+  }, [paymentId, payment?.partyId?._id]);
+
+  const handleVendorSelect = (value) => {
+    const selected = dropdownVendors.find((c) => c._id === value);
+    if (!selected) return;
+
+    // Set Shipping Address (or fallback to billing)
+    setVendorShippingAddress(selected.shippingAddress || selected.billingAddress || {});
+  };
+
   return (
     <div className="!relative">
       <Card className="!p-3 !m-4 !pb-10">
-     
+
         <Row align="middle" style={{ marginBottom: 24 }}>
           <Col>
             <Button
@@ -139,18 +154,19 @@ const AddPaymentMade = () => {
                 <CustomInput
                   type="select"
                   name="partyId"
-                  label="Vendor Name *" 
-                  placeholder="Select Vendor" 
+                  label="Vendor Name"
+                  placeholder="Select Vendor"
                   options={(dropdownVendors || []).map((cust) => ({
                     label: cust.companyName || cust.name,
                     value: cust._id,
-                  }))} 
+                  }))}
                   showSearch={true}
                   filterOption={false}
                   loading={dropLoading}
+                  onChange={(value) => handleVendorSelect(value)}
                   rules={[
                     { required: true, message: "Please select a Vendor" },
-                  ]} 
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -172,6 +188,27 @@ const AddPaymentMade = () => {
                 />
               </Col>
             </Row>
+            {form.getFieldValue("partyId") && (
+              <Row gutter={0} style={{ marginTop: 4, marginBottom: 16 }}>
+                <Col span={12}>
+                  <div style={{ fontSize: 14, lineHeight: "20px" }}>
+                    <strong style={{ display: "block", marginBottom: 4 }}>
+                      Shipping Address
+                    </strong>
+
+                    <p style={{ margin: 0 }}>
+                      {vendorShippingAddress?.street || "-"}, {vendorShippingAddress?.city || "-"}
+                    </p>
+                    <p style={{ margin: "2px 0" }}>
+                      {vendorShippingAddress?.state || "-"}, {vendorShippingAddress?.pincode || vendorShippingAddress?.zip || "-"}
+                    </p>
+                    <p style={{ margin: 0 }}>
+                      {vendorShippingAddress?.country || "-"}
+                    </p>
+                  </div>
+                </Col>
+              </Row>
+            )}
 
             <Row gutter={16}>
               <Col span={8}>
@@ -257,8 +294,8 @@ const AddPaymentMade = () => {
           {postLoading
             ? "Loading..."
             : paymentId
-            ? "Update Payment Madee"
-            : "Save Payment Made"}
+              ? "Update Payment Madee"
+              : "Save Payment Made"}
         </Button>
         <Button onClick={() => navigate("/payment-made")}>Cancel</Button>
       </div>

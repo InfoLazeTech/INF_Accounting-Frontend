@@ -6,7 +6,7 @@ const createItem = async (data) => {
 };
 
 const getAllItem = async (payload) => {
-  const { companyId, search = "", limit = 10, page = 1 } = payload;
+  const { companyId, search = "", limit = 10, page = 1, categoryId = "" } = payload;
 
   const quaryParams = new URLSearchParams({
     companyId: companyId,
@@ -15,6 +15,9 @@ const getAllItem = async (payload) => {
   });
   if (search) {
     quaryParams.append("search", search);
+  }
+  if (categoryId) {
+    quaryParams.append("categoryId", categoryId);
   }
 
   const res = await api.get("/item-master/getItem", { params: quaryParams });

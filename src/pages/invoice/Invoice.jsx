@@ -38,7 +38,7 @@ const Invoice = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filter, setFilter] = useState({
     search: searchParams.get("search") || "",
-    customerId: searchParams.get("customerId") || "",
+    customerId: searchParams.get("customerId") || null,
   });
 
   const fetchInvoices = (signal) => {
@@ -99,7 +99,7 @@ const Invoice = () => {
       page: 1,
       limit: 10,
       search: "",
-      customerId: "",
+      customerId: null,
     });
     setFilter({
       search: "",

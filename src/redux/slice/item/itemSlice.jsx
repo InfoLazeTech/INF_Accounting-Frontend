@@ -2,67 +2,59 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import itemService from "./itemService";
 import { toast } from "react-toastify";
 
-// Add
-export const addItem = createAsyncThunk("item/add", async (data, thunkAPI) => {
+export const addItem = createAsyncThunk("item/add", async (data) => {
   try {
-    return await itemService.createItem(data);
-  } catch (err) {
-    return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+    const response = await itemService.createItem(data);
+    return response;
+  } catch (error) {
+    throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
   }
 });
 
-// Get All
 export const getItem = createAsyncThunk(
   "item/getAll",
-  async (payload, thunkAPI) => {
+  async (payload) => {
     try {
-      return await itemService.getAllItem(payload);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await itemService.getAllItem(payload);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
-// Get By ID
 export const getItemById = createAsyncThunk(
   "item/getById",
-  async (id, thunkAPI) => {
+  async (id) => {
     try {
-      return await itemService.getItemById(id);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await itemService.getItemById(id);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
-// Update
 export const updateItem = createAsyncThunk(
   "item/update",
-  async ({ id, data }, thunkAPI) => {
+  async ({ id, data }) => {
     try {
-      return await itemService.updateItem(id, data);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await itemService.updateItem(id, data);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
-// Delete
 export const deleteItem = createAsyncThunk(
   "item/delete",
-  async (id, thunkAPI) => {
+  async (id) => {
     try {
-      return await itemService.deleteItem(id);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await itemService.deleteItem(id);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -94,14 +86,13 @@ const itemSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Add
       .addCase(addItem.pending, (state) => {
         state.postLoading = true;
       })
       .addCase(addItem.fulfilled, (state, action) => {
         state.postLoading = false;
-        state.items.push(action.payload.data);
-        state.message = action.payload?.message;
+        // state.items.push(action.payload.data);
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(addItem.rejected, (state, action) => {
@@ -109,8 +100,6 @@ const itemSlice = createSlice({
         state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // Get All
       .addCase(getItem.pending, (state) => {
         state.loading = true;
       })
@@ -126,11 +115,7 @@ const itemSlice = createSlice({
       })
       .addCase(getItem.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
-        toast.error(state.error);
       })
-
-      // Get By ID
       .addCase(getItemById.pending, (state) => {
         state.loading = true;
       })
@@ -140,11 +125,9 @@ const itemSlice = createSlice({
       })
       .addCase(getItemById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // Update
       .addCase(updateItem.pending, (state) => {
         state.postLoading = true;
       })
@@ -163,21 +146,19 @@ const itemSlice = createSlice({
         state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // Delete
       .addCase(deleteItem.pending, (state) => {
         state.deleteLoading = true;
       })
       .addCase(deleteItem.fulfilled, (state, action) => {
         state.deleteLoading = false;
         state.items = state.items.filter((c) => c._id !== action.meta.arg);
-        state.message = action.payload?.message;
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(deleteItem.rejected, (state, action) => {
         state.deleteLoading = false;
-        state.error = action.payload;
-        toast.error(action.payload);
+        state.error = action.error.message;
+        toast.error(state.error);
       });
   },
 });

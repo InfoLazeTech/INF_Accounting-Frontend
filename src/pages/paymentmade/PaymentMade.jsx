@@ -41,7 +41,7 @@ const PaymentMade = () => {
   );
   const [filter, setFilter] = useState({
     search: searchParams.get("search") || "",
-    partyId: searchParams.get("partyId") || "",
+    partyId: searchParams.get("partyId") || null,
   });
   const fetchPayment = (signal) => {
     const page = parseInt(searchParams?.get("page")) || 1;
@@ -99,7 +99,7 @@ const PaymentMade = () => {
       page: 1,
       limit: 10,
       search: "",
-      partyId: "",
+      partyId: null,
     });
     setFilter({
       search: "",

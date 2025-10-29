@@ -21,6 +21,7 @@ const AddPaymentReceived = () => {
   const { paymentId } = useParams();
   const dispatch = useDispatch();
   const { companyId } = useSelector((state) => state.auth);
+  const [customerShippingAddress, setCustomerShippingAddress] = useState({});
   const { dropdownCustomers, dropLoading } = useSelector(
     (state) => state.customerVendor
   );
@@ -40,7 +41,7 @@ const AddPaymentReceived = () => {
         })
       );
     }
-  }, [companyId, dispatch]); 
+  }, [companyId, dispatch]);
 
   useEffect(() => {
     if (paymentId && companyId) {
@@ -100,10 +101,24 @@ const AddPaymentReceived = () => {
     }
   };
 
+  useEffect(() => {
+    if (paymentId && payment?.partyId?._id) {
+      handleCustomerSelect(payment?.partyId?._id);
+    }
+  }, [paymentId, payment?.partyId?._id]);
+
+  const handleCustomerSelect = (value) => {
+    const selected = dropdownCustomers.find((c) => c._id === value);
+    if (!selected) return;
+
+    // Set Shipping Address (or fallback to billing)
+    setCustomerShippingAddress(selected.shippingAddress || selected.billingAddress || {});
+  };
+
   return (
     <div className="!relative">
       <Card className="!p-3 !m-4 !pb-10">
-     
+
         <Row align="middle" style={{ marginBottom: 24 }}>
           <Col>
             <Button
@@ -139,18 +154,19 @@ const AddPaymentReceived = () => {
                 <CustomInput
                   type="select"
                   name="partyId"
-                  label="Customer Name *" 
-                  placeholder="select Customer" 
+                  label="Customer Name"
+                  placeholder="select Customer"
                   options={(dropdownCustomers || []).map((cust) => ({
                     label: cust.companyName || cust.name,
                     value: cust._id,
-                  }))} 
+                  }))}
                   showSearch={true}
                   filterOption={false}
                   loading={dropLoading}
+                  onChange={(value) => handleCustomerSelect(value)}
                   rules={[
                     { required: true, message: "Please select a Customer" },
-                  ]} 
+                  ]}
                 />
               </Col>
               <Col span={8}>
@@ -172,6 +188,27 @@ const AddPaymentReceived = () => {
                 />
               </Col>
             </Row>
+            {form.getFieldValue("partyId") && (
+              <Row gutter={0} style={{ marginTop: 4, marginBottom: 16 }}>
+                <Col span={12}>
+                  <div style={{ fontSize: 14, lineHeight: "20px" }}>
+                    <strong style={{ display: "block", marginBottom: 4 }}>
+                      Shipping Address
+                    </strong>
+
+                    <p style={{ margin: 0 }}>
+                      {customerShippingAddress?.street || "-"}, {customerShippingAddress?.city || "-"}
+                    </p>
+                    <p style={{ margin: "2px 0" }}>
+                      {customerShippingAddress?.state || "-"}, {customerShippingAddress?.pincode || customerShippingAddress?.zip || "-"}
+                    </p>
+                    <p style={{ margin: 0 }}>
+                      {customerShippingAddress?.country || "-"}
+                    </p>
+                  </div>
+                </Col>
+              </Row>
+            )}
 
             <Row gutter={16}>
               <Col span={8}>
@@ -257,8 +294,8 @@ const AddPaymentReceived = () => {
           {postLoading
             ? "Loading..."
             : paymentId
-            ? "Update Payment Received"
-            : "Save Payment Received"}
+              ? "Update Payment Received"
+              : "Save Payment Received"}
         </Button>
         <Button onClick={() => navigate("/payment-received")}>Cancel</Button>
       </div>

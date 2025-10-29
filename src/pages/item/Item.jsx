@@ -31,7 +31,7 @@ const Item = () => {
 
   const [filter, setFilter] = useState({
     search: searchParams.get("search") || "",
-    categoryId: searchParams.get("categoryId") || "",
+    categoryId: searchParams.get("categoryId") || null,
   });
   const { pagination } = useSelector((state) => state.item);
 
@@ -82,7 +82,7 @@ const Item = () => {
     updateUrlParams({ companyId, page: 1, limit: 10, search: "", categoryId: "" });
     setFilter({
       search: "",
-      categoryId: "",
+      categoryId: null,
     });
   };
 
@@ -238,8 +238,12 @@ const Item = () => {
                   placeholder="Select Catgory"
                   loading={false}
                   className="w-full"
-                  value={filter.categoryId || undefined}
+                  value={filter.categoryId ?? null}
                   onChange={(value) => setFilter((prev) => ({ ...prev, categoryId: value }))}
+                  onClear={() => {
+                    setFilter(prev => ({ ...prev, categoryId: null }));
+                    updateUrlParams({ companyId, page: 1, limit: 10, categoryId: "" });
+                  }}
                   allowClear
                   size="large"
                   optionFilterProp="label"

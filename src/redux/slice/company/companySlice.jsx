@@ -5,13 +5,12 @@ import { toast } from "react-toastify";
 // Get company
 export const getCompany = createAsyncThunk(
   "company/get",
-  async (companyId, thunkAPI) => {
+  async (companyId) => {
     try {
-      return await companyService.getCompany(companyId);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await companyService.getCompany(companyId);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -19,13 +18,12 @@ export const getCompany = createAsyncThunk(
 // Update company
 export const updateCompany = createAsyncThunk(
   "company/update",
-  async ({ companyId, data }, thunkAPI) => {
+  async ({ companyId, data }) => {
     try {
-      return await companyService.updateCompany(companyId, data);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await companyService.updateCompany(companyId, data);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -54,24 +52,21 @@ const companySlice = createSlice({
       .addCase(getCompany.fulfilled, (state, action) => {
         state.loading = false;
         state.companyData = action.payload.data;
-
       })
       .addCase(getCompany.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       })
       .addCase(updateCompany.pending, (state) => {
         state.postLoading = true;
       })
       .addCase(updateCompany.fulfilled, (state, action) => {
         state.postLoading = false;
-        // state.data = action.payload.data;
-         state.message = action.payload?.message;
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(updateCompany.rejected, (state, action) => {
         state.postLoading = false;
-          state.error = action.payload.error.message;
+        state.error = action.error.message;
         toast.error(state.error);
       });
   },
