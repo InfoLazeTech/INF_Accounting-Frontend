@@ -283,7 +283,7 @@ const BillView = () => {
                   </tr>
                   <tr>
                     <td className="pr-4">Vendor Contact No</td>
-                    <td>: {bill.vendorId.contactPerson || "N/A"}</td>
+                    <td>: {bill.vendorId.phone || "N/A"}</td>
                   </tr>
                   <tr>
                     <td className="pr-4">Date</td>
@@ -304,15 +304,13 @@ const BillView = () => {
                   <br />
                   {company.address?.street2}
                   <br />
-                  {company.address?.city}, [
-                  {company.address?.state}] -{" "}
+                  {company.address?.city},{" "} 
+                  {company.address?.state} -{" "}
                   {company.address?.pinCode}
                   <br />
                   GSTIN: {company.gstNo}
                   <br />
                   PAN No: {company.panNo}
-                  <br />
-                  Contact No: {bill.vendorId.contactPerson}
                 </p>
               </div>
             </div>
@@ -322,18 +320,20 @@ const BillView = () => {
                   <td className="border border-[#e9e9e9] p-2">
                     <span className="font-semibold">Bill To:</span>
                     <br />
-                    {bill.vendorName}
-                    <br />
-                    {bill.vendorId.billingAddress?.street || "N/A"},{" "}
-                    {bill.vendorId.billingAddress?.city || "N/A"}
+                    {bill.vendorId.billingAddress?.street || "N/A"},{" "}<br />
+                    {bill.vendorId.billingAddress?.city || "N/A"}, {" "}
+                    {bill.vendorId.billingAddress?.state || "N/A"}, {" "}
+                    {bill.vendorId.billingAddress?.country || "N/A"} - {" "}
+                    {bill.vendorId.billingAddress?.zip || "N/A"}
                   </td>
                   <td className="border border-[#e9e9e9] p-2">
                     <span className="font-semibold">Ship To:</span>
                     <br />
-                    {bill.vendorName}
-                    <br />
-                    {bill.vendorId.shippingAddress?.street || "N/A"},{" "}
-                    {bill.vendorId.shippingAddress?.city || "N/A"}
+                    {bill.vendorId.shippingAddress?.street || "N/A"},{" "}<br />
+                    {bill.vendorId.shippingAddress?.city || "N/A"},{" "}
+                    {bill.vendorId.shippingAddress?.state || "N/A"},{" "}
+                    {bill.vendorId.shippingAddress?.country || "N/A"} - {" "}
+                    {bill.vendorId.shippingAddress?.zip || "N/A"}
                   </td>
                   <td className="border border-[#e9e9e9] p-2">
                     <span className="font-semibold ">Other Information:</span>
