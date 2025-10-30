@@ -178,6 +178,7 @@ const Customer = () => {
           <Popconfirm
             title="Are you sure you want to delete this customer?"
             okText="Yes"
+            disabled
             cancelText="No"
             okButtonProps={{ loading: deleteLoading }}
             onConfirm={async () => {
@@ -204,7 +205,7 @@ const Customer = () => {
       <Card style={{ marginBottom: 16 }} bodyStyle={{ padding: "12px 20px" }}>
         <Row align="middle" justify="space-between">
           <Col>
-            <div className="text-xl font-semibold">View Customers</div>
+            <div className="text-xl font-semibold">View Customers / Vendor</div>
           </Col>
           <Col>
             <Space size="middle">
@@ -225,7 +226,7 @@ const Customer = () => {
                 size="middle"
                 onClick={() => navigate("/customer/add")}
               >
-                Add Customer
+                Add Customer / Vendor
               </Button>
             </Space>
           </Col>
@@ -255,7 +256,7 @@ const Customer = () => {
           </Col>
           <Col span={14} style={{ textAlign: "right" }}>
             <Space>
-              <div className="w-28">
+              <div className="w-40">
               <FilterInput
                 type={filterInputEnum?.SELECT}
                 name={"type"}

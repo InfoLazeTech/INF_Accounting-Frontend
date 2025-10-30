@@ -8,6 +8,7 @@ import {
   Space,
   message,
   Popconfirm,
+  Select,
 } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,6 +18,7 @@ import { getItem, deleteItem } from "../../redux/slice/item/itemSlice";
 import { filteredURLParams, getQueryParams } from "../../utlis/services";
 import { filterInputEnum } from "../../utlis/constants";
 import FilterInput from "../../component/commonComponent/FilterInput";
+import { getcategory } from "../../redux/slice/category/categorySlice";
 
 const { Search } = Input;
 
@@ -29,6 +31,7 @@ const Item = () => {
 
   const [filter, setFilter] = useState({
     search: searchParams.get("search") || "",
+    categoryId: searchParams.get("categoryId") || null,
   });
   const { pagination } = useSelector((state) => state.item);
 
@@ -58,6 +61,12 @@ const Item = () => {
     return () => controller.abort();
   }, [dispatch, companyId, searchParams]);
 
+  useEffect(() => {
+    if (companyId) {
+      dispatch(getcategory({ companyId }));
+    }
+  }, [dispatch, companyId]);
+
   const updateUrlParams = (newParams) => {
     const params = new URLSearchParams(searchParams);
     const filterParams = filteredURLParams(params, newParams);
@@ -65,13 +74,15 @@ const Item = () => {
   };
   const handleSearch = () => {
     const searchValue = filter.search ? String(filter.search) : "";
-    updateUrlParams({ companyId, page: 1, limit: 10, search: searchValue });
+    const categoryId = filter.categoryId ? String(filter.categoryId) : "";
+    updateUrlParams({ companyId, page: 1, limit: 10, search: searchValue, categoryId, });
   };
 
   const handleClear = () => {
-    updateUrlParams({ companyId, page: 1, limit: 10, search: "" });
+    updateUrlParams({ companyId, page: 1, limit: 10, search: "", categoryId: "" });
     setFilter({
       search: "",
+      categoryId: null,
     });
   };
 
@@ -154,6 +165,7 @@ const Item = () => {
             okText="Yes"
             okButtonProps={{ loading: deleteLoading }}
             cancelText="No"
+            disabled
             onConfirm={async () => {
               try {
                 await dispatch(deleteItem(record._id)).unwrap();
@@ -172,6 +184,14 @@ const Item = () => {
       }),
     },
   ];
+
+  const categoryOptions =
+    categorys && Array.isArray(categorys) && categorys.length
+      ? categorys.map((c) => ({
+        label: c.name || c.categoryName || c.title || "Unnamed",
+        value: c._id || c.id,
+      }))
+      : [];
 
   return (
     <div className="m-4">
@@ -200,18 +220,48 @@ const Item = () => {
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={10}>
-              <FilterInput
-                          type={filterInputEnum?.SEARCH}
-                          name={"search"}
-                          placeHolder="Search..."
-                          value={filter?.search}
-                          setFilter={setFilter}
-                          onSerch={handleSearch}
-                          onClear={handleClear}
-                        />
+            <FilterInput
+              type={filterInputEnum?.SEARCH}
+              name={"search"}
+              placeHolder="Search..."
+              value={filter?.search}
+              setFilter={setFilter}
+              onSerch={handleSearch}
+              onClear={handleClear}
+            />
           </Col>
           <Col span={14} style={{ textAlign: "right" }}>
             <Space>
+              <div className="w-44">
+                <Select
+                  showSearch
+                  placeholder="Select Catgory"
+                  loading={false}
+                  className="w-full"
+                  value={filter.categoryId ?? null}
+                  onChange={(value) => setFilter((prev) => ({ ...prev, categoryId: value }))}
+                  onClear={() => {
+                    setFilter(prev => ({ ...prev, categoryId: null }));
+                    updateUrlParams({ companyId, page: 1, limit: 10, categoryId: "" });
+                  }}
+                  allowClear
+                  size="large"
+                  optionFilterProp="label"
+                  dropdownStyle={{ textAlign: "left" }}
+                  style={{ textAlign: "left" }}
+                  options={
+                    categoryOptions.length
+                      ? categoryOptions
+                      : [
+                        {
+                          label: "No categories available",
+                          value: "",
+                          disabled: true,
+                        },
+                      ]
+                  }
+                />
+              </div>
               <Button
                 type="primary"
                 icon={<Icons.FilterOutlined />}

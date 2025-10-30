@@ -30,16 +30,16 @@ const { Title, Text } = Typography;
 const { Dragger } = Upload;
 import { useDispatch, useSelector } from "react-redux";
 import CustomInput from "../../component/commonComponent/CustomInput";
-import {IndianStates}from '../../utlis/state.js'
+import { stateSelectionOptions } from '../../utlis/state.js'
 import {
   getCompany,
   updateCompany,
 } from "../../redux/slice/company/companySlice";
 import Icons from "../../assets/icon";
 
-const stateOptions = Object.values(IndianStates).map((stateName ) => ({
-  value: stateName,
-  label: stateName,
+const stateOptions = stateSelectionOptions.map((item) => ({
+  value: item.value,
+  label: item.label,
 }));
 
 const Profile = () => {
@@ -91,14 +91,14 @@ const Profile = () => {
           faxNumber: values.fax,
         },
       };
-console.log("Payload sent to updateCompany:", payload); 
+      console.log("Payload sent to updateCompany:", payload);
       // await dispatch(updateCompany({ companyId, data: payload })).unwrap();
-       const response = await dispatch(updateCompany({ companyId, data: payload })).unwrap();
-       console.log("Backend response:", response);
+      const response = await dispatch(updateCompany({ companyId, data: payload })).unwrap();
+      console.log("Backend response:", response);
       setIsEditing(false);
-        dispatch(getCompany(companyId));
+      dispatch(getCompany(companyId));
     } catch (err) {
-       console.error("Update error:", err);
+      console.error("Update error:", err);
       message.error(err);
     }
   };
@@ -233,7 +233,7 @@ console.log("Payload sent to updateCompany:", payload);
         />
         <Row gutter={16}>
           <Col span={8}>
-         <CustomInput
+            <CustomInput
               type="text"
               name="companyName"
               label="Company Name"
@@ -244,7 +244,7 @@ console.log("Payload sent to updateCompany:", payload);
             />
           </Col>
           <Col span={8}>
-           <CustomInput
+            <CustomInput
               type="text"
               name="email"
               label="Email Address"
@@ -258,7 +258,7 @@ console.log("Payload sent to updateCompany:", payload);
             />
           </Col>
           <Col span={8}>
-           <CustomInput
+            <CustomInput
               type="text"
               name="phone"
               label="Phone Number"
@@ -381,7 +381,7 @@ console.log("Payload sent to updateCompany:", payload);
             />
           </Col>
           <Col span={12}>
-              <CustomInput
+            <CustomInput
               type="text"
               name="panNo"
               label="PAN Number"
@@ -401,7 +401,7 @@ console.log("Payload sent to updateCompany:", payload);
         />
         <Row gutter={16}>
           <Col span={12}>
-             <CustomInput
+            <CustomInput
               type="text"
               name="street1"
               label="Street Address 1"
@@ -439,7 +439,7 @@ console.log("Payload sent to updateCompany:", payload);
               rules={[{ required: true, message: "Please enter city" }]}
             />
           </Col>
-           <Col span={8}>
+          <Col span={8}>
             <CustomInput
               type="select"
               name="state"
@@ -452,7 +452,7 @@ console.log("Payload sent to updateCompany:", payload);
             />
           </Col>
           <Col span={8}>
-           <CustomInput
+            <CustomInput
               type="text"
               name="pin"
               label="PIN Code"

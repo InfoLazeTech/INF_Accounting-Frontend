@@ -20,7 +20,7 @@ const BillView = () => {
     bill,
     loading: billLoading,
     error: billError,
-  } = useSelector((state) => state.bill); 
+  } = useSelector((state) => state.bill);
   const {
     companyData: company,
     loading: companyLoading,
@@ -57,7 +57,7 @@ const BillView = () => {
     input.style.height = "auto";
     input.style.overflow = "visible";
     html2canvas(input, {
-       scale: 3,
+      scale: 3,
       useCORS: true,
       logging: true,
       windowWidth: document.documentElement.scrollWidth,
@@ -167,59 +167,59 @@ const BillView = () => {
       bill.vendorId.address.state !== company.address.state);
   const taxSummary = bill?.items?.length
     ? [
-        ...Object.values(
-          bill.items.reduce((acc, item) => {
-            const hsnSac = item.hsnCode;
-            if (!acc[hsnSac]) {
-              acc[hsnSac] = {
-                hsnSac,
-                quantity: 0,
-                taxableValue: 0,
-                cgstTax: isInterState
-                  ? { rate: "", amount: 0 }
-                  : { rate: item.taxRate / 2, amount: 0 },
-                sgstTax: isInterState
-                  ? { rate: "", amount: 0 }
-                  : { rate: item.taxRate / 2, amount: 0 },
-                igstTax: isInterState
-                  ? { rate: item.taxRate, amount: 0 }
-                  : { rate: "", amount: 0 },
-                totalTax: 0,
-              };
-            }
-            acc[hsnSac].quantity += item.quantity;
-            acc[hsnSac].taxableValue += item.lineTotal;
-            if (isInterState) {
-              acc[hsnSac].igstTax.amount +=
-                (item.lineTotal * item.taxRate) / 100;
-            } else {
-              acc[hsnSac].cgstTax.amount +=
-                (item.lineTotal * item.taxRate) / 200;
-              acc[hsnSac].sgstTax.amount +=
-                (item.lineTotal * item.taxRate) / 200;
-            }
-            acc[hsnSac].totalTax += (item.lineTotal * item.taxRate) / 100;
-            return acc;
-          }, {})
-        ),
-        {
-          hsnSac: "Total",
-          quantity:
-            bill.items.reduce((sum, item) => sum + (item.quantity || 0), 0) ||
-            0,
-          taxableValue: bill?.totals?.subtotal || 0,
-          cgstTax: isInterState
-            ? { rate: "", amount: 0 }
-            : { rate: "", amount: bill?.totals?.cgst || 0 },
-          sgstTax: isInterState
-            ? { rate: "", amount: 0 }
-            : { rate: "", amount: bill?.totals?.sgst || 0 },
-          igstTax: isInterState
-            ? { rate: "", amount: bill?.totals?.totalTax || 0 }
-            : { rate: "", amount: 0 },
-          totalTax: bill?.totals?.totalTax || 0,
-        },
-      ]
+      ...Object.values(
+        bill.items.reduce((acc, item) => {
+          const hsnSac = item.hsnCode;
+          if (!acc[hsnSac]) {
+            acc[hsnSac] = {
+              hsnSac,
+              quantity: 0,
+              taxableValue: 0,
+              cgstTax: isInterState
+                ? { rate: "", amount: 0 }
+                : { rate: item.taxRate / 2, amount: 0 },
+              sgstTax: isInterState
+                ? { rate: "", amount: 0 }
+                : { rate: item.taxRate / 2, amount: 0 },
+              igstTax: isInterState
+                ? { rate: item.taxRate, amount: 0 }
+                : { rate: "", amount: 0 },
+              totalTax: 0,
+            };
+          }
+          acc[hsnSac].quantity += item.quantity;
+          acc[hsnSac].taxableValue += item.lineTotal;
+          if (isInterState) {
+            acc[hsnSac].igstTax.amount +=
+              (item.lineTotal * item.taxRate) / 100;
+          } else {
+            acc[hsnSac].cgstTax.amount +=
+              (item.lineTotal * item.taxRate) / 200;
+            acc[hsnSac].sgstTax.amount +=
+              (item.lineTotal * item.taxRate) / 200;
+          }
+          acc[hsnSac].totalTax += (item.lineTotal * item.taxRate) / 100;
+          return acc;
+        }, {})
+      ),
+      {
+        hsnSac: "Total",
+        quantity:
+          bill.items.reduce((sum, item) => sum + (item.quantity || 0), 0) ||
+          0,
+        taxableValue: bill?.totals?.subtotal || 0,
+        cgstTax: isInterState
+          ? { rate: "", amount: 0 }
+          : { rate: "", amount: bill?.totals?.cgst || 0 },
+        sgstTax: isInterState
+          ? { rate: "", amount: 0 }
+          : { rate: "", amount: bill?.totals?.sgst || 0 },
+        igstTax: isInterState
+          ? { rate: "", amount: bill?.totals?.totalTax || 0 }
+          : { rate: "", amount: 0 },
+        totalTax: bill?.totals?.totalTax || 0,
+      },
+    ]
     : [];
 
   if (billLoading || companyLoading) {
@@ -250,7 +250,7 @@ const BillView = () => {
           <Button
             type="text"
             icon={<Icons.ArrowLeftOutlined />}
-            onClick={() => navigate("/bills")}
+            onClick={() => navigate("/bill")}
           />
           <div className="text-xl font-semibold">Bill #{bill.billNumber}</div>
         </div>
@@ -275,7 +275,7 @@ const BillView = () => {
                   </tr>
                   <tr>
                     <td className="pr-4">Vendor Code</td>
-                    <td>: {bill.vendorId._id}</td>
+                    <td>: {bill.vendorId.customerVendorId}</td>
                   </tr>
                   <tr>
                     <td className="pr-4">Vendor Name</td>
@@ -283,11 +283,15 @@ const BillView = () => {
                   </tr>
                   <tr>
                     <td className="pr-4">Vendor Contact No</td>
-                    <td>: {bill.vendorId.contactPerson || "N/A"}</td>
+                    <td>: {bill.vendorId.phone || "N/A"}</td>
                   </tr>
                   <tr>
                     <td className="pr-4">Date</td>
                     <td>: {moment(bill.billDate).format("DD/MM/YYYY")}</td>
+                  </tr>
+                  <tr>
+                    <td className="pr-4">GST No.</td>
+                    <td>: {bill.vendorId.gstNumber}</td>
                   </tr>
                 </table>
               </div>
@@ -296,19 +300,17 @@ const BillView = () => {
                   <img className="h-20 w-60" src={company.logo} alt="" />
                 </div>
                 <p>
-                  {company.address?.street1 || "A-807, Empire Business Hub"}
+                  {company.address?.street1}
                   <br />
-                  {company.address?.street2 || "Science City Road, Sola"}
+                  {company.address?.street2}
                   <br />
-                  {company.address?.city || "Ahmedabad"}, [
-                  {company.address?.state || "GJ"}] -{" "}
-                  {company.address?.pinCode || "360004"}
+                  {company.address?.city},{" "} 
+                  {company.address?.state} -{" "}
+                  {company.address?.pinCode}
                   <br />
-                  GSTIN: {company.gstNo || "27ABCDE1234F1Z5"}
+                  GSTIN: {company.gstNo}
                   <br />
-                  PAN No: {company.panNo || "BJPFC1243E"}
-                  <br />
-                  Contact No: {bill.vendorId.contactPerson || "7229028694"}
+                  PAN No: {company.panNo}
                 </p>
               </div>
             </div>
@@ -316,23 +318,25 @@ const BillView = () => {
               <table className="w-full">
                 <tr>
                   <td className="border border-[#e9e9e9] p-2">
-                  <span className="font-semibold">Bill To:</span>
+                    <span className="font-semibold">Bill To:</span>
                     <br />
-                    {bill.vendorName}
-                    <br />
-                    {bill.vendorId.address?.street || "N/A"},{" "}
-                    {bill.vendorId.address?.city || "N/A"}
+                    {bill.vendorId.billingAddress?.street || "N/A"},{" "}<br />
+                    {bill.vendorId.billingAddress?.city || "N/A"}, {" "}
+                    {bill.vendorId.billingAddress?.state || "N/A"}, {" "}
+                    {bill.vendorId.billingAddress?.country || "N/A"} - {" "}
+                    {bill.vendorId.billingAddress?.zip || "N/A"}
                   </td>
                   <td className="border border-[#e9e9e9] p-2">
-                     <span className="font-semibold">Ship To:</span>
+                    <span className="font-semibold">Ship To:</span>
                     <br />
-                    {bill.vendorName}
-                    <br />
-                    {bill.vendorId.address?.street || "N/A"},{" "}
-                    {bill.vendorId.address?.city || "N/A"}
+                    {bill.vendorId.shippingAddress?.street || "N/A"},{" "}<br />
+                    {bill.vendorId.shippingAddress?.city || "N/A"},{" "}
+                    {bill.vendorId.shippingAddress?.state || "N/A"},{" "}
+                    {bill.vendorId.shippingAddress?.country || "N/A"} - {" "}
+                    {bill.vendorId.shippingAddress?.zip || "N/A"}
                   </td>
                   <td className="border border-[#e9e9e9] p-2">
-                  <span className="font-semibold ">Other Information:</span>
+                    <span className="font-semibold ">Other Information:</span>
                     <br />
                     Payment Terms:{" "}
                     {bill.paymentTerms?.paymentTerms || "Due On Receipt"}
@@ -356,11 +360,11 @@ const BillView = () => {
                     <th className="border border-[#e9e9e9] p-1  relative text-xs" rowSpan="2">
                       HSN/SAC
                     </th>
-                    <th className="border border-[#e9e9e9] p-1  relative text-xs"rowSpan="2">Qty</th>
+                    <th className="border border-[#e9e9e9] p-1  relative text-xs" rowSpan="2">Qty</th>
                     <th className="border border-[#e9e9e9] p-1 relative text-xs" rowSpan="2">
                       Taxable value
                     </th>
-                   {isInterState ? (
+                    {isInterState ? (
                       <th
                         className="border border-[#e9e9e9] p-1  text-xs "
                         colSpan="2"
@@ -460,7 +464,7 @@ const BillView = () => {
                         ₹{item.totalTax.toFixed(2)}
                       </td>
                     </tr>
-                  ))} 
+                  ))}
                 </tbody>
               </table>
               <table className="border-collapse  w-1/3">

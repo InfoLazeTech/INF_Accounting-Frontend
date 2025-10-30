@@ -8,6 +8,7 @@ import {
   Space,
   message,
   Popconfirm,
+  Select,
 } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,6 +17,7 @@ import Icons from "../../assets/icon";
 import { filteredURLParams, getQueryParams } from "../../utlis/services";
 import FilterInput from "../../component/commonComponent/FilterInput";
 import { filterInputEnum } from "../../utlis/constants";
+import { getCustomerDropdown } from "../../redux/slice/customer/customerVendorSlice";
 
 import {
   deletePaymentReceived,
@@ -33,8 +35,13 @@ const PaymentReceived = () => {
     (state) => state.paymentReceived
   );
 
+  const { dropdownCustomers, dropLoading } = useSelector(
+    (state) => state.customerVendor
+  );
+
   const [filter, setFilter] = useState({
     search: searchParams.get("search") || "",
+    partyId: searchParams.get("partyId") || null,
   });
   const fetchPayment = (signal) => {
     const page = parseInt(searchParams?.get("page")) || 1;
@@ -53,13 +60,22 @@ const PaymentReceived = () => {
       };
     }
 
+    if (filter.partyId) {
+      payload = { ...payload, partyId: filter.partyId };
+    }
+
     dispatch(getAllPaymentReceived({ ...payload }));
+  };
+
+  const fetchCustomer = (signal) => {
+    dispatch(getCustomerDropdown({ companyId, signal }));
   };
   useEffect(() => {
     const controller = new AbortController();
     fetchPayment(controller.signal);
+    fetchCustomer(controller.signal);
     return () => controller.abort();
-  }, [dispatch, companyId, searchParams]);
+  }, [dispatch, companyId, searchParams, filter.partyId]);
 
   const updateUrlParams = (newParams) => {
     const params = new URLSearchParams(searchParams);
@@ -68,11 +84,24 @@ const PaymentReceived = () => {
   };
   const handleSearch = () => {
     const searchValue = filter.search ? String(filter.search) : "";
-    updateUrlParams({ companyId, page: 1, limit: 10, search: searchValue });
+    const CustomerValue = filter.partyId ? String(filter.partyId) : "";
+    updateUrlParams({
+      companyId,
+      page: 1,
+      limit: 10,
+      search: searchValue,
+      partyId: CustomerValue,
+    });
   };
 
   const handleClear = () => {
-    updateUrlParams({ companyId, page: 1, limit: 10, search: "" });
+    updateUrlParams({
+      companyId,
+      page: 1,
+      limit: 10,
+      search: "",
+      partyId: null,
+    });
     setFilter({
       search: "",
     });
@@ -88,6 +117,18 @@ const PaymentReceived = () => {
     } catch (err) {
       message.error(err?.message);
     }
+  };
+  
+  const handleCustomerChange = (value) => {
+    setFilter((prev) => ({ ...prev, partyId: value || "" }));
+
+    updateUrlParams({
+      companyId,
+      partyId: value || "",
+      page: 1,
+      limit: 10,
+      search: filter.search || "",
+    });
   };
 
   const columns = [
@@ -109,7 +150,7 @@ const PaymentReceived = () => {
       }),
     },
     {
-      title: "Vendor Name",
+      title: "Customer Name",
       dataIndex: "partyId",
       key: "partyId",
       render: (_, record) => {
@@ -131,16 +172,16 @@ const PaymentReceived = () => {
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) =>
-        status ? status.charAt(0).toUpperCase() + status.slice(1) : "N/A",
-      onHeaderCell: () => ({
-        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-      }),
-    },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   render: (status) =>
+    //     status ? status.charAt(0).toUpperCase() + status.slice(1) : "N/A",
+    //   onHeaderCell: () => ({
+    //     style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+    //   }),
+    // },
     // {
     //   title: "Bank",
     //   dataIndex: "bank",
@@ -155,20 +196,20 @@ const PaymentReceived = () => {
       title: "Payment Received",
       dataIndex: "amount",
       key: "amount",
-      render: (amount) => (amount ? `$${amount.toFixed(2)}` : "-"),
+      render: (amount) => (amount ? `₹${amount.toFixed(2)}` : "-"),
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-    {
-      title: "Available Balance",
-      dataIndex: "netAmount",
-      key: "netAmount",
-      render: (amount) => (amount ? `$${amount.toFixed(2)}` : "-"),
-      onHeaderCell: () => ({
-        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-      }),
-    },
+    // {
+    //   title: "Available Balance",
+    //   dataIndex: "netAmount",
+    //   key: "netAmount",
+    //   render: (amount) => (amount ? `₹${amount.toFixed(2)}` : "-"),
+    //   onHeaderCell: () => ({
+    //     style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+    //   }),
+    // },
     {
       title: "Action",
       key: "action",
@@ -188,9 +229,10 @@ const PaymentReceived = () => {
           <Popconfirm
             title="Are you sure you want to delete this Payment?"
             okText="Yes"
+            disabled
             okButtonProps={{ loading: deleteLoading }}
             cancelText="No"
-           onConfirm={() => handleDelete(record._id)}
+            onConfirm={() => handleDelete(record._id)}
           >
             <Button type="default" danger icon={<Icons.DeleteOutlined />} />
           </Popconfirm>
@@ -227,20 +269,66 @@ const PaymentReceived = () => {
 
       {/* Search / Filter */}
       <Card style={{ marginBottom: 16 }}>
-        <Row gutter={16} align="middle">
-          <Col span={10}>
+        <Row align="middle" justify="space-between" gutter={[16, 16]}>
+          {/* Left Side - Search Input */}
+          <Col flex="auto">
             <FilterInput
-              type={filterInputEnum?.SEARCH}
-              name={"search"}
+              type={filterInputEnum.SEARCH}
+              name="search"
               placeHolder="Search..."
-              value={filter?.search}
+              value={filter.search}
               setFilter={setFilter}
               onSerch={handleSearch}
               onClear={handleClear}
             />
           </Col>
-          <Col span={14} style={{ textAlign: "right" }}>
-            <Space>
+
+          <Col>
+            <Space size="middle" wrap>
+              <div className="w-52">
+                <Select
+                  showSearch
+                  placeholder="Select Customer"
+                  loading={dropLoading}
+                  className="w-full"
+                  value={filter.partyId}
+                  onChange={handleCustomerChange}
+                  allowClear
+                  size="large"
+                  optionFilterProp="label"
+                  filterOption={(input, option) =>
+                    option?.label?.toLowerCase().includes(input.toLowerCase())
+                  }
+                  dropdownStyle={{ textAlign: "left" }}
+                  style={{ textAlign: "left" }}
+                  options={
+                    dropdownCustomers?.length
+                      ? dropdownCustomers.map((customer) => ({
+                          label: customer.companyName || customer.name,
+                          value: customer._id,
+                        }))
+                      : [
+                          {
+                            // label: "No customers available",
+                            value: "",
+                            disabled: true,
+                          },
+                        ]
+                  }
+                />
+              </div>
+
+              {/* Clear Button */}
+              <Button
+                type="default"
+                icon={<Icons.ClearOutlined />}
+                size="middle"
+                onClick={handleClear}
+              >
+                Clear All
+              </Button>
+
+              {/* Apply Filter Button */}
               <Button
                 type="primary"
                 icon={<Icons.FilterOutlined />}

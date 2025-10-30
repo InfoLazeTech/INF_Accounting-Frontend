@@ -6,30 +6,30 @@ import { toast } from "react-toastify";
 // Async Thunks
 export const createPaymentMade = createAsyncThunk(
   "paymentMade/createPaymentMade",
-  async (paymentData, { rejectWithValue }) => {
+  async (paymentData) => {
     try {
       const response = await paymentMadeService.createPaymentMade(paymentData);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 export const getAllPaymentMade = createAsyncThunk(
   "paymentMade/getAllPaymentMade",
-  async (payload, { rejectWithValue }) => {
+  async (payload) => {
     try {
       const response = await paymentMadeService.getAllPaymentMade(payload);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const getPaymentMadeById = createAsyncThunk(
   "paymentMade/getPaymentMadeById",
-  async ({ paymentId, companyId }, { rejectWithValue }) => {
+  async ({ paymentId, companyId }) => {
     try {
       const response = await paymentMadeService.getPaymentMadeById(
         paymentId,
@@ -37,14 +37,14 @@ export const getPaymentMadeById = createAsyncThunk(
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const updatePaymentMade = createAsyncThunk(
   "paymentMade/updatePaymentMade",
-  async ({ paymentId, paymentData }, { rejectWithValue }) => {
+  async ({ paymentId, paymentData }) => {
     try {
       const response = await paymentMadeService.updatePaymentMade(
         paymentId,
@@ -52,43 +52,43 @@ export const updatePaymentMade = createAsyncThunk(
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const deletePaymentMade = createAsyncThunk(
   "paymentMade/deletePaymentMade",
-  async (paymentId, { rejectWithValue }) => {
+  async (paymentId) => {
     try {
       const response = await paymentMadeService.deletePaymentMade(paymentId);
       return { paymentId, ...response };
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const getPaymentSummary = createAsyncThunk(
   "paymentMade/getPaymentSummary",
-  async (payload, { rejectWithValue }) => {
+  async (payload) => {
     try {
       const response = await paymentMadeService.getPaymentSummary(payload);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const getPaymentsByParty = createAsyncThunk(
   "paymentMade/getPaymentsByParty",
-  async (payload, { rejectWithValue }) => {
+  async (payload) => {
     try {
       const response = await paymentMadeService.getPaymentsByParty(payload);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -130,7 +130,6 @@ const paymentMadeSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // CREATE
     builder
       .addCase(createPaymentMade.pending, (state) => {
         state.postLoading = true;
@@ -138,17 +137,15 @@ const paymentMadeSlice = createSlice({
       })
       .addCase(createPaymentMade.fulfilled, (state, action) => {
         state.postLoading = false;
-        state.payments.push(action.payload.data);
-        state.message = action.payload?.message;
+        // state.payments.push(action.payload.data);
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(createPaymentMade.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload?.message;
+        state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // GET ALL
       .addCase(getAllPaymentMade.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -162,10 +159,7 @@ const paymentMadeSlice = createSlice({
       .addCase(getAllPaymentMade.rejected, (state, action) => {
         state.loading = false;
         state.payments = [];
-        state.error = action.payload?.message;
       })
-
-      // GET BY ID
       .addCase(getPaymentMadeById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -177,10 +171,7 @@ const paymentMadeSlice = createSlice({
       })
       .addCase(getPaymentMadeById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
       })
-
-      // UPDATE
       .addCase(updatePaymentMade.pending, (state) => {
         state.postLoading = true;
         state.error = null;
@@ -188,32 +179,28 @@ const paymentMadeSlice = createSlice({
       .addCase(updatePaymentMade.fulfilled, (state, action) => {
         state.postLoading = false;
         state.payment = action.payload.data;
-        state.message = action.payload?.message;
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(updatePaymentMade.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload?.message;
+        sstate.error = action.error.message;
         toast.error(state.error);
       })
-
-      // DELETE
       .addCase(deletePaymentMade.pending, (state) => {
         state.postLoading = true;
         state.error = null;
       })
       .addCase(deletePaymentMade.fulfilled, (state, action) => {
         state.postLoading = false;
-        state.message = action.payload?.message;
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(deletePaymentMade.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload?.message;
+        state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // SUMMARY
       .addCase(getPaymentSummary.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -225,10 +212,7 @@ const paymentMadeSlice = createSlice({
       })
       .addCase(getPaymentSummary.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message;
       })
-
-      // PARTY PAYMENTS
       .addCase(getPaymentsByParty.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -241,7 +225,6 @@ const paymentMadeSlice = createSlice({
       .addCase(getPaymentsByParty.rejected, (state, action) => {
         state.loading = false;
         state.partyPayments = [];
-        state.error = action.payload?.message;
       });
   },
 });

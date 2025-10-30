@@ -24,6 +24,8 @@ import {
   updateInvoice,
 } from "../../redux/slice/invoice/invoiceSlice";
 import { getCustomersVendors } from "../../redux/slice/customer/customerVendorSlice";
+
+import { getCustomerDropdown } from "../../redux/slice/customer/customerVendorSlice";
 import { getItem } from "../../redux/slice/item/itemSlice";
 import { getCompany } from "../../redux/slice/company/companySlice";
 
@@ -70,8 +72,13 @@ const AddInvoice = () => {
   const [customerState, setCustomerState] = useState("");
   const [companyState, setCompanyState] = useState("");
   const [isSameState, setIsSameState] = useState(true);
+  const [customerShippingAddress, setCustomerShippingAddress] = useState({});
+    const { dropdownCustomers, dropLoading } = useSelector(
+      (state) => state.customerVendor
+    );
+
   useEffect(() => {
-    dispatch(getCustomersVendors({ companyId }));
+    dispatch(getCustomerDropdown({ companyId }));
     dispatch(getItem({ companyId }));
     dispatch(getCompany(companyId));
     if (invoiceId) {
@@ -153,11 +160,15 @@ const AddInvoice = () => {
     setItems(updated);
   };
 
-  // When Customer is selected
-  const handleCustomerSelect = (value) => {
-    const selected = customers.find((c) => c._id === value);
-    console.log("selected", selected);
+  useEffect(() => {
+  if (invoiceId && invoice?.customerId?._id) {
+    handleCustomerSelect(invoice?.customerId?._id);
+  }
+}, [invoiceId, invoice?.customerId?._id]);
 
+
+  const handleCustomerSelect = (value) => {
+    const selected = dropdownCustomers.find((c) => c._id === value);
     if (!selected) return;
     form.setFieldsValue({
       // customerId: selected._id,
@@ -166,6 +177,7 @@ const AddInvoice = () => {
     setCustomerState(
       selected.billingAddress?.state || selected.shippingAddress?.state || ""
     );
+    setCustomerShippingAddress(selected.shippingAddress || {});
   };
 
   // Handle change for qty, price, discount, tax
@@ -248,13 +260,13 @@ const AddInvoice = () => {
 
   const onFinish = async (values) => {
     try {
-      const selectedCustomer = customers.find(
+      const selectedCustomer = dropdownCustomers.find(
         (c) => c._id === values.customerId
       );
       if (!selectedCustomer) {
         console.error(
           "Selected customer not found. Customers:",
-          customers,
+          dropdownCustomers,
           "Customer ID:",
           values.customerId
         );
@@ -480,7 +492,7 @@ const AddInvoice = () => {
                 name="customerId"
                 label="Customer Name"
                 placeholder="Select Customer"
-                options={customers.map((customer) => ({
+                options={dropdownCustomers.map((customer) => ({
                   value: customer._id,
                   label: customer.companyName,
                 }))}
@@ -523,6 +535,27 @@ const AddInvoice = () => {
               <Form.Item name="customerName" className="hidden" />
             </Col>
           </Row>
+          {form.getFieldValue("customerId") && (
+            <Row gutter={0} style={{ marginTop: 4, marginBottom: 16 }}>
+              <Col span={12}>
+                <div style={{ fontSize: 14, lineHeight: "20px" }}>
+                  <strong style={{ display: "block", marginBottom: 4 }}>
+                    Shipping Address
+                  </strong>
+
+                  <p style={{ margin: 0 }}>
+                    {customerShippingAddress.street || "-"}, {customerShippingAddress.city || "-"}
+                  </p>
+                  <p style={{ margin: "2px 0" }}>
+                    {customerShippingAddress.state || "-"}, {customerShippingAddress.zip || "-"}
+                  </p>
+                  <p style={{ margin: 0 }}>
+                    {customerShippingAddress.country || "-"}
+                  </p>
+                </div>
+              </Col>
+            </Row>
+          )}
 
           <Title level={4}>Payment Information</Title>
           <Row gutter={16}>

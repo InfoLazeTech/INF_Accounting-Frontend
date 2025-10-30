@@ -38,7 +38,7 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
     {
       key: "2",
       icon: <Icons.UsergroupAddOutlined />,
-      label: "Customer",
+      label: "Customer/Vendor",
       path: "/customer",
     },
     {
