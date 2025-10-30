@@ -35,6 +35,7 @@ import ViewPaymentMade from "./pages/paymentmade/ViewPaymentMade";
 import CustomerReport from "./pages/customerReport/CustomerReport";
 import VendorReport from "./pages/vendorReport/VendorReport";
 import ViewCustomerReport from "./pages/customerReport/ViewCustomerReport";
+import ViewVendorReport from "./pages/vendorReport/ViewVendorReport";
 
 export default function App() {
   return (
@@ -121,6 +122,7 @@ export default function App() {
 
 
           <Route path="/vendor-report" element={<VendorReport/>} />
+          <Route path="/vendor-report/view/:vendorId"  element={<ViewVendorReport/>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

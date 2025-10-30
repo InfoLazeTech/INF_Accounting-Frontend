@@ -70,13 +70,13 @@ const ViewCustomerReport = () => {
       title: "Total",
       dataIndex: "total",
       key: "total",
-      render: (total) => `$${Number(total).toFixed(2)}`,
+      render: (total) => `₹${Number(total).toFixed(2)}`,
     },
     {
       title: "Paid",
       dataIndex: "amountPaid",
       key: "amountPaid",
-      render: (paid) => `$${Number(paid).toFixed(2)}`,
+      render: (paid) => `₹${Number(paid).toFixed(2)}`,
     },
     {
       title: "Due",
@@ -85,7 +85,7 @@ const ViewCustomerReport = () => {
         const due = record.total - record.amountPaid;
         return (
           <span style={{ color: due > 0 ? "red" : "green" }}>
-            ${due.toFixed(2)}
+            ₹{due.toFixed(2)}
           </span>
         );
       },
@@ -120,14 +120,14 @@ const ViewCustomerReport = () => {
         <Col span={6}>
           <Card>
             <div className="text-sm text-gray-500">Total Sales</div>
-            <div className="text-xl font-bold">${Number(summary.totalSales).toFixed(2)}</div>
+            <div className="text-xl font-bold">₹{Number(summary.totalSales).toFixed(2)}</div>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
             <div className="text-sm text-gray-500">Total Paid</div>
             <div className="text-xl font-bold text-green-600">
-              ${Number(summary.totalPaid).toFixed(2)}
+              ₹{Number(summary.totalPaid).toFixed(2)}
             </div>
           </Card>
         </Col>
@@ -135,7 +135,7 @@ const ViewCustomerReport = () => {
           <Card>
             <div className="text-sm text-gray-500">Total Due</div>
             <div className="text-xl font-bold text-red-600">
-              ${Number(summary.totalDue).toFixed(2)}
+              ₹{Number(summary.totalDue).toFixed(2)}
             </div>
           </Card>
         </Col>

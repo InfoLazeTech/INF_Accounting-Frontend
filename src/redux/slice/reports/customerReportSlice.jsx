@@ -20,9 +20,9 @@ export const getCustomerReports = createAsyncThunk(
 const customerReportSlice = createSlice({
   name: "customerReport",
   initialState: {
-    reports: [],                 // <-- All invoices (list page)
-    selectedCustomerReport: null, // <-- Invoices + summary for ONE customer (view page)
-    summary: {                   // <-- Global summary (list page)
+    reports: [],                 
+    selectedCustomerReport: null, 
+    summary: {             
       totalSales: 0,
       totalPaid: 0,
       totalDue: 0,
@@ -52,7 +52,6 @@ const customerReportSlice = createSlice({
         const { data } = action.payload;
         const { customerId } = action.meta.arg || {};
 
-        // ---- 1. Global list (no customerId) ----
         if (!customerId) {
           const allInvoices = [];
           data.customers?.forEach((cust) => {
@@ -81,8 +80,6 @@ const customerReportSlice = createSlice({
             totalInvoices: s.totalInvoices || 0,
           };
         }
-
-        // ---- 2. Single-customer view (customerId present) ----
         else {
           const customer = data.customers?.[0];
           if (!customer) {

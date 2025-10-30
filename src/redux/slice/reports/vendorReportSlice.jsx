@@ -1,4 +1,4 @@
-// src/redux/slice/report/vendorReportSlice.js
+// src/redux/slice/reports/vendorReportSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import reportService from "./reportService";
 import { toast } from "react-toastify";
@@ -7,12 +7,8 @@ export const getVendorReports = createAsyncThunk(
   "vendorReport/getVendorReports",
   async (payload, thunkAPI) => {
     try {
-      const reportResponse = await reportService.getPurchaseReport(payload);
-      const summaryResponse = await reportService.getPurchaseSummary(payload);
-      return {
-        ...reportResponse,
-        summary: summaryResponse.data,
-      };
+      const response = await reportService.getPurchaseReport(payload);
+      return response; 
     } catch (err) {
       const message = err.response?.data?.message || err.message;
       toast.error(message);
@@ -24,27 +20,41 @@ export const getVendorReports = createAsyncThunk(
 const vendorReportSlice = createSlice({
   name: "vendorReport",
   initialState: {
-    reports: [],
-    summary: {},
+    vendors: [],
+    selectedVendorReport: null, // For /view/:vendorId
+    summary: {
+      totalVendors: 0,
+      totalBills: 0,
+      totalAmount: 0,
+      totalPaid: 0,
+      totalPending: 0,
+      totalPaymentsMade: 0,
+      netAmount: 0,
+      averageBillAmount: 0,
+    },
     loading: false,
     error: null,
     pagination: {
-      currentPage: 1,
-      totalPages: 1,
+      current: 1,
       limit: 10,
       totalCount: 0,
     },
   },
   reducers: {
     resetVendorReport: (state) => {
-      state.reports = [];
-      state.summary = {};
-      state.pagination = {
-        currentPage: 1,
-        totalPages: 1,
-        limit: 10,
-        totalCount: 0,
+      state.vendors = [];
+      state.selectedVendorReport = null;
+      state.summary = {
+        totalVendors: 0,
+        totalBills: 0,
+        totalAmount: 0,
+        totalPaid: 0,
+        totalPending: 0,
+        totalPaymentsMade: 0,
+        netAmount: 0,
+        averageBillAmount: 0,
       };
+      state.pagination = { current: 1, limit: 10, totalCount: 0 };
       state.error = null;
     },
   },
@@ -54,20 +64,81 @@ const vendorReportSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
+
       .addCase(getVendorReports.fulfilled, (state, action) => {
         state.loading = false;
-        state.reports = action.payload.data?.bills || [];
-        state.summary = action.payload.summary || {};
-        state.pagination = {
-          currentPage: action.payload.extras?.currentPage || 1,
-          totalPages: action.payload.extras?.totalPages || 1,
-          limit: action.payload.extras?.limit || 10,
-          totalCount: action.payload.extras?.totalCount || 0,
-        };
+        const { data } = action.payload;
+        const { vendorId } = action.meta.arg || {};
+        if (!vendorId) {
+          state.vendors = data.vendors || [];
+
+          const s = data.summary || {};
+          state.summary = {
+            totalVendors: s.totalVendors || 0,
+            totalBills: s.totalBills || 0,
+            totalAmount: s.totalAmount || 0,
+            totalPaid: s.totalPaid || 0,
+            totalPending: s.totalPending || 0,
+            totalPaymentsMade: s.totalPaymentsMade || 0,
+            netAmount: s.netAmount || 0,
+            averageBillAmount: s.averageBillAmount || 0,
+          };
+
+          const { page = 1, limit = 10 } = action.meta.arg || {};
+          state.pagination = {
+            current: parseInt(page),
+            limit: parseInt(limit),
+            totalCount: data.vendors?.length || 0,
+          };
+
+          state.selectedVendorReport = null; 
+        }
+        else {
+          const vendor = data.vendors?.[0];
+          if (!vendor) {
+            state.selectedVendorReport = null;
+            state.vendors = [];
+            return;
+          }
+          const bills = vendor.bills?.map((b) => ({
+            key: b.billId,
+            billNumber: b.billNumber,
+            billDate: b.billDate,
+            dueDate: b.dueDate,
+            totalAmount: b.totalAmount,
+            paidAmount: b.paidAmount,
+            remainingAmount: b.remainingAmount,
+            status: (b.paymentStatus || b.status || "draft").toLowerCase(),
+          })) || [];
+          const venSummary = vendor.summary || {};
+
+          state.selectedVendorReport = {
+            vendor: {
+              _id: vendor.vendorId,
+              companyName: vendor.vendorDetails?.companyName || vendor.vendorName || "Unknown",
+              email: vendor.vendorDetails?.email || "",
+              phone: vendor.vendorDetails?.phone || "",
+              contactPerson: vendor.vendorDetails?.contactPerson || "",
+            },
+            bills,
+            payments: vendor.payments || [],
+            summary: {
+              totalBillAmount: venSummary.totalBillAmount || 0,
+              totalPaidAmount: venSummary.totalPaidAmount || 0,
+              totalRemainingAmount: venSummary.totalRemainingAmount || 0,
+              totalPaymentAmount: venSummary.totalPaymentAmount || 0,
+              netAmountDue: venSummary.netAmountDue || 0,
+            },
+          };
+          state.vendors = [vendor];
+        }
       })
+
       .addCase(getVendorReports.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+        state.vendors = [];
+        state.selectedVendorReport = null;
       });
   },
 });

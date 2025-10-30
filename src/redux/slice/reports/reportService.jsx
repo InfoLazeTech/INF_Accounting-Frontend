@@ -1,9 +1,6 @@
-// src/redux/service/reportService.js
+
 import api from "../../axiosconfig";
 
-/**
- * GET /report/sales
- */
 const getSalesReport = async (payload) => {
   const {
     companyId,
@@ -18,8 +15,8 @@ const getSalesReport = async (payload) => {
 
   const queryParams = new URLSearchParams({
     companyId,
-    page: page,
-    limit: limit,
+    page,
+    limit 
   });
 
   if (search) queryParams.append("search", search);
@@ -32,9 +29,7 @@ const getSalesReport = async (payload) => {
   return res.data;
 };
 
-/**
- * GET /report/sales/summary
- */
+
 const getSalesSummary = async (payload) => {
   const {
     companyId,
@@ -55,9 +50,7 @@ const getSalesSummary = async (payload) => {
   return res.data;
 };
 
-/**
- * GET /report/purchase
- */
+
 const getPurchaseReport = async (payload) => {
   const {
     companyId,
@@ -86,9 +79,7 @@ const getPurchaseReport = async (payload) => {
   return res.data;
 };
 
-/**
- * GET /report/purchase/summary
- */
+
 const getPurchaseSummary = async (payload) => {
   const {
     companyId,

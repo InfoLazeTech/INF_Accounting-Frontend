@@ -1,21 +1,14 @@
-// src/pages/reports/CustomerReport.jsx
 import { useState, useEffect } from "react";
-import {
-  Card,
-  Row,
-  Col,
-  Button,
-  Space,
-  Tag,
-  DatePicker,
-  Skeleton,
-} from "antd";
+import { Card, Row, Col, Button, Space, Tag, DatePicker, Skeleton } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import CustomTable from "../../component/commonComponent/CustomTable";
 import Icons from "../../assets/icon";
 import { useDispatch, useSelector } from "react-redux";
-import { getCustomerReports, resetCustomerReport } from "../../redux/slice/reports/customerReportSlice";
-import { filteredURLParams } from "../../utlis/services";
+import {
+  getCustomerReports,
+  resetCustomerReport,
+} from "../../redux/slice/reports/customerReportSlice";
+import { filteredURLParams, getQueryParams } from "../../utlis/services";
 import FilterInput from "../../component/commonComponent/FilterInput";
 import { filterInputEnum } from "../../utlis/constants";
 import dayjs from "dayjs";
@@ -39,27 +32,32 @@ const CustomerReport = () => {
   );
   const { companyId } = useSelector((state) => state.auth);
 
-  // Fetch reports
   const fetchReports = (signal) => {
     const page = parseInt(searchParams.get("page")) || 1;
-    const limit = parseInt(searchParams.get("limit")) || 10;
+    const pageSize = parseInt(searchParams?.get("limit")) || pagination.limit;
 
-    const payload = {
-      companyId,
-      page,
-      limit,
-      search: filter.search || undefined,
-      customerId: filter.customerId || undefined,
-      startDate: filter.startDate || undefined,
-      endDate: filter.endDate || undefined,
-    };
+    let payload = getQueryParams(window.location.href);
 
-    // Remove undefined/null/empty
-    const cleanPayload = Object.fromEntries(
-      Object.entries(payload).filter(([_, v]) => v != null && v !== "")
-    );
+    if (Object.keys(payload)?.length <= 0) {
+      payload = {
+        companyId,
+        page,
+        limit: pageSize,
+        search: filter.search || undefined,
+        customerId: filter.customerId || undefined,
+        startDate: filter.startDate || undefined,
+        endDate: filter.endDate || undefined,
+      };
+    }
 
-    dispatch(getCustomerReports({ ...cleanPayload, signal }));
+    if (!payload?.companyId) {
+      payload = {
+        ...payload,
+        companyId,
+      };
+    }
+
+    dispatch(getCustomerReports({ ...payload }));
   };
 
   useEffect(() => {
@@ -68,25 +66,25 @@ const CustomerReport = () => {
     return () => controller.abort();
   }, [dispatch, companyId, searchParams]);
 
-  // Update URL params
   const updateUrlParams = (newParams) => {
     const params = new URLSearchParams(searchParams);
-    Object.entries(newParams).forEach(([key, value]) => {
-      if (value) params.set(key, value);
-      else params.delete(key);
-    });
-    setSearchParams(params);
+    const filterParams = filteredURLParams(params, newParams);
+    setSearchParams(filterParams);
   };
 
   const handleSearch = () => {
+    const searchValue = filter.search ? String(filter.search) : "";
+
     updateUrlParams({
+      companyId,
       page: 1,
       limit: 10,
-      search: filter.search,
+      search: searchValue,
       customerId: filter.customerId,
       startDate: filter.startDate,
       endDate: filter.endDate,
     });
+
   };
 
   const handleDateChange = (dates) => {
@@ -108,7 +106,14 @@ const CustomerReport = () => {
       startDate: "",
       endDate: "",
     });
-    updateUrlParams({ page: 1, limit: 10 });
+    updateUrlParams({
+      page: 1,
+      limit: 10,
+      search: "",
+      customerId: "",
+      startDate: "",
+      endDate: "",
+    });
   };
 
   const handlePaginationChange = (page, pageSize) => {
@@ -119,20 +124,26 @@ const CustomerReport = () => {
       title: "Invoice #",
       dataIndex: "invoiceNumber",
       key: "invoiceNumber",
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
     },
     {
       title: "Date",
       dataIndex: "invoiceDate",
       key: "invoiceDate",
       render: (date) => dayjs(date).format("DD MMM YYYY"),
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
     },
     {
       title: "Customer",
       dataIndex: ["customer", "companyName"],
       key: "companyName",
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
     },
     {
       title: "Status",
@@ -145,21 +156,27 @@ const CustomerReport = () => {
         else if (status === "sent") color = "blue";
         return <Tag color={color}>{(status || "draft").toUpperCase()}</Tag>;
       },
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
     },
     {
       title: "Total",
       dataIndex: "total",
       key: "total",
-      render: (total) => `$${Number(total).toFixed(2)}`,
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
+      render: (total) => `₹${Number(total).toFixed(2)}`,
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
     },
     {
       title: "Paid",
       dataIndex: "amountPaid",
       key: "amountPaid",
-      render: (paid) => `$${Number(paid).toFixed(2)}`,
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
+      render: (paid) => `₹${Number(paid).toFixed(2)}`,
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
     },
     {
       title: "Due",
@@ -168,11 +185,13 @@ const CustomerReport = () => {
         const due = record.total - record.amountPaid;
         return (
           <span style={{ color: due > 0 ? "red" : "green", fontWeight: 500 }}>
-            ${due.toFixed(2)}
+            ₹{due.toFixed(2)}
           </span>
         );
       },
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
     },
     {
       title: "Action",
@@ -183,11 +202,15 @@ const CustomerReport = () => {
             type="default"
             size="small"
             icon={<Icons.EyeOutlined />}
-            onClick={() => navigate(`/customer-report/view/${record.customer._id}`)}
+            onClick={() =>
+              navigate(`/customer-report/view/${record.customer._id}`)
+            }
           />
         </Space>
       ),
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
     },
   ];
 
@@ -213,8 +236,6 @@ const CustomerReport = () => {
           </Col>
         </Row>
       </Card>
-
-      {/* Summary Stats */}
       {loading ? (
         <Row gutter={16} style={{ marginBottom: 16 }}>
           {[1, 2, 3, 4].map((i) => (
@@ -231,7 +252,7 @@ const CustomerReport = () => {
             <Card>
               <div className="text-sm text-gray-500">Total Sales</div>
               <div className="text-2xl font-bold">
-                ${Number(summary.totalSales).toFixed(2)}
+                ₹{Number(summary.totalSales).toFixed(2)}
               </div>
             </Card>
           </Col>
@@ -239,7 +260,7 @@ const CustomerReport = () => {
             <Card>
               <div className="text-sm text-gray-500">Paid</div>
               <div className="text-2xl font-bold text-green-600">
-                ${Number(summary.totalPaid).toFixed(2)}
+                ₹{Number(summary.totalPaid).toFixed(2)}
               </div>
             </Card>
           </Col>
@@ -247,7 +268,7 @@ const CustomerReport = () => {
             <Card>
               <div className="text-sm text-gray-500">Due</div>
               <div className="text-2xl font-bold text-red-600">
-                ${Number(summary.totalDue).toFixed(2)}
+                ₹{Number(summary.totalDue).toFixed(2)}
               </div>
             </Card>
           </Col>
@@ -259,8 +280,6 @@ const CustomerReport = () => {
           </Col>
         </Row>
       )}
-
-      {/* Filters */}
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={8}>
@@ -315,11 +334,10 @@ const CustomerReport = () => {
           loading={loading}
           columns={columns}
           pagination={{
-            current: pagination.current,
-            pageSize: pagination.limit,
+            current: parseInt(searchParams?.get("page")) || 1,
+            pageSize: parseInt(searchParams?.get("limit")) || 10,
             total: pagination.totalCount,
             onChange: handlePaginationChange,
-            showSizeChanger: true,
           }}
         />
       </Card>
