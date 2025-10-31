@@ -25,7 +25,9 @@ import {
   updateBill,
 } from "../../redux/slice/bill/billSlice";
 import { getItem } from "../../redux/slice/item/itemSlice";
-import { getCustomersVendors } from "../../redux/slice/customer/customerVendorSlice";
+// import { getCustomersVendors } from "../../redux/slice/customer/customerVendorSlice";
+
+import { getVendorDropdown } from "../../redux/slice/customer/customerVendorSlice";
 import { getCompany } from "../../redux/slice/company/companySlice";
 
 const { Title } = Typography;
@@ -39,6 +41,10 @@ const AddBill = () => {
   const { bill, loading, postLoading } = useSelector((state) => state.bill);
   const { items: itemList } = useSelector((state) => state.item);
   const { customers } = useSelector((state) => state.customerVendor);
+
+  const { dropdownVendors, dropLoading } = useSelector(
+    (state) => state.customerVendor
+  );
 
   const { companyData } = useSelector((state) => state.company);
   const [items, setItems] = useState([
@@ -64,6 +70,7 @@ const AddBill = () => {
   const [vendorState, setVendorState] = useState("");
   const [companyState, setCompanyState] = useState("");
   const [isSameState, setIsSameState] = useState(true);
+  const [vendorShippingAddress, setVendorShippingAddress] = useState({});
 
   // Fetch bill data for editing
   useEffect(() => {
@@ -76,7 +83,7 @@ const AddBill = () => {
   useEffect(() => {
     if (companyId) {
       dispatch(getItem({ companyId }));
-      dispatch(getCustomersVendors({ companyId }));
+      dispatch(getVendorDropdown({ companyId }));
       dispatch(getCompany(companyId));
       if (billId) {
         dispatch(getBillById({ companyId, billId }));
@@ -135,17 +142,24 @@ const AddBill = () => {
       setIsSameState(vendorState === companyState);
     }
   }, [vendorState, companyState]);
-  // Handle vendor selection
-  const handleVendorSelect = (value) => {
-    const selected = customers.find((v) => v._id === value);
-    if (!selected) return;
-    setSelectedVendorId(selected._id);
-    form.setFieldsValue({
-      vendorName: selected.companyName || "",
-    });
-    setVendorState(
-      selected.billingAddress?.state || selected.shippingAddress?.state || ""
-    );
+
+  useEffect(() => {
+    if (billId && selectedVendorId) {
+      handleVendorSelect(selectedVendorId);
+    }
+  }, [billId, selectedVendorId]);
+
+  const handleVendorSelect = (vendorId) => {
+    setSelectedVendorId(vendorId);
+
+    const selectedVendor = dropdownVendors.find((v) => v._id === vendorId);
+    if (!selectedVendor) return;
+
+    const shipping = selectedVendor.shippingAddress || billing;
+    setVendorShippingAddress(shipping);
+
+    setVendorState(shipping.state || billing.state || "");
+    form.setFieldsValue({ vendorName: selectedVendor.companyName });
   };
 
   // Handle item selection
@@ -293,10 +307,10 @@ const AddBill = () => {
         lineTotal: item.lineTotal, // Subtotal only
       })),
       totals: {
-       subtotal: totals.subtotal,
-      sgst: isSameState ? totals.sgst : 0,
-      cgst: isSameState ? totals.cgst : 0,
-      igst: isSameState ? 0 : totals.igst,
+        subtotal: totals.subtotal,
+        sgst: isSameState ? totals.sgst : 0,
+        cgst: isSameState ? totals.cgst : 0,
+        igst: isSameState ? 0 : totals.igst,
         totalTax: totals.totalTax,
         shippingCharges: extraCharges.shipping,
         otherCharges: extraCharges.other,
@@ -448,18 +462,18 @@ const AddBill = () => {
                   label="Vendor Name"
                   placeholder="Select vendor"
                   options={
-                    customers && customers.length > 0
-                      ? customers.map((vendor) => ({
-                          label: vendor.companyName,
-                          value: vendor._id,
-                        }))
+                    dropdownVendors && dropdownVendors.length > 0
+                      ? dropdownVendors.map((vendor) => ({
+                        label: vendor.companyName || vendor.name,
+                        value: vendor._id,
+                      }))
                       : [
-                          {
-                            label: "No vendors available",
-                            value: "",
-                            disabled: true,
-                          },
-                        ]
+                        {
+                          label: "No vendors available",
+                          value: "",
+                          disabled: true,
+                        },
+                      ]
                   }
                   rules={[
                     { required: true, message: "Please select a vendor" },
@@ -467,17 +481,17 @@ const AddBill = () => {
                   onChange={handleVendorSelect}
                 />
               </Col>
-              <Col span={8}>
-                <CustomInput
-                  type="text"
-                  name="billNumber"
-                  label="Bill Number"
-                  placeholder="Enter bill number"
-                  rules={[
-                    { required: true, message: "Please enter bill number" },
-                  ]}
-                />
-              </Col>
+              {billId && (
+                <Col span={8}>
+                  <CustomInput
+                    type="text"
+                    name="billNumber"
+                    label="Bill Number"
+                    placeholder="Enter bill number"
+                    disabled={true}
+                  />
+                </Col>
+              )}
               <Col span={8}>
                 <CustomInput
                   type="date"
@@ -490,6 +504,27 @@ const AddBill = () => {
                 />
               </Col>
             </Row>
+            {selectedVendorId && (
+              <Row gutter={0} className="mb-5">
+                <Col span={12}>
+                  <div style={{ fontSize: 14, lineHeight: "20px" }}>
+                    <strong style={{ display: "block", marginBottom: 4 }}>Shipping Address</strong>
+
+                    <div>
+                      <p style={{ margin: 0 }}>
+                        {vendorShippingAddress.street || "-"}, {vendorShippingAddress.city || "-"}
+                      </p>
+                      <p style={{ margin: "2px 0" }}>
+                        {vendorShippingAddress.state || "-"}, {vendorShippingAddress.zip || "-"}
+                      </p>
+                      <p style={{ margin: 0 }}>
+                        {vendorShippingAddress.country || "-"}
+                      </p>
+                    </div>
+                  </div>
+                </Col>
+              </Row>
+            )}
             <Row gutter={16}>
               <Col span={8}>
                 <CustomInput

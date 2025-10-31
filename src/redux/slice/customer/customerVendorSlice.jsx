@@ -5,13 +5,12 @@ import { toast } from "react-toastify";
 // Add
 export const addCustomerVendor = createAsyncThunk(
   "customerVendor/add",
-  async (data, thunkAPI) => {
+  async (data) => {
     try {
-      return await customerVendorService.createCustomerVendor(data);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await customerVendorService.createCustomerVendor(data);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -19,13 +18,12 @@ export const addCustomerVendor = createAsyncThunk(
 // Get All
 export const getCustomersVendors = createAsyncThunk(
   "customerVendor/getAll",
-  async (paylod, thunkAPI) => {
+  async (paylod) => {
     try {
-      return await customerVendorService.getAllCustomerVendors(paylod);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await customerVendorService.getAllCustomerVendors(paylod);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -33,13 +31,12 @@ export const getCustomersVendors = createAsyncThunk(
 // Get By ID
 export const getCustomerVendorById = createAsyncThunk(
   "customerVendor/getById",
-  async (id, thunkAPI) => {
+  async (id) => {
     try {
-      return await customerVendorService.getCustomerVendorById(id);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await customerVendorService.getCustomerVendorById(id);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -47,11 +44,12 @@ export const getCustomerVendorById = createAsyncThunk(
 // Update
 export const updateCustomerVendor = createAsyncThunk(
   "customerVendor/update",
-  async ({ customerId, data }, thunkAPI) => {
+  async ({ customerId, data }) => {
     try {
-      return await customerVendorService.updateCustomerVendor(customerId, data);
+      const response = await customerVendorService.updateCustomerVendor(customerId, data);
+      return response;
     } catch (err) {
-      return thunkAPI.rejectWithValue(
+      retur.rejectWithValue(
         err.response?.data?.message || err?.message
       );
     }
@@ -61,41 +59,40 @@ export const updateCustomerVendor = createAsyncThunk(
 // Delete
 export const deleteCustomerVendor = createAsyncThunk(
   "customerVendor/delete",
-  async (id, thunkAPI) => {
+  async (id) => {
     try {
-      return await customerVendorService.deleteCustomerVendor(id);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await customerVendorService.deleteCustomerVendor(id);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const getCustomerDropdown = createAsyncThunk(
   "customerVendor/getCustomerDropdown",
-  async (payload, { rejectWithValue }) => {
+  async (payload) => {
     try {
       const response = await customerVendorService.getCustomerDropdown(
         payload
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const getVendorDropdown = createAsyncThunk(
   "customerVendor/getVendorDropdown",
-  async (payload, { rejectWithValue }) => {
+  async (payload) => {
     try {
       const response = await customerVendorService.getVendorDropdown(
         payload
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -130,23 +127,20 @@ const customerVendorSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Add
       .addCase(addCustomerVendor.pending, (state) => {
         state.postLoading = true;
       })
       .addCase(addCustomerVendor.fulfilled, (state, action) => {
         state.postLoading = false;
-        state.customers.push(action.payload);
-        state.message = action.payload?.message;
+        // state.customers.push(action.payload);
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(addCustomerVendor.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload.error.message;
+        state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // Get All
       .addCase(getCustomersVendors.pending, (state) => {
         state.loading = true;
       })
@@ -162,11 +156,7 @@ const customerVendorSlice = createSlice({
       })
       .addCase(getCustomersVendors.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
-        toast.error(state.error);
       })
-
-      // Get By ID
       .addCase(getCustomerVendorById.pending, (state) => {
         state.loading = true;
       })
@@ -177,10 +167,7 @@ const customerVendorSlice = createSlice({
       })
       .addCase(getCustomerVendorById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
       })
-
-      // Update
       .addCase(updateCustomerVendor.pending, (state) => {
         state.postLoading = true;
       })
@@ -192,29 +179,27 @@ const customerVendorSlice = createSlice({
           (c) => c._id === action.payload._id
         );
         if (index !== -1) state.customers[index] = action.payload;
-        toast.success(action.payload?.message);
+        toast.success(action.payload.message);
       })
       .addCase(updateCustomerVendor.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload.error.message;
+        state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // Delete
       .addCase(deleteCustomerVendor.pending, (state) => {
         state.deleteLoading = true;
       })
       .addCase(deleteCustomerVendor.fulfilled, (state, action) => {
         state.deleteLoading = false;
-        state.customers = state.customers.filter(
-          (c) => c._id !== action.meta.arg
-        );
-        state.message = action.payload?.message;
+        // state.customers = state.customers.filter(
+        //   (c) => c._id !== action.meta.arg
+        // );
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(deleteCustomerVendor.rejected, (state, action) => {
         state.deleteLoading = false;
-        state.error = action.payload.error.message;
+        state.error = action.error.message;
         toast.error(state.error);
       })
       .addCase(getCustomerDropdown.pending, (state) => {
@@ -228,7 +213,6 @@ const customerVendorSlice = createSlice({
       .addCase(getCustomerDropdown.rejected, (state, action) => {
         state.dropLoading = false;
         state.dropdownCustomers = [];
-        state.error = action.payload?.message;
       })
       .addCase(getVendorDropdown.pending, (state) => {
         state.dropLoading = true;
@@ -241,7 +225,6 @@ const customerVendorSlice = createSlice({
       .addCase(getVendorDropdown.rejected, (state, action) => {
         state.dropLoading = false;
         state.dropdownVendors = [];
-        state.error = action.payload?.message;
       });
   },
 });

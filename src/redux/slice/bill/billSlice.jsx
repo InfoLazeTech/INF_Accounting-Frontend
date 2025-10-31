@@ -2,11 +2,12 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import billService from "./billService";
 import { toast } from "react-toastify";
 
-export const addBill = createAsyncThunk("bill/add", async (data, thunkAPI) => {
+export const addBill = createAsyncThunk("bill/add", async (data) => {
   try {
-    return await billService.createBill(data);
-  } catch (err) {
-    return thunkAPI.rejectWithValue(err.response?.data?.message || err.message);
+    const response = await billService.createBill(data);
+    return response;
+  } catch (error) {
+    throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
   }
 });
 
@@ -14,11 +15,10 @@ export const getBills = createAsyncThunk(
   "bill/getAll",
   async (payload, thunkAPI) => {
     try {
-      return await billService.getAllBills(payload);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await billService.getAllBills(payload);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -27,11 +27,10 @@ export const getBillById = createAsyncThunk(
   "bill/getById",
   async (payload, thunkAPI) => {
     try {
-      return await billService.getBillById(payload);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await billService.getBillById(payload);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -40,11 +39,10 @@ export const updateBill = createAsyncThunk(
   "bill/update",
   async ({ billId, data }, thunkAPI) => {
     try {
-      return await billService.updateBill(billId, data);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await billService.updateBill(billId, data);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -53,11 +51,10 @@ export const deleteBill = createAsyncThunk(
   "bill/delete",
   async (billId, thunkAPI) => {
     try {
-      return await billService.deleteBill(billId);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await billService.deleteBill(billId);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -66,11 +63,10 @@ export const updateBillStatus = createAsyncThunk(
   "bill/updateStatus",
   async ({ billId, data }, thunkAPI) => {
     try {
-      return await billService.updateBillStatus(billId, data);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await billService.updateBillStatus(billId, data);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -79,11 +75,10 @@ export const recordPayment = createAsyncThunk(
   "bill/recordPayment",
   async ({ billId, data }, thunkAPI) => {
     try {
-      return await billService.recordPayment(billId, data);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await billService.recordPayment(billId, data);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -92,11 +87,10 @@ export const getBillSummary = createAsyncThunk(
   "bill/summary",
   async (payload, thunkAPI) => {
     try {
-      return await billService.getBillSummary(payload);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await billService.getBillSummary(payload);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -104,11 +98,10 @@ export const getOverdueBills = createAsyncThunk(
   "bill/overdue",
   async (payload, thunkAPI) => {
     try {
-      return await billService.getOverdueBills(payload);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await billService.getOverdueBills(payload);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -154,12 +147,12 @@ const billSlice = createSlice({
       .addCase(addBill.fulfilled, (state, action) => {
         state.postLoading = false;
         state.bills.push(action.payload.data);
-        state.message = action.payload?.message;
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(addBill.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload;
+        state.error = action.error.message;
         toast.error(state.error);
       })
       // Get All Bills
@@ -178,10 +171,8 @@ const billSlice = createSlice({
       })
       .addCase(getBills.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
-        toast.error(state.error);
       })
-      
+
       .addCase(getBillById.pending, (state) => {
         state.loading = true;
       })
@@ -191,8 +182,6 @@ const billSlice = createSlice({
       })
       .addCase(getBillById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
-        toast.error(state.error);
       })
       // Update Bill
       .addCase(updateBill.pending, (state) => {
@@ -200,16 +189,12 @@ const billSlice = createSlice({
       })
       .addCase(updateBill.fulfilled, (state, action) => {
         state.postLoading = false;
-        const index = state.bills.findIndex(
-          (b) => b._id === action.payload.data._id
-        );
-        if (index !== -1) state.bills[index] = action.payload.data;
-        state.message = action.payload?.message;
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(updateBill.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload;
+        state.error = action.error.message;
         toast.error(state.error);
       })
       // Delete Bill
@@ -218,13 +203,12 @@ const billSlice = createSlice({
       })
       .addCase(deleteBill.fulfilled, (state, action) => {
         state.deleteLoading = false;
-        state.bills = state.bills.filter((b) => b._id !== action.meta.arg);
-        state.message = action.payload?.message;
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(deleteBill.rejected, (state, action) => {
         state.deleteLoading = false;
-        state.error = action.payload;
+        state.error = action.error.message;
         toast.error(state.error);
       })
       // Update Bill Status
@@ -233,16 +217,12 @@ const billSlice = createSlice({
       })
       .addCase(updateBillStatus.fulfilled, (state, action) => {
         state.postLoading = false;
-        const index = state.bills.findIndex(
-          (b) => b._id === action.payload.data._id
-        );
-        if (index !== -1) state.bills[index] = action.payload.data;
-        state.message = action.payload?.message;
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(updateBillStatus.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload;
+        state.error = action.error.message;
         toast.error(state.error);
       })
       // Record Payment
@@ -251,16 +231,12 @@ const billSlice = createSlice({
       })
       .addCase(recordPayment.fulfilled, (state, action) => {
         state.postLoading = false;
-        const index = state.bills.findIndex(
-          (b) => b._id === action.payload.data._id
-        );
-        if (index !== -1) state.bills[index] = action.payload.data;
-        state.message = action.payload?.message;
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(recordPayment.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload;
+        state.error = action.error.message;
         toast.error(state.error);
       })
       // Get Bill Summary
@@ -273,8 +249,6 @@ const billSlice = createSlice({
       })
       .addCase(getBillSummary.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
-        toast.error(state.error);
       })
       // Get Overdue Bills
       .addCase(getOverdueBills.pending, (state) => {
@@ -286,8 +260,6 @@ const billSlice = createSlice({
       })
       .addCase(getOverdueBills.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
-        toast.error(state.error);
       });
   },
 });

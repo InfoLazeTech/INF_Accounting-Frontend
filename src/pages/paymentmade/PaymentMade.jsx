@@ -8,6 +8,7 @@ import {
   Space,
   message,
   Popconfirm,
+  Select,
 } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -16,6 +17,8 @@ import Icons from "../../assets/icon";
 import { filteredURLParams, getQueryParams } from "../../utlis/services";
 import FilterInput from "../../component/commonComponent/FilterInput";
 import { filterInputEnum } from "../../utlis/constants";
+
+import { getVendorDropdown } from "../../redux/slice/customer/customerVendorSlice";
 
 import {
   deletePaymentMade,
@@ -33,8 +36,12 @@ const PaymentMade = () => {
     (state) => state.paymentMade
   );
 
+  const { dropdownVendors, dropLoading } = useSelector(
+    (state) => state.customerVendor
+  );
   const [filter, setFilter] = useState({
     search: searchParams.get("search") || "",
+    partyId: searchParams.get("partyId") || null,
   });
   const fetchPayment = (signal) => {
     const page = parseInt(searchParams?.get("page")) || 1;
@@ -52,14 +59,22 @@ const PaymentMade = () => {
         companyId,
       };
     }
+    
+    if (filter.partyId) {
+      payload = { ...payload, partyId: filter.partyId };
+    }
 
     dispatch(getAllPaymentMade({ ...payload }));
   };
+    const fetchVendors = (signal) => {
+      dispatch(getVendorDropdown({ companyId, signal }));
+    };
   useEffect(() => {
     const controller = new AbortController();
     fetchPayment(controller.signal);
+     fetchVendors(controller.signal);
     return () => controller.abort();
-  }, [dispatch, companyId, searchParams]);
+  }, [dispatch, companyId, searchParams, filter.partyId]);
 
   const updateUrlParams = (newParams) => {
     const params = new URLSearchParams(searchParams);
@@ -68,27 +83,53 @@ const PaymentMade = () => {
   };
   const handleSearch = () => {
     const searchValue = filter.search ? String(filter.search) : "";
-    updateUrlParams({ companyId, page: 1, limit: 10, search: searchValue });
+     const vendorValue = filter.partyId ? String(filter.partyId) : "";
+    updateUrlParams({
+      companyId,
+      page: 1,
+      limit: 10,
+      search: searchValue,
+      partyId: vendorValue,
+    });
   };
 
   const handleClear = () => {
-    updateUrlParams({ companyId, page: 1, limit: 10, search: "" });
+     updateUrlParams({
+      companyId,
+      page: 1,
+      limit: 10,
+      search: "",
+      partyId: null,
+    });
     setFilter({
       search: "",
     });
   };
 
   const handlePaginationChange = (page, pageSize) => {
-    updateUrlParams({ page, limit: pageSize });
+    updateUrlParams({ page, limit: pageSize, partyId: filter.partyId });
   };
-    const handleDelete = async (recordId) => {
-      try {
-        await dispatch(deletePaymentMade(recordId)).unwrap();
-        fetchPayment();
-      } catch (err) {
-        message.error(err?.message);
-      }
-    };
+  const handleDelete = async (recordId) => {
+    try {
+      await dispatch(deletePaymentMade(recordId)).unwrap();
+      fetchPayment();
+    } catch (err) {
+      message.error(err?.message);
+    }
+  };
+    const handleVendorChange = (value) => {
+    setFilter((prev) => ({ ...prev, partyId: value || "" }));
+
+    // optional: auto-update bills when vendor changes
+    updateUrlParams({
+      companyId,
+      partyId: value || "",
+      page: 1,
+      limit: 10,
+      search: filter.search || "",
+    });
+  };
+
 
   const columns = [
     {
@@ -190,6 +231,7 @@ const PaymentMade = () => {
             okText="Yes"
             okButtonProps={{ loading: deleteLoading }}
             cancelText="No"
+            disabled
             onConfirm={() => handleDelete(record._id)}
           >
             <Button type="default" danger icon={<Icons.DeleteOutlined />} />
@@ -227,20 +269,65 @@ const PaymentMade = () => {
 
       {/* Search / Filter */}
       <Card style={{ marginBottom: 16 }}>
-        <Row gutter={16} align="middle">
-          <Col span={10}>
+        <Row align="middle" justify="space-between" gutter={[16, 16]}>
+          {/* Left Side - Search Input */}
+          <Col flex="auto">
             <FilterInput
-              type={filterInputEnum?.SEARCH}
-              name={"search"}
+              type={filterInputEnum.SEARCH}
+              name="search"
               placeHolder="Search..."
-              value={filter?.search}
+              value={filter.search}
               setFilter={setFilter}
               onSerch={handleSearch}
               onClear={handleClear}
             />
           </Col>
-          <Col span={14} style={{ textAlign: "right" }}>
+
+          {/* Right Side - Select Vendor + Buttons */}
+          <Col>
             <Space>
+              <div className="w-44">
+                <Select
+                  showSearch
+                  placeholder="Select Vendor"
+                  loading={dropLoading}
+                  className="w-full"
+                  value={filter.partyId || undefined}
+                  onChange={handleVendorChange}
+                  allowClear
+                  size="large"
+                  optionFilterProp="label" 
+                  filterOption={(input, option) =>
+                    option?.label?.toLowerCase().includes(input.toLowerCase())
+                  }
+                  dropdownStyle={{ textAlign: "left" }}
+                  style={{ textAlign: "left" }}
+                  options={
+                    dropdownVendors?.length
+                      ? dropdownVendors.map((vendor) => ({
+                          label: vendor.companyName || vendor.name,
+                          value: vendor._id,
+                        }))
+                      : [
+                          {
+                            label: "No vendors available",
+                            value: "",
+                            disabled: true,
+                          },
+                        ]
+                  }
+                />
+              </div>
+
+              <Button
+                type="default"
+                icon={<Icons.ClearOutlined />}
+                size="middle"
+                onClick={handleClear}
+              >
+                Clear All
+              </Button>
+
               <Button
                 type="primary"
                 icon={<Icons.FilterOutlined />}

@@ -5,13 +5,12 @@ import { toast } from "react-toastify";
 // Add
 export const addcategory = createAsyncThunk(
   "category/add",
-  async (data, thunkAPI) => {
+  async (data) => {
     try {
-      return await categoryService.createCategory(data);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await categoryService.createCategory(data);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -19,13 +18,12 @@ export const addcategory = createAsyncThunk(
 // Get All
 export const getcategory = createAsyncThunk(
   "category/getAll",
-  async (payload, thunkAPI) => {
+  async (payload) => {
     try {
-      return await categoryService.getAllCategory(payload);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await categoryService.getAllCategory(payload);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -33,13 +31,12 @@ export const getcategory = createAsyncThunk(
 // Get By ID
 export const getCategoryById = createAsyncThunk(
   "category/getById",
-  async (id, thunkAPI) => {
+  async (id) => {
     try {
-      return await categoryService.getCategoryById(id);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await categoryService.getCategoryById(id);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -47,13 +44,12 @@ export const getCategoryById = createAsyncThunk(
 // Update
 export const updateCategory = createAsyncThunk(
   "category/update",
-  async ({ id, data }, thunkAPI) => {
+  async ({ id, data }) => {
     try {
-      return await categoryService.updateCategory(id, data);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await categoryService.updateCategory(id, data);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -61,13 +57,12 @@ export const updateCategory = createAsyncThunk(
 // Delete
 export const deleteCategory = createAsyncThunk(
   "category/delete",
-  async (id, thunkAPI) => {
+  async (id) => {
     try {
-      return await categoryService.deleteCategory(id);
-    } catch (err) {
-      return thunkAPI.rejectWithValue(
-        err.response?.data?.message || err.message
-      );
+      const response = await categoryService.deleteCategory(id);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -92,7 +87,6 @@ const categorySlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Add
       .addCase(addcategory.pending, (state) => {
         state.postLoading = true;
       })
@@ -100,16 +94,12 @@ const categorySlice = createSlice({
         state.postLoading = false;
         state.message = action.payload.message;
         toast.success(state.message);
-
-        // state.categorys.push(action.payload);
       })
       .addCase(addcategory.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload.error.message;
+        state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // Get All
       .addCase(getcategory.pending, (state) => {
         state.loading = true;
       })
@@ -119,11 +109,7 @@ const categorySlice = createSlice({
       })
       .addCase(getcategory.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.error.message;
-        toast.error(state.error);
       })
-
-      // Get By ID
       .addCase(getCategoryById.pending, (state) => {
         state.loading = true;
       })
@@ -133,11 +119,7 @@ const categorySlice = createSlice({
       })
       .addCase(getCategoryById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.error.message;
-        toast.error(state.error);
       })
-
-      // Update
       .addCase(updateCategory.pending, (state) => {
         state.postLoading = true;
       })
@@ -146,17 +128,12 @@ const categorySlice = createSlice({
         state.category = action.payload;
         state.message = action.payload.message;
         toast.success(state.message);
-
-        // const index = state.category.findIndex((c) => c._id === action.payload._id);
-        // if (index !== -1) state.category[index] = action.payload;
       })
       .addCase(updateCategory.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload.error.message;
+        state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // Delete
       .addCase(deleteCategory.pending, (state) => {
         state.loading = true;
       })
@@ -170,7 +147,7 @@ const categorySlice = createSlice({
       })
       .addCase(deleteCategory.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.error.message;
+        state.error = action.error.message;
         toast.error(state.error);
       });
   },

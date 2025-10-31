@@ -6,34 +6,34 @@ import { toast } from "react-toastify";
 // Async Thunks
 export const createPaymentReceived = createAsyncThunk(
   "paymentReceived/createPaymentReceived",
-  async (paymentData, { rejectWithValue }) => {
+  async (paymentData) => {
     try {
       const response = await paymentReceivedService.createPaymentReceived(
         paymentData
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 export const getAllPaymentReceived = createAsyncThunk(
   "paymentReceived/getAllPaymentReceived",
-  async (payload, { rejectWithValue }) => {
+  async (payload) => {
     try {
       const response = await paymentReceivedService.getAllPaymentReceived(
         payload
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const getPaymentReceivedById = createAsyncThunk(
   "paymentReceived/getPaymentReceivedById",
-  async ({ paymentId, companyId }, { rejectWithValue }) => {
+  async ({ paymentId, companyId }) => {
     try {
       const response = await paymentReceivedService.getPaymentReceivedById(
         paymentId,
@@ -41,14 +41,14 @@ export const getPaymentReceivedById = createAsyncThunk(
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const updatePaymentReceived = createAsyncThunk(
   "paymentReceived/updatePaymentReceived",
-  async ({ paymentId, paymentData }, { rejectWithValue }) => {
+  async ({ paymentId, paymentData }) => {
     try {
       const response = await paymentReceivedService.updatePaymentReceived(
         paymentId,
@@ -56,45 +56,45 @@ export const updatePaymentReceived = createAsyncThunk(
       );
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const deletePaymentReceived = createAsyncThunk(
   "paymentReceived/deletePaymentReceived",
-  async (paymentId, { rejectWithValue }) => {
+  async (paymentId) => {
     try {
       const response = await paymentReceivedService.deletePaymentReceived(
         paymentId
       );
       return { paymentId, ...response };
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const getPaymentSummary = createAsyncThunk(
   "paymentReceived/getPaymentSummary",
-  async (payload, { rejectWithValue }) => {
+  async (payload) => {
     try {
       const response = await paymentReceivedService.getPaymentSummary(payload);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
 
 export const getPaymentsByParty = createAsyncThunk(
   "paymentReceived/getPaymentsByParty",
-  async (payload, { rejectWithValue }) => {
+  async (payload) => {
     try {
       const response = await paymentReceivedService.getPaymentsByParty(payload);
       return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || error.message);
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
     }
   }
 );
@@ -136,7 +136,6 @@ const paymentReceivedSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    // CREATE
     builder
       .addCase(createPaymentReceived.pending, (state) => {
         state.postLoading = true;
@@ -144,17 +143,15 @@ const paymentReceivedSlice = createSlice({
       })
       .addCase(createPaymentReceived.fulfilled, (state, action) => {
         state.postLoading = false;
-        state.payments.push(action.payload.data);
-        state.message = action.payload?.message;
+        // state.payments.push(action.payload.data);
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(createPaymentReceived.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload?.message;
+        state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // GET ALL
       .addCase(getAllPaymentReceived.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -168,10 +165,7 @@ const paymentReceivedSlice = createSlice({
       .addCase(getAllPaymentReceived.rejected, (state, action) => {
         state.loading = false;
         state.payments = [];
-        state.error = action.payload?.message || "Failed to fetch payments";
       })
-
-      // GET BY ID
       .addCase(getPaymentReceivedById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -183,10 +177,7 @@ const paymentReceivedSlice = createSlice({
       })
       .addCase(getPaymentReceivedById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || "Failed to fetch payment";
       })
-
-      // UPDATE
       .addCase(updatePaymentReceived.pending, (state) => {
         state.postLoading = true;
         state.error = null;
@@ -194,32 +185,28 @@ const paymentReceivedSlice = createSlice({
       .addCase(updatePaymentReceived.fulfilled, (state, action) => {
         state.postLoading = false;
         state.payment = action.payload.data;
-        state.message = action.payload?.message;
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(updatePaymentReceived.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload?.message;
+        state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // DELETE
       .addCase(deletePaymentReceived.pending, (state) => {
         state.postLoading = true;
         state.error = null;
       })
       .addCase(deletePaymentReceived.fulfilled, (state, action) => {
         state.postLoading = false;
-        state.message = action.payload?.message;
+        state.message = action.payload.message;
         toast.success(state.message);
       })
       .addCase(deletePaymentReceived.rejected, (state, action) => {
         state.postLoading = false;
-        state.error = action.payload?.message;
+        state.error = action.error.message;
         toast.error(state.error);
       })
-
-      // SUMMARY
       .addCase(getPaymentSummary.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -231,10 +218,7 @@ const paymentReceivedSlice = createSlice({
       })
       .addCase(getPaymentSummary.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload?.message || "Failed to fetch summary";
       })
-
-      // PARTY PAYMENTS
       .addCase(getPaymentsByParty.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -247,8 +231,6 @@ const paymentReceivedSlice = createSlice({
       .addCase(getPaymentsByParty.rejected, (state, action) => {
         state.loading = false;
         state.partyPayments = [];
-        state.error =
-          action.payload?.message || "Failed to fetch party payments";
       });
   },
 });

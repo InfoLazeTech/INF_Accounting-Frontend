@@ -9,8 +9,14 @@ import {
   updateCustomerVendor,
 } from "../../redux/slice/customer/customerVendorSlice";
 import { useEffect } from "react";
+import { stateSelectionOptions } from "../../utlis/state";
 
 const { Title } = Typography;
+
+const stateOptions = stateSelectionOptions.map((item) => ({
+  value: item.value,
+  label: item.label,
+}));
 
 const AddCustomer = () => {
   const [form] = Form.useForm();
@@ -129,7 +135,7 @@ const AddCustomer = () => {
           </Col>
           <Col>
             <Title level={3} style={{ margin: 0 }}>
-              {customerId ? "Edit Customer" : "Add Customer"}
+              {customerId ? "Edit Customer / Vendor" : "Add Customer / Vendor"}
             </Title>
           </Col>
         </Row>
@@ -291,10 +297,11 @@ const AddCustomer = () => {
               </Col>
               <Col span={8}>
                 <CustomInput
-                  type="text"
+                  type="select"
                   name={["billingAddress", "state"]}
                   label="State"
-                  placeholder="Enter state"
+                  placeholder="Select state"
+                  options={stateOptions}
                   rules={[
                     { required: true, message: "Please enter State Name" },
                   ]}
@@ -361,10 +368,11 @@ const AddCustomer = () => {
               </Col>
               <Col span={8}>
                 <CustomInput
-                  type="text"
+                  type="select"
                   name={["shippingAddress", "state"]}
                   label="State"
-                  placeholder="Enter state"
+                  placeholder="Select state"
+                  options={stateOptions}
                   rules={[
                     { required: true, message: "Please enter State Name" },
                   ]}
