@@ -1,21 +1,14 @@
-// src/pages/reports/CustomerReport.jsx
 import { useState, useEffect } from "react";
-import {
-  Card,
-  Row,
-  Col,
-  Button,
-  Space,
-  Tag,
-  DatePicker,
-  Skeleton,
-} from "antd";
+import { Card, Row, Col, Button, Space, Tag, DatePicker, Skeleton } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import CustomTable from "../../component/commonComponent/CustomTable";
 import Icons from "../../assets/icon";
 import { useDispatch, useSelector } from "react-redux";
-import { getCustomerReports, resetCustomerReport } from "../../redux/slice/reports/customerReportSlice";
-import { filteredURLParams } from "../../utlis/services";
+import {
+  getCustomerReports,
+  resetCustomerReport,
+} from "../../redux/slice/reports/customerReportSlice";
+import { filteredURLParams, getQueryParams } from "../../utlis/services";
 import FilterInput from "../../component/commonComponent/FilterInput";
 import { filterInputEnum } from "../../utlis/constants";
 import dayjs from "dayjs";
@@ -39,27 +32,32 @@ const CustomerReport = () => {
   );
   const { companyId } = useSelector((state) => state.auth);
 
-  // Fetch reports
   const fetchReports = (signal) => {
     const page = parseInt(searchParams.get("page")) || 1;
-    const limit = parseInt(searchParams.get("limit")) || 10;
+    const pageSize = parseInt(searchParams?.get("limit")) || pagination.limit;
 
-    const payload = {
-      companyId,
-      page,
-      limit,
-      search: filter.search || undefined,
-      customerId: filter.customerId || undefined,
-      startDate: filter.startDate || undefined,
-      endDate: filter.endDate || undefined,
-    };
+    let payload = getQueryParams(window.location.href);
 
-    // Remove undefined/null/empty
-    const cleanPayload = Object.fromEntries(
-      Object.entries(payload).filter(([_, v]) => v != null && v !== "")
-    );
+    if (Object.keys(payload)?.length <= 0) {
+      payload = {
+        companyId,
+        page,
+        limit: pageSize,
+        search: filter.search || undefined,
+        customerId: filter.customerId || undefined,
+        startDate: filter.startDate || undefined,
+        endDate: filter.endDate || undefined,
+      };
+    }
 
-    dispatch(getCustomerReports({ ...cleanPayload, signal }));
+    if (!payload?.companyId) {
+      payload = {
+        ...payload,
+        companyId,
+      };
+    }
+
+    dispatch(getCustomerReports({ ...payload }));
   };
 
   useEffect(() => {
@@ -68,25 +66,25 @@ const CustomerReport = () => {
     return () => controller.abort();
   }, [dispatch, companyId, searchParams]);
 
-  // Update URL params
   const updateUrlParams = (newParams) => {
     const params = new URLSearchParams(searchParams);
-    Object.entries(newParams).forEach(([key, value]) => {
-      if (value) params.set(key, value);
-      else params.delete(key);
-    });
-    setSearchParams(params);
+    const filterParams = filteredURLParams(params, newParams);
+    setSearchParams(filterParams);
   };
 
   const handleSearch = () => {
+    const searchValue = filter.search ? String(filter.search) : "";
+
     updateUrlParams({
+      companyId,
       page: 1,
       limit: 10,
-      search: filter.search,
+      search: searchValue,
       customerId: filter.customerId,
       startDate: filter.startDate,
       endDate: filter.endDate,
     });
+
   };
 
   const handleDateChange = (dates) => {
@@ -109,9 +107,12 @@ const CustomerReport = () => {
       endDate: "",
     });
     updateUrlParams({
-      page: 1, limit: 10, customerId: "",
+      page: 1,
+      limit: 10,
+      search: "",
+      customerId: "",
       startDate: "",
-      endDate: ""
+      endDate: "",
     });
   };
 
@@ -132,7 +133,9 @@ const CustomerReport = () => {
       render: (_, record) => {
         return <Tag color="blue">{record?.invoices?.length}</Tag>;
       },
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
     },
     {
       title: "Total",
@@ -176,7 +179,9 @@ const CustomerReport = () => {
           />
         </Space>
       ),
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
     },
   ];
 
@@ -202,8 +207,6 @@ const CustomerReport = () => {
           </Col>
         </Row>
       </Card>
-
-      {/* Summary Stats */}
       {loading ? (
         <Row gutter={16} style={{ marginBottom: 16 }}>
           {[1, 2, 3, 4].map((i) => (
@@ -248,8 +251,6 @@ const CustomerReport = () => {
           </Col>
         </Row>
       )}
-
-      {/* Filters */}
       <Card style={{ marginBottom: 16 }}>
         <Row gutter={16} align="middle">
           <Col span={8}>
@@ -304,11 +305,10 @@ const CustomerReport = () => {
           loading={loading}
           columns={columns}
           pagination={{
-            current: pagination.current,
-            pageSize: pagination.limit,
+            current: parseInt(searchParams?.get("page")) || 1,
+            pageSize: parseInt(searchParams?.get("limit")) || 10,
             total: pagination.totalCount,
             onChange: handlePaginationChange,
-            showSizeChanger: true,
           }}
         />
       </Card>

@@ -102,7 +102,7 @@ const ViewCustomerReport = () => {
         const due = record?.remainingAmount;
         return (
           <span style={{ color: due > 0 ? "red" : "green" }}>
-            ${due.toFixed(2)}
+            ₹{due.toFixed(2)}
           </span>
         );
       },

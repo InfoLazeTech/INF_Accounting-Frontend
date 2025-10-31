@@ -20,9 +20,9 @@ export const getCustomerReports = createAsyncThunk(
 const customerReportSlice = createSlice({
   name: "customerReport",
   initialState: {
-    reports: [],                 // <-- All invoices (list page)
-    selectedCustomerReport: null, // <-- Invoices + summary for ONE customer (view page)
-    summary: {                   // <-- Global summary (list page)
+    reports: [],                 
+    selectedCustomerReport: null, 
+    summary: {             
       totalSales: 0,
       totalPaid: 0,
       totalDue: 0,
