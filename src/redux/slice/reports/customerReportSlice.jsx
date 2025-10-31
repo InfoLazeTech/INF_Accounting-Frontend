@@ -51,82 +51,82 @@ const customerReportSlice = createSlice({
         state.loading = false;
         const { data } = action.payload;
         const { customerId } = action.meta.arg || {};
-
+        state.reports = action.payload.data;
         // ---- 1. Global list (no customerId) ----
-        if (!customerId) {
-          const allInvoices = [];
-          data.customers?.forEach((cust) => {
-            cust.invoices?.forEach((inv) => {
-              allInvoices.push({
-                key: inv.invoiceId,
-                invoiceNumber: inv.invoiceNumber,
-                invoiceDate: inv.invoiceDate,
-                total: inv.totalAmount,
-                amountPaid: inv.paidAmount,
-                status: (inv.paymentStatus || inv.status || "draft").toLowerCase(),
-                customer: {
-                  _id: cust.customerId,
-                  companyName: cust.customerDetails?.companyName || cust.customerName || "Unknown",
-                },
-              });
-            });
-          });
-          state.reports = allInvoices;
+        // if (!customerId) {
+        //   const allInvoices = [];
+        //   data.customers?.forEach((cust) => {
+        //     cust.invoices?.forEach((inv) => {
+        //       allInvoices.push({
+        //         key: inv.invoiceId,
+        //         invoiceNumber: inv.invoiceNumber,
+        //         invoiceDate: inv.invoiceDate,
+        //         total: inv.totalAmount,
+        //         amountPaid: inv.paidAmount,
+        //         status: (inv.paymentStatus || inv.status || "draft").toLowerCase(),
+        //         customer: {
+        //           _id: cust.customerId,
+        //           companyName: cust.customerDetails?.companyName || cust.customerName || "Unknown",
+        //         },
+        //       });
+        //     });
+        //   });
+        //   state.reports = allInvoices;
 
-          const s = data.summary || {};
-          state.summary = {
-            totalSales: s.totalAmount || 0,
-            totalPaid: s.totalPaid || 0,
-            totalDue: s.totalPending || 0,
-            totalInvoices: s.totalInvoices || 0,
-          };
-        }
+        //   const s = data.summary || {};
+        //   state.summary = {
+        //     totalSales: s.totalAmount || 0,
+        //     totalPaid: s.totalPaid || 0,
+        //     totalDue: s.totalPending || 0,
+        //     totalInvoices: s.totalInvoices || 0,
+        //   };
+        // }
 
-        // ---- 2. Single-customer view (customerId present) ----
-        else {
-          const customer = data.customers?.[0];
-          if (!customer) {
-            state.selectedCustomerReport = { invoices: [], summary: {} };
-            return;
-          }
+        // // ---- 2. Single-customer view (customerId present) ----
+        // else {
+        //   const customer = data.customers?.[0];
+        //   if (!customer) {
+        //     state.selectedCustomerReport = { invoices: [], summary: {} };
+        //     return;
+        //   }
 
-          const invoices = customer.invoices?.map((inv) => ({
-            key: inv.invoiceId,
-            invoiceNumber: inv.invoiceNumber,
-            invoiceDate: inv.invoiceDate,
-            total: inv.totalAmount,
-            amountPaid: inv.paidAmount,
-            status: (inv.paymentStatus || inv.status || "draft").toLowerCase(),
-            customer: {
-              _id: customer.customerId,
-              companyName: customer.customerDetails?.companyName || customer.customerName,
-            },
-          })) || [];
+        //   const invoices = customer.invoices?.map((inv) => ({
+        //     key: inv.invoiceId,
+        //     invoiceNumber: inv.invoiceNumber,
+        //     invoiceDate: inv.invoiceDate,
+        //     total: inv.totalAmount,
+        //     amountPaid: inv.paidAmount,
+        //     status: (inv.paymentStatus || inv.status || "draft").toLowerCase(),
+        //     customer: {
+        //       _id: customer.customerId,
+        //       companyName: customer.customerDetails?.companyName || customer.customerName,
+        //     },
+        //   })) || [];
 
-          const custSummary = customer.summary || {};
-          state.selectedCustomerReport = {
-            customer: {
-              _id: customer.customerId,
-              companyName: customer.customerDetails?.companyName || customer.customerName,
-              email: customer.customerDetails?.email || "",
-              phone: customer.customerDetails?.phone || "",
-              contactPerson: customer.customerDetails?.contactPerson || "",
-            },
-            invoices,
-            summary: {
-              totalSales: custSummary.totalInvoiceAmount || 0,
-              totalPaid: custSummary.totalPaidAmount || 0,
-              totalDue: custSummary.totalRemainingAmount || 0,
-              totalInvoices: customer.invoices?.length || 0,
-            },
-          };
-        }
-        const { page = 1, limit = 10 } = action.meta.arg || {};
-        state.pagination = {
-          current: parseInt(page),
-          limit: parseInt(limit),
-          totalCount: state.reports.length,
-        };
+        //   const custSummary = customer.summary || {};
+        //   state.selectedCustomerReport = {
+        //     customer: {
+        //       _id: customer.customerId,
+        //       companyName: customer.customerDetails?.companyName || customer.customerName,
+        //       email: customer.customerDetails?.email || "",
+        //       phone: customer.customerDetails?.phone || "",
+        //       contactPerson: customer.customerDetails?.contactPerson || "",
+        //     },
+        //     invoices,
+        //     summary: {
+        //       totalSales: custSummary.totalInvoiceAmount || 0,
+        //       totalPaid: custSummary.totalPaidAmount || 0,
+        //       totalDue: custSummary.totalRemainingAmount || 0,
+        //       totalInvoices: customer.invoices?.length || 0,
+        //     },
+        //   };
+        // }
+        // const { page = 1, limit = 10 } = action.meta.arg || {};
+        // state.pagination = {
+        //   current: parseInt(page),
+        //   limit: parseInt(limit),
+        //   totalCount: state.reports.length,
+        // };
       })
       .addCase(getCustomerReports.rejected, (state, action) => {
         state.loading = false;

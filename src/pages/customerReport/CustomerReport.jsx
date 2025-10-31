@@ -108,7 +108,11 @@ const CustomerReport = () => {
       startDate: "",
       endDate: "",
     });
-    updateUrlParams({ page: 1, limit: 10 });
+    updateUrlParams({
+      page: 1, limit: 10, customerId: "",
+      startDate: "",
+      endDate: ""
+    });
   };
 
   const handlePaginationChange = (page, pageSize) => {
@@ -116,34 +120,17 @@ const CustomerReport = () => {
   };
   const columns = [
     {
-      title: "Invoice #",
-      dataIndex: "invoiceNumber",
-      key: "invoiceNumber",
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
-    },
-    {
-      title: "Date",
-      dataIndex: "invoiceDate",
-      key: "invoiceDate",
-      render: (date) => dayjs(date).format("DD MMM YYYY"),
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
-    },
-    {
       title: "Customer",
-      dataIndex: ["customer", "companyName"],
-      key: "companyName",
+      dataIndex: "customerName",
+      key: "customerName",
       onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
     },
     {
-      title: "Status",
+      title: "Invoice",
       dataIndex: "status",
       key: "status",
-      render: (status) => {
-        let color = "orange";
-        if (status === "paid") color = "green";
-        else if (status === "overdue") color = "red";
-        else if (status === "sent") color = "blue";
-        return <Tag color={color}>{(status || "draft").toUpperCase()}</Tag>;
+      render: (_, record) => {
+        return <Tag color="blue">{record?.invoices?.length}</Tag>;
       },
       onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
     },
@@ -151,28 +138,30 @@ const CustomerReport = () => {
       title: "Total",
       dataIndex: "total",
       key: "total",
-      render: (total) => `$${Number(total).toFixed(2)}`,
+      render: (_, record) => `$${Number(record?.summary?.totalInvoiceAmount).toFixed(2)}`,
       onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
     },
     {
       title: "Paid",
       dataIndex: "amountPaid",
       key: "amountPaid",
-      render: (paid) => `$${Number(paid).toFixed(2)}`,
+      render: (_, record) => `$${Number(record?.summary?.totalPaymentAmount).toFixed(2)}`,
       onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
     },
     {
       title: "Due",
       key: "due",
       render: (_, record) => {
-        const due = record.total - record.amountPaid;
+        const due = record?.summary?.netAmountDue ?? 0;
         return (
           <span style={{ color: due > 0 ? "red" : "green", fontWeight: 500 }}>
-            ${due.toFixed(2)}
+            ${Number(due).toFixed(2)}
           </span>
         );
       },
-      onHeaderCell: () => ({ style: { fontSize: 16, fontWeight: 700, color: "#001529" } }),
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
     },
     {
       title: "Action",
@@ -183,7 +172,7 @@ const CustomerReport = () => {
             type="default"
             size="small"
             icon={<Icons.EyeOutlined />}
-            onClick={() => navigate(`/customer-report/view/${record.customer._id}`)}
+            onClick={() => navigate(`/customer-report/view/${record?.customerId}`)}
           />
         </Space>
       ),
@@ -231,7 +220,7 @@ const CustomerReport = () => {
             <Card>
               <div className="text-sm text-gray-500">Total Sales</div>
               <div className="text-2xl font-bold">
-                ${Number(summary.totalSales).toFixed(2)}
+                ${Number(reports?.summary?.totalAmount).toFixed(2)}
               </div>
             </Card>
           </Col>
@@ -239,7 +228,7 @@ const CustomerReport = () => {
             <Card>
               <div className="text-sm text-gray-500">Paid</div>
               <div className="text-2xl font-bold text-green-600">
-                ${Number(summary.totalPaid).toFixed(2)}
+                ${Number(reports?.summary?.totalPaymentsReceived).toFixed(2)}
               </div>
             </Card>
           </Col>
@@ -247,14 +236,14 @@ const CustomerReport = () => {
             <Card>
               <div className="text-sm text-gray-500">Due</div>
               <div className="text-2xl font-bold text-red-600">
-                ${Number(summary.totalDue).toFixed(2)}
+                ${Number(reports?.summary?.netAmount).toFixed(2)}
               </div>
             </Card>
           </Col>
           <Col span={6}>
             <Card>
               <div className="text-sm text-gray-500">Invoices</div>
-              <div className="text-2xl font-bold">{summary.totalInvoices}</div>
+              <div className="text-2xl font-bold">{reports?.summary?.totalInvoices}</div>
             </Card>
           </Col>
         </Row>
@@ -311,7 +300,7 @@ const CustomerReport = () => {
       <Card>
         <CustomTable
           tableId="customer-report"
-          data={reports}
+          data={reports?.customers}
           loading={loading}
           columns={columns}
           pagination={{

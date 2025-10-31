@@ -12,7 +12,7 @@ const ViewCustomerReport = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { selectedCustomerReport, loading } = useSelector((state) => state.customerReport);
+  const { reports, loading } = useSelector((state) => state.customerReport);
   const { companyId } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -28,11 +28,18 @@ const ViewCustomerReport = () => {
 
   if (loading) return <Spin tip="Loading customer report..." />;
 
-  if (!selectedCustomerReport) {
+  if (!reports) {
     return <div className="m-4">No data found for this customer.</div>;
   }
 
-  const { customer, invoices, summary } = selectedCustomerReport;
+  // const { customers: customer, summary, customers: [{ invoices }] } = reports;
+  const customer = reports?.customers?.[0] || {};
+  const invoices = customer.invoices || [];
+  const summary = reports?.summary || {};
+  console.log("customer", customer);
+  console.log("invoices", invoices);
+  console.log("summary", summary);
+
 
   const columns = [
     {
@@ -56,33 +63,43 @@ const ViewCustomerReport = () => {
             status === "paid"
               ? "green"
               : status === "overdue"
-              ? "red"
-              : status === "sent"
-              ? "blue"
-              : "orange"
+                ? "red"
+                : status === "sent"
+                  ? "blue"
+                  : "orange"  
           }
         >
-          {(status || "draft").toUpperCase()}
+          {(status).toUpperCase()}
+        </Tag>
+      ),
+    },
+    {
+      title: "Status",
+      dataIndex: "paymentStatus",
+      key: "paymentStatus",
+      render: (status) => (
+        <Tag color={status === "paid" ? "green" : "red"}>
+          {(status).toUpperCase()}
         </Tag>
       ),
     },
     {
       title: "Total",
-      dataIndex: "total",
-      key: "total",
+      dataIndex: "totalAmount",
+      key: "totalAmount",
       render: (total) => `$${Number(total).toFixed(2)}`,
     },
     {
       title: "Paid",
-      dataIndex: "amountPaid",
-      key: "amountPaid",
+      dataIndex: "paidAmount",
+      key: "paidAmount",
       render: (paid) => `$${Number(paid).toFixed(2)}`,
     },
     {
       title: "Due",
       key: "due",
       render: (_, record) => {
-        const due = record.total - record.amountPaid;
+        const due = record?.remainingAmount;
         return (
           <span style={{ color: due > 0 ? "red" : "green" }}>
             ${due.toFixed(2)}
@@ -99,7 +116,7 @@ const ViewCustomerReport = () => {
         title={
           <div className="flex justify-between items-center">
             <span className="text-lg font-semibold">
-              Customer Report: {customer.companyName}
+              Customer : {customer?.customerDetails?.companyName}
             </span>
             <Button icon={<Icons.ArrowLeftOutlined />} onClick={() => navigate(-1)}>
               Back
@@ -109,9 +126,9 @@ const ViewCustomerReport = () => {
         style={{ marginBottom: 16 }}
       >
         <Row gutter={16}>
-          <Col span={8}><strong>Email:</strong> {customer.email || "-"}</Col>
-          <Col span={8}><strong>Phone:</strong> {customer.phone || "-"}</Col>
-          <Col span={8}><strong>Contact:</strong> {customer.contactPerson || "-"}</Col>
+          <Col span={8}><strong>Email:</strong> {customer?.customerDetails?.email || "-"}</Col>
+          <Col span={8}><strong>Phone:</strong> {customer?.customerDetails?.phone || "-"}</Col>
+          <Col span={8}><strong>Contact:</strong> {customer?.customerDetails?.contactPerson || "-"}</Col>
         </Row>
       </Card>
 
@@ -120,14 +137,14 @@ const ViewCustomerReport = () => {
         <Col span={6}>
           <Card>
             <div className="text-sm text-gray-500">Total Sales</div>
-            <div className="text-xl font-bold">${Number(summary.totalSales).toFixed(2)}</div>
+            <div className="text-xl font-bold">${Number(summary?.totalAmount).toFixed(2)}</div>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
             <div className="text-sm text-gray-500">Total Paid</div>
             <div className="text-xl font-bold text-green-600">
-              ${Number(summary.totalPaid).toFixed(2)}
+              ${Number(summary?.totalPaymentsReceived).toFixed(2)}
             </div>
           </Card>
         </Col>
@@ -135,14 +152,14 @@ const ViewCustomerReport = () => {
           <Card>
             <div className="text-sm text-gray-500">Total Due</div>
             <div className="text-xl font-bold text-red-600">
-              ${Number(summary.totalDue).toFixed(2)}
+              ${Number(summary?.netAmount).toFixed(2)}
             </div>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
             <div className="text-sm text-gray-500">Invoices</div>
-            <div className="text-xl font-bold">{summary.totalInvoices}</div>
+            <div className="text-xl font-bold">{summary?.totalInvoices}</div>
           </Card>
         </Col>
       </Row>
