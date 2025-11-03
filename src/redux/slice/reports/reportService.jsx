@@ -4,8 +4,6 @@ import api from "../../axiosconfig";
 const getSalesReport = async (payload) => {
   const {
     companyId,
-    page = 1,
-    limit = 10,
     search = "",
     customerId = "",
     startDate = "",
@@ -15,8 +13,6 @@ const getSalesReport = async (payload) => {
 
   const queryParams = new URLSearchParams({
     companyId,
-    page,
-    limit 
   });
 
   if (search) queryParams.append("search", search);
@@ -37,9 +33,11 @@ const getSalesSummary = async (payload) => {
     startDate = "",
     endDate = "",
     status = "",
+    page = 1,
+    limit = 10,
   } = payload;
 
-  const queryParams = new URLSearchParams({ companyId });
+  const queryParams = new URLSearchParams({ companyId, page, limit });
 
   if (customerId) queryParams.append("customerId", customerId);
   if (startDate) queryParams.append("startDate", startDate);
@@ -54,9 +52,6 @@ const getSalesSummary = async (payload) => {
 const getPurchaseReport = async (payload) => {
   const {
     companyId,
-    page = 1,
-    limit = 10,
-    search = "",
     vendorId = "",
     startDate = "",
     endDate = "",
@@ -65,11 +60,8 @@ const getPurchaseReport = async (payload) => {
 
   const queryParams = new URLSearchParams({
     companyId,
-    page: page,
-    limit: limit,
   });
 
-  if (search) queryParams.append("search", search);
   if (vendorId) queryParams.append("vendorId", vendorId);
   if (startDate) queryParams.append("startDate", startDate);
   if (endDate) queryParams.append("endDate", endDate);
@@ -83,13 +75,15 @@ const getPurchaseReport = async (payload) => {
 const getPurchaseSummary = async (payload) => {
   const {
     companyId,
-    vendorId = "",
     startDate = "",
     endDate = "",
+    vendorId = "",
     status = "",
+    page = 1,
+    limit = 10,
   } = payload;
 
-  const queryParams = new URLSearchParams({ companyId });
+  const queryParams = new URLSearchParams({ companyId, page, limit });
 
   if (vendorId) queryParams.append("vendorId", vendorId);
   if (startDate) queryParams.append("startDate", startDate);

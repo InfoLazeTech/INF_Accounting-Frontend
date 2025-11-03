@@ -17,12 +17,28 @@ export const getCustomerReports = createAsyncThunk(
   }
 );
 
+export const getCustomerSummary = createAsyncThunk(
+  "customerReport/getCustomerSummary",
+  async (payload, thunkAPI) => {
+    try {
+      const response = await reportService.getSalesSummary(payload);
+      return response;
+    } catch (err) {
+      const message = err.response?.data?.message || err.message || "Failed to fetch report";
+      toast.error(message);
+      return thunkAPI.rejectWithValue(message);
+    }
+  }
+);
+
+
 const customerReportSlice = createSlice({
   name: "customerReport",
   initialState: {
-    reports: [],                 
-    selectedCustomerReport: null, 
-    summary: {             
+    reports: [],
+    summary: [],
+    selectedCustomerReport: null,
+    summary: {
       totalSales: 0,
       totalPaid: 0,
       totalDue: 0,
@@ -133,7 +149,23 @@ const customerReportSlice = createSlice({
         state.error = action.payload;
         state.reports = [];
         state.selectedCustomerReport = null;
-      });
+      })
+      .addCase(getCustomerSummary.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(getCustomerSummary.fulfilled, (state, action) => {
+        state.loading = false;
+        state.summary = action.payload.data;
+        state.pagination = {
+          currentPage: action.payload.data?.pagination?.currentPage || 1,
+          totalPages: action.payload.data?.pagination?.totalPages || 1,
+          limit: action.payload.data?.pagination?.limit || 10,
+          totalCount: action.payload.data?.pagination?.totalCount || 0,
+        };
+      })
+      .addCase(getCustomerSummary.rejected, (state, action) => {
+        state.loading = false;
+      })
   },
 });
 

@@ -1,11 +1,14 @@
 // src/pages/customerReport/ViewCustomerReport.jsx
 import { useEffect } from "react";
-import { Card, Row, Col, Tag, Table, Spin, Button } from "antd";
+import { Card, Row, Col, Tag, Spin, Button, Skeleton, Space, Typography } from "antd";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getCustomerReports } from "../../redux/slice/reports/customerReportSlice";
 import dayjs from "dayjs";
 import Icons from "../../assets/icon";
+import CustomTable from "../../component/commonComponent/CustomTable";
+
+const { Text } = Typography;
 
 const ViewCustomerReport = () => {
   const { customerId } = useParams();
@@ -14,6 +17,9 @@ const ViewCustomerReport = () => {
 
   const { reports, loading } = useSelector((state) => state.customerReport);
   const { companyId } = useSelector((state) => state.auth);
+
+  console.log("reports",reports);
+  
 
   useEffect(() => {
     dispatch(
@@ -26,21 +32,13 @@ const ViewCustomerReport = () => {
     );
   }, [dispatch, companyId, customerId]);
 
-  if (loading) return <Spin tip="Loading customer report..." />;
-
   if (!reports) {
     return <div className="m-4">No data found for this customer.</div>;
   }
 
   // const { customers: customer, summary, customers: [{ invoices }] } = reports;
-  const customer = reports?.customers?.[0] || {};
-  const invoices = customer.invoices || [];
-  const summary = reports?.summary || {};
-  console.log("customer", customer);
-  console.log("invoices", invoices);
-  console.log("summary", summary);
-
-
+  const invoices = reports?.invoices || [];
+  const payments = reports?.payments || [];
   const columns = [
     {
       title: "Invoice #",
@@ -48,65 +46,124 @@ const ViewCustomerReport = () => {
       key: "invoiceNumber",
     },
     {
-      title: "Date",
+      title: "Invoice Date",
       dataIndex: "invoiceDate",
       key: "invoiceDate",
-      render: (date) => dayjs(date).format("DD MMM YYYY"),
+      render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (
-        <Tag
-          color={
-            status === "paid"
-              ? "green"
-              : status === "overdue"
-                ? "red"
-                : status === "sent"
-                  ? "blue"
-                  : "orange"  
-          }
-        >
-          {(status).toUpperCase()}
-        </Tag>
-      ),
+      title: "Due Date",
+      dataIndex: "dueDate",
+      key: "dueDate",
+      render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
     },
-    {
-      title: "Status",
-      dataIndex: "paymentStatus",
-      key: "paymentStatus",
-      render: (status) => (
-        <Tag color={status === "paid" ? "green" : "red"}>
-          {(status).toUpperCase()}
-        </Tag>
-      ),
-    },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   render: (status) => (
+    //     <Tag
+    //       color={
+    //         status === "paid"
+    //           ? "green"
+    //           : status === "overdue"
+    //             ? "red"
+    //             : status === "sent"
+    //               ? "blue"
+    //               : "orange"
+    //       }
+    //     >
+    //       {(status).toUpperCase()}
+    //     </Tag>
+    //   ),
+    // },
+    // {
+    //   title: "Status",
+    //   dataIndex: "paymentStatus",
+    //   key: "paymentStatus",
+    //   render: (status) => (
+    //     <Tag color={status === "paid" ? "green" : "red"}>
+    //       {(status).toUpperCase()}
+    //     </Tag>
+    //   ),
+    // },
     {
       title: "Total",
       dataIndex: "totalAmount",
       key: "totalAmount",
       render: (total) => `$${Number(total).toFixed(2)}`,
     },
+    // {
+    //   title: "Paid",
+    //   dataIndex: "paidAmount",
+    //   key: "paidAmount",
+    //   render: (paid) => `$${Number(paid).toFixed(2)}`,
+    // },
+    // {
+    //   title: "Due",
+    //   key: "due",
+    //   render: (_, record) => {
+    //     const due = record?.remainingAmount;
+    //     return (
+    //       <span style={{ color: due > 0 ? "red" : "green" }}>
+    //         ₹{due.toFixed(2)}
+    //       </span>
+    //     );
+    //   },
+    // },
+  ];
+
+  const Paymentcolumns = [
     {
-      title: "Paid",
-      dataIndex: "paidAmount",
-      key: "paidAmount",
-      render: (paid) => `$${Number(paid).toFixed(2)}`,
+      title: "Payment #",
+      dataIndex: "paymentNumber",
+      key: "paymentNumber",
     },
     {
-      title: "Due",
-      key: "due",
-      render: (_, record) => {
-        const due = record?.remainingAmount;
-        return (
-          <span style={{ color: due > 0 ? "red" : "green" }}>
-            ₹{due.toFixed(2)}
-          </span>
-        );
-      },
+      title: "Date",
+      dataIndex: "paymentDate",
+      key: "paymentDate",
+      render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
     },
+    {
+      title: "Amount",
+      dataIndex: "amount",
+      key: "amount",
+      render: (total) => `$${Number(total).toFixed(2)}`,
+    },
+    {
+      title: "Mode",
+      dataIndex: "paymentMode",
+      key: "paymentMode",
+      render: (mode) => (
+        <Tag color={mode === "bank" ? "blue" : "green"}>
+          {mode?.toUpperCase()}
+        </Tag>
+      ),
+    },
+    {
+      title: "Ref #",
+      dataIndex: "referenceNumber",
+      key: "referenceNumber",
+    },
+    // {
+    //   title: "Paid",
+    //   dataIndex: "paidAmount",
+    //   key: "paidAmount",
+    //   render: (paid) => `$${Number(paid).toFixed(2)}`,
+    // },
+    // {
+    //   title: "Due",
+    //   key: "due",
+    //   render: (_, record) => {
+    //     const due = record?.remainingAmount;
+    //     return (
+    //       <span style={{ color: due > 0 ? "red" : "green" }}>
+    //         ₹{due.toFixed(2)}
+    //       </span>
+    //     );
+    //   },
+    // },
   ];
 
   return (
@@ -114,62 +171,94 @@ const ViewCustomerReport = () => {
       {/* Header */}
       <Card
         title={
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-semibold">
-              Customer : {customer?.customerDetails?.companyName}
-            </span>
-            <Button icon={<Icons.ArrowLeftOutlined />} onClick={() => navigate(-1)}>
-              Back
+          <div className="flex gap-2 items-center">
+            <Button type="text" icon={<Icons.ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+
             </Button>
+            <span className="text-lg font-semibold">
+              Customer : {reports?.customerName}
+            </span>
           </div>
         }
         style={{ marginBottom: 16 }}
       >
-        <Row gutter={16}>
+        {/* <Row gutter={16}>
           <Col span={8}><strong>Email:</strong> {customer?.customerDetails?.email || "-"}</Col>
           <Col span={8}><strong>Phone:</strong> {customer?.customerDetails?.phone || "-"}</Col>
           <Col span={8}><strong>Contact:</strong> {customer?.customerDetails?.contactPerson || "-"}</Col>
-        </Row>
+        </Row> */}
       </Card>
 
       {/* Summary */}
       <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={6}>
-          <Card>
-            <div className="text-sm text-gray-500">Total Sales</div>
-            <div className="text-xl font-bold">${Number(summary?.totalAmount).toFixed(2)}</div>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <div className="text-sm text-gray-500">Total Paid</div>
-            <div className="text-xl font-bold text-green-600">
-              ${Number(summary?.totalPaymentsReceived).toFixed(2)}
-            </div>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <div className="text-sm text-gray-500">Total Due</div>
-            <div className="text-xl font-bold text-red-600">
-              ${Number(summary?.netAmount).toFixed(2)}
-            </div>
-          </Card>
-        </Col>
-        <Col span={6}>
-          <Card>
-            <div className="text-sm text-gray-500">Invoices</div>
-            <div className="text-xl font-bold">{summary?.totalInvoices}</div>
-          </Card>
-        </Col>
+        {loading ? (
+          [1, 2, 3, 4].map((i) => (
+            <Col span={6} key={i}>
+              <Card>
+                <Skeleton active paragraph={{ rows: 1 }} />
+              </Card>
+            </Col>
+          ))
+        ) : (
+          <>
+            <Col span={6}>
+              <Card>
+                <div className="text-sm text-gray-500">Total Sales</div>
+                <div className="text-xl font-bold">${Number(reports?.summary?.invoiceTotal).toFixed(2)}</div>
+              </Card>
+            </Col>
+            <Col span={6}>
+              <Card>
+                <div className="text-sm text-gray-500">Total Paid</div>
+                <div className="text-xl font-bold text-green-600">
+                  ${Number(reports?.summary?.paymentTotal).toFixed(2)}
+                </div>
+              </Card>
+            </Col>
+            <Col span={6}>
+              <Card>
+                <div className="text-sm text-gray-500">Total Due</div>
+                <div className="text-xl font-bold text-red-600">
+                  ${Number(reports?.summary?.due).toFixed(2)}
+                </div>
+              </Card>
+            </Col>
+            <Col span={6}>
+              <Card>
+                <div className="text-sm text-gray-500">Invoices</div>
+                <div className="text-xl font-bold">{reports?.summary?.invoiceCount}</div>
+              </Card>
+            </Col>
+          </>
+        )}
       </Row>
 
       {/* Invoice Table */}
-      <Card title="Invoice History">
-        <Table
-          dataSource={invoices}
+      <Card title={
+        <Space>
+          <Text strong>Invoice History</Text>
+          <Tag color="blue">{invoices.length} invoices(s)</Tag>
+        </Space>
+      }>
+        <CustomTable
+          tableId="invoiceNumber"
+          data={invoices}
+          loading={loading}
           columns={columns}
-          rowKey="key"
+          pagination={false}
+        />
+      </Card>
+      <Card title={
+        <Space>
+          <Text strong>Payment History</Text>
+          <Tag color="green">{payments.length} payment(s)</Tag>
+        </Space>
+      } style={{ marginTop: 20 }}>
+        <CustomTable
+          tableId="paymentNumber"
+          data={payments}
+          loading={loading}
+          columns={Paymentcolumns}
           pagination={false}
         />
       </Card>

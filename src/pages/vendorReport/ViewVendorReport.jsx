@@ -14,8 +14,11 @@ const ViewVendorReport = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const { selectedVendorReport, loading } = useSelector((state) => state.vendorReport);
+  const { vendors, selectedVendorReport, loading } = useSelector((state) => state.vendorReport);
   const { companyId } = useSelector((state) => state.auth);
+
+  console.log("vendors",vendors);
+  
 
   useEffect(() => {
     dispatch(
@@ -30,11 +33,11 @@ const ViewVendorReport = () => {
 
   if (loading) return <Spin tip="Loading vendor report..." style={{ display: "block", margin: "40px auto" }} />;
 
-  if (!selectedVendorReport) {
+  if (!vendors) {
     return <div className="m-4 text-center">No data found for this vendor.</div>;
   }
 
-  const { vendor, bills, payments, summary } = selectedVendorReport;
+  const {  bills, payments, summary } = vendors;
 
   // Bills Table Columns
   const billColumns = [
@@ -47,51 +50,19 @@ const ViewVendorReport = () => {
       title: "Bill Date",
       dataIndex: "billDate",
       key: "billDate",
-      render: (date) => dayjs(date).format("DD MMM YYYY"),
+      render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
     },
     {
       title: "Due Date",
       dataIndex: "dueDate",
       key: "dueDate",
-      render: (date) => dayjs(date).format("DD MMM YYYY"),
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (
-        <Tag
-          color={
-            status === "paid"
-              ? "green"
-              : status === "overdue"
-              ? "red"
-              : status === "pending"
-              ? "orange"
-              : "blue"
-          }
-        >
-          {(status || "draft").toUpperCase()}
-        </Tag>
-      ),
+      render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
     },
     {
       title: "Total",
       dataIndex: "totalAmount",
       key: "totalAmount",
       render: (total) => `₹${Number(total).toFixed(2)}`,
-    },
-    {
-      title: "Paid",
-      dataIndex: "paidAmount",
-      key: "paidAmount",
-      render: (paid) => `₹${Number(paid).toFixed(2)}`,
-    },
-    {
-      title: "Remaining",
-      dataIndex: "remainingAmount",
-      key: "remainingAmount",
-      render: (remaining) => `₹${Number(remaining).toFixed(2)}`,
     },
   ];
 
@@ -106,7 +77,7 @@ const ViewVendorReport = () => {
       title: "Date",
       dataIndex: "paymentDate",
       key: "paymentDate",
-      render: (date) => dayjs(date).format("DD MMM YYYY"),
+      render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
     },
     {
       title: "Amount",
@@ -137,22 +108,22 @@ const ViewVendorReport = () => {
       {/* Header */}
       <Card
         title={
-          <div className="flex justify-between items-center">
-            <span className="text-lg font-semibold">
-              Vendor Report: {vendor.companyName}
-            </span>
-            <Button icon={<Icons.ArrowLeftOutlined />} onClick={() => navigate(-1)}>
-              Back
+          <div className="flex gap-2 items-center">
+            <Button type="text" icon={<Icons.ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+              
             </Button>
+            <span className="text-lg font-semibold">
+              Vendor : {vendors?.vendorName}
+            </span>
           </div>
         }
         style={{ marginBottom: 16 }}
       >
-        <Row gutter={16}>
-          <Col span={8}><strong>Email:</strong> {vendor.email || "-"}</Col>
-          <Col span={8}><strong>Phone:</strong> {vendor.phone || "-"}</Col>
-          <Col span={8}><strong>Contact:</strong> {vendor.contactPerson || "-"}</Col>
-        </Row>
+        {/* <Row gutter={16}>
+          <Col span={8}><strong>Email:</strong> {bills.email || "-"}</Col>
+          <Col span={8}><strong>Phone:</strong> {bills.phone || "-"}</Col>
+          <Col span={8}><strong>Contact:</strong> {bills.contactPerson || "-"}</Col>
+        </Row> */}
       </Card>
 
       {/* Summary Cards */}
@@ -161,7 +132,7 @@ const ViewVendorReport = () => {
           <Card>
             <div className="text-sm text-gray-500">Total Bill Amount</div>
             <div className="text-xl font-bold">
-              ₹{Number(summary.totalBillAmount || 0).toFixed(2)}
+              ₹{Number(summary.billTotal || 0).toFixed(2)}
             </div>
           </Card>
         </Col>
@@ -169,7 +140,7 @@ const ViewVendorReport = () => {
           <Card>
             <div className="text-sm text-gray-500">Paid (Bills)</div>
             <div className="text-xl font-bold text-green-600">
-              ₹{Number(summary.totalPaidAmount || 0).toFixed(2)}
+              ₹{Number(summary.paymentTotal || 0).toFixed(2)}
             </div>
           </Card>
         </Col>
@@ -177,32 +148,14 @@ const ViewVendorReport = () => {
           <Card>
             <div className="text-sm text-gray-500">Remaining (Bills)</div>
             <div className="text-xl font-bold text-red-600">
-              ₹{Number(summary.totalRemainingAmount || 0).toFixed(2)}
+              ₹{Number(summary.due || 0).toFixed(2)}
             </div>
           </Card>
         </Col>
         <Col span={6}>
           <Card>
-            <div className="text-sm text-gray-500">Payments Made</div>
-            <div className="text-xl font-bold text-blue-600">
-              ₹{Number(summary.totalPaymentAmount || 0).toFixed(2)}
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={16} style={{ marginBottom: 16 }}>
-        <Col span={24}>
-          <Card>
-            <div className="text-sm text-gray-500">Net Amount Due</div>
-            <div
-              className="text-2xl font-bold"
-              style={{
-                color: summary.netAmountDue > 0 ? "#d32029" : "#52c41a",
-              }}
-            >
-              ₹{Number(summary.netAmountDue || 0).toFixed(2)}
-            </div>
+            <div className="text-sm text-gray-500">Bills</div>
+            <div className="text-xl font-bold">{summary?.billCount}</div>
           </Card>
         </Col>
       </Row>

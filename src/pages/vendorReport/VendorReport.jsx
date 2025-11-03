@@ -6,6 +6,7 @@ import Icons from "../../assets/icon";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getVendorReports,
+  getVendorSummary,
 } from "../../redux/slice/reports/vendorReportSlice";
 import { filteredURLParams, getQueryParams } from "../../utlis/services";
 import FilterInput from "../../component/commonComponent/FilterInput";
@@ -29,6 +30,9 @@ const VendorReport = () => {
   const { vendors, loading, pagination, summary } = useSelector(
     (state) => state.vendorReport
   );
+
+  console.log("summary", summary);
+
   const { companyId } = useSelector((state) => state.auth);
 
   const fetchReports = (signal) => {
@@ -56,7 +60,7 @@ const VendorReport = () => {
       };
     }
 
-    dispatch(getVendorReports({ ...payload,signal }));
+    dispatch(getVendorSummary({ ...payload, signal }));
   };
 
   useEffect(() => {
@@ -119,18 +123,18 @@ const VendorReport = () => {
     updateUrlParams({ page, limit: pageSize });
   };
   const columns = [
-   
+
     {
       title: "Vendor",
       key: "vendorName",
       render: (_, record) => (
         <Space direction="vertical" size={0}>
           <div style={{ fontWeight: 600 }}>{record.vendorName}</div>
-          {record.vendorDetails?.contactPerson && (
+          {/* {record.vendorDetails?.contactPerson && (
             <div style={{ fontSize: 12, color: "#888" }}>
               {record.vendorDetails.contactPerson}
             </div>
-          )}
+          )} */}
         </Space>
       ),
       onHeaderCell: () => ({
@@ -139,10 +143,11 @@ const VendorReport = () => {
     },
     {
       title: "Bills",
-      dataIndex: ["bills"],
-      key: "bills",
-      render: (bills) => bills?.length || 0,
-      align: "center",
+      dataIndex: "status",
+      key: "status",
+      render: (_, record) => {
+        return <Tag color="blue">{record?.billCount}</Tag>;
+      },
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
@@ -150,32 +155,7 @@ const VendorReport = () => {
     {
       title: "Bill Amount",
       key: "totalBillAmount",
-      render: (_, record) => `₹${Number(record.summary.totalBillAmount || 0).toFixed(2)}`,
-      onHeaderCell: () => ({
-        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-      }),
-    },
-    {
-      title: "Date",
-      dataIndex: "paymentDate",
-      key: "paymentDate",
-      render: (date) => dayjs(date).format("DD MMM YYYY"),
-      onHeaderCell: () => ({
-        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-      }),
-    },
-    {
-      title: "Paid (Bills)",
-      key: "totalPaidAmount",
-      render: (_, record) => `₹${Number(record.summary.totalPaidAmount || 0).toFixed(2)}`,
-      onHeaderCell: () => ({
-        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-      }),
-    },
-    {
-      title: "Remaining",
-      key: "totalRemainingAmount",
-      render: (_, record) => `₹${Number(record.summary.totalRemainingAmount || 0).toFixed(2)}`,
+      render: (_, record) => `₹${Number(record.billTotal || 0).toFixed(2)}`,
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
@@ -183,16 +163,16 @@ const VendorReport = () => {
     {
       title: "Payments Made",
       key: "totalPaymentAmount",
-      render: (_, record) => `₹${Number(record.summary.totalPaymentAmount || 0).toFixed(2)}`,
+      render: (_, record) => `₹${Number(record.billTotal || 0).toFixed(2)}`,
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
     },
-   {
+    {
       title: "Net Due",
       key: "netAmountDue",
       render: (_, record) => {
-        const net = Number(record.summary.netAmountDue || 0);
+        const net = Number(record.due || 0);
         return (
           <span style={{ color: net > 0 ? "red" : "green", fontWeight: 600 }}>
             ₹{net.toFixed(2)}
@@ -204,22 +184,6 @@ const VendorReport = () => {
       }),
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        let color = "orange";
-        if (status === "paid") color = "green";
-        else if (status === "overdue") color = "red";
-        else if (status === "sent") color = "blue";
-        return <Tag color={color}>{(status || "draft").toUpperCase()}</Tag>;
-      },
-      onHeaderCell: () => ({
-        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-      }),
-    },
-   
-   {
       title: "Action",
       key: "action",
       render: (_, record) => (
@@ -264,7 +228,7 @@ const VendorReport = () => {
       </Card>
       {loading ? (
         <Row gutter={16} style={{ marginBottom: 16 }}>
-        {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <Col span={4} key={i}>
               <Card>
                 <Skeleton active paragraph={{ rows: 1 }} />
@@ -273,48 +237,34 @@ const VendorReport = () => {
           ))}
         </Row>
       ) : (
-       <Row gutter={16} style={{ marginBottom: 16 }}>
-          <Col span={4}>
-            <Card>
-              <div className="text-sm text-gray-500">Total Vendors</div>
-              <div className="text-2xl font-bold">{summary.totalVendors}</div>
-            </Card>
-          </Col>
-          <Col span={4}>
+        <Row gutter={16} style={{ marginBottom: 16 }}>
+          <Col span={6}>
             <Card>
               <div className="text-sm text-gray-500">Total Bills</div>
-              <div className="text-2xl font-bold">{summary.totalBills}</div>
+              <div className="text-2xl font-bold">{summary?.total?.billTotal}</div>
             </Card>
           </Col>
-          <Col span={4}>
-            <Card>
-              <div className="text-sm text-gray-500">Bill Amount</div>
-              <div className="text-2xl font-bold">
-                ₹{Number(summary.totalAmount).toFixed(2)}
-              </div>
-            </Card>
-          </Col>
-          <Col span={4}>
+          <Col span={6}>
             <Card>
               <div className="text-sm text-gray-500">Paid</div>
               <div className="text-2xl font-bold text-green-600">
-                ₹{Number(summary.totalPaid).toFixed(2)}
+                ₹{Number(summary?.total?.paymentTotal).toFixed(2)}
               </div>
             </Card>
           </Col>
-          <Col span={4}>
+          <Col span={6}>
             <Card>
-              <div className="text-sm text-gray-500">Pending</div>
+              <div className="text-sm text-gray-500">Due</div>
               <div className="text-2xl font-bold text-red-600">
-                ₹{Number(summary.totalPending).toFixed(2)}
+                ₹{Number(summary?.total?.due).toFixed(2)}
               </div>
             </Card>
           </Col>
-          <Col span={4}>
+          <Col span={6}>
             <Card>
-              <div className="text-sm text-gray-500">Net Amount</div>
+              <div className="text-sm text-gray-500">Bills</div>
               <div className="text-2xl font-bold">
-                ₹{Number(summary.netAmount).toFixed(2)}
+                ₹{Number(summary?.total?.billCount).toFixed(2)}
               </div>
             </Card>
           </Col>
@@ -369,8 +319,8 @@ const VendorReport = () => {
       {/* Table */}
       <Card>
         <CustomTable
-          tableId="vendor-report"
-          data={vendors}
+          tableId="vendorId"
+          data={summary?.vendorSummary}
           loading={loading}
           columns={columns}
           pagination={{
