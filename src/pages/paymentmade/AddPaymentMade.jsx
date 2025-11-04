@@ -181,7 +181,7 @@ const AddPaymentMade = () => {
                 <CustomInput
                   type="date"
                   name="paymentDate"
-                  label="Payment Date *"
+                  label="Payment Date"
                   rules={[
                     { required: true, message: "Please select payment date" },
                   ]}
@@ -215,7 +215,7 @@ const AddPaymentMade = () => {
                 <CustomInput
                   type="select"
                   name="paymentMode"
-                  label="Payment Mode *"
+                  label="Payment Mode"
                   placeholder="Select payment mode"
                   options={[
                     { label: "Cash", value: "cash" },
@@ -231,7 +231,7 @@ const AddPaymentMade = () => {
                 <CustomInput
                   type="number"
                   name="amount"
-                  label="Amount *"
+                  label="Amount"
                   placeholder="Enter amount"
                   min={0}
                   precision={2}
@@ -255,7 +255,7 @@ const AddPaymentMade = () => {
                 <CustomInput
                   type="select"
                   name="status"
-                  label="Status *"
+                  label="Status"
                   placeholder="Select status"
                   options={[
                     { label: "Pending", value: "pending" },
