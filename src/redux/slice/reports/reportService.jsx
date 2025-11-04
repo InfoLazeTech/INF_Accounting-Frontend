@@ -94,11 +94,28 @@ const getPurchaseSummary = async (payload) => {
   return res.data;
 };
 
+const getDashboard = async (payload) => {
+  const {
+    companyId,
+    startDate = "",
+    endDate = "",
+  } = payload;
+
+  const queryParams = new URLSearchParams({ companyId });
+
+  if (startDate) queryParams.append("startDate", startDate);
+  if (endDate) queryParams.append("endDate", endDate);
+
+  const res = await api.get("/report/dashboard", { params: queryParams });
+  return res.data;
+};
+
 const reportService = {
   getSalesReport,
   getSalesSummary,
   getPurchaseReport,
   getPurchaseSummary,
+  getDashboard
 };
 
 export default reportService;

@@ -35,6 +35,27 @@ const VendorReport = () => {
 
   const { companyId } = useSelector((state) => state.auth);
 
+  useEffect(() => {
+    // If no date applied yet, set current month range
+    if (!filter.startDate && !filter.endDate) {
+      const start = dayjs().startOf("month").format("YYYY-MM-DD");
+      const end = dayjs().endOf("month").format("YYYY-MM-DD");
+
+      setFilter((prev) => ({
+        ...prev,
+        startDate: start,
+        endDate: end,
+      }));
+
+      updateUrlParams({
+        startDate: start,
+        endDate: end,
+        page: 1,
+        limit: 10,
+      });
+    }
+  }, []);
+
   const fetchReports = (signal) => {
     const page = parseInt(searchParams.get("page")) || 1;
     const pageSize = parseInt(searchParams?.get("limit")) || pagination.limit;
@@ -264,7 +285,7 @@ const VendorReport = () => {
             <Card>
               <div className="text-sm text-gray-500">Bills</div>
               <div className="text-2xl font-bold">
-                ₹{Number(summary?.total?.billCount).toFixed(2)}
+                {summary?.total?.billCount}
               </div>
             </Card>
           </Col>

@@ -1,25 +1,36 @@
 // src/pages/customerReport/ViewCustomerReport.jsx
-import { useEffect } from "react";
-import { Card, Row, Col, Tag, Spin, Button, Skeleton, Space, Typography } from "antd";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Card, Row, Col, Tag, Spin, Button, Skeleton, Space, Typography, DatePicker } from "antd";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { getCustomerReports } from "../../redux/slice/reports/customerReportSlice";
 import dayjs from "dayjs";
 import Icons from "../../assets/icon";
 import CustomTable from "../../component/commonComponent/CustomTable";
+import { filteredURLParams } from "../../utlis/services";
 
 const { Text } = Typography;
+const { RangePicker } = DatePicker;
 
 const ViewCustomerReport = () => {
   const { customerId } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const [filter, setFilter] = useState({
+    search: searchParams.get("search") || "",
+    customerId: searchParams.get("customerId") || "",
+    startDate: searchParams.get("startDate") || "",
+    endDate: searchParams.get("endDate") || "",
+  });
+
 
   const { reports, loading } = useSelector((state) => state.customerReport);
   const { companyId } = useSelector((state) => state.auth);
 
-  console.log("reports",reports);
-  
+  console.log("reports", reports);
+
 
   useEffect(() => {
     dispatch(
@@ -28,13 +39,61 @@ const ViewCustomerReport = () => {
         customerId,
         page: 1,
         limit: 100,
+        startDate: searchParams.get("startDate") || "",
+        endDate: searchParams.get("endDate") || "",
       })
     );
-  }, [dispatch, companyId, customerId]);
+  }, [dispatch, companyId, customerId, searchParams]);
+
+  const updateUrlParams = (newParams) => {
+    const params = new URLSearchParams(searchParams);
+    const filterParams = filteredURLParams(params, newParams);
+    setSearchParams(filterParams);
+  };
 
   if (!reports) {
     return <div className="m-4">No data found for this customer.</div>;
   }
+
+  const handleSearch = () => {
+    const searchValue = filter.search ? String(filter.search) : "";
+
+    updateUrlParams({
+      companyId,
+      search: searchValue,
+      customerId: filter.customerId,
+      startDate: filter.startDate,
+      endDate: filter.endDate,
+    });
+
+  };
+
+  const handleDateChange = (dates) => {
+    if (dates && dates[0] && dates[1]) {
+      setFilter({
+        ...filter,
+        startDate: dates[0].format("YYYY-MM-DD"),
+        endDate: dates[1].format("YYYY-MM-DD"),
+      });
+    } else {
+      setFilter({ ...filter, startDate: "", endDate: "" });
+    }
+  };
+
+  const handleClear = () => {
+    setFilter({
+      search: "",
+      customerId: "",
+      startDate: "",
+      endDate: "",
+    });
+    updateUrlParams({
+      search: "",
+      customerId: "",
+      startDate: "",
+      endDate: "",
+    });
+  };
 
   // const { customers: customer, summary, customers: [{ invoices }] } = reports;
   const invoices = reports?.invoices || [];
@@ -232,6 +291,40 @@ const ViewCustomerReport = () => {
           </>
         )}
       </Row>
+      <Card style={{ marginBottom: 16 }}>
+        <Row gutter={16} align="middle">
+          <Col span={8}>
+            <RangePicker
+              style={{ width: "100%" }}
+              value={
+                filter.startDate
+                  ? [dayjs(filter.startDate), dayjs(filter.endDate)]
+                  : null
+              }
+              onChange={handleDateChange}
+              format="YYYY-MM-DD"
+            />
+          </Col>
+          <Col span={8} style={{ textAlign: "right" }}>
+            <Space>
+              <Button
+                type="default"
+                icon={<Icons.ClearOutlined />}
+                onClick={handleClear}
+              >
+                Clear All
+              </Button>
+              <Button
+                type="primary"
+                icon={<Icons.FilterOutlined />}
+                onClick={handleSearch}
+              >
+                Apply Filter
+              </Button>
+            </Space>
+          </Col>
+        </Row>
+      </Card>
 
       {/* Invoice Table */}
       <Card title={
