@@ -50,7 +50,7 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
     {
       key: "4",
       icon: <Icons.BuildOutlined />,
-      label: "Bill ",
+      label: "Purchase Bill",
       path: "/bill",
     },
     {
@@ -82,6 +82,12 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
       icon: <Icons.RiseOutlined />,
       label: "Vendor Report",
       path: "/vendor-report",
+    },
+     {
+      key: "10",
+      icon: <Icons.RiseOutlined />,
+      label: "Item Report",
+      path: "/item-report",
     },
   ];
 

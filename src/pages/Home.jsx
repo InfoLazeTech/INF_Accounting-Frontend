@@ -11,6 +11,7 @@ import {
   DatePicker,
   Space,
   Button,
+  Skeleton,
 } from "antd";
 import {
   ShoppingCartOutlined,
@@ -177,78 +178,103 @@ const Home = () => {
       </Row>
 
       {/* Top Stats */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} md={8}>
-          <Card>
-            <Statistic
-              title="Total Customers"
-              value={dashboars?.totalCustomer || 0}
-              prefix={<UserOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={8}>
-          <Card>
-            <Statistic
-              title="Total Sales"
-              value={dashboars?.totalSalesCount || 0}
-              prefix={<ShoppingCartOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={8}>
-          <Card>
-            <Statistic
-              title="Sales Revenue"
-              value={dashboars?.totalSales || 0}
-              prefix={<span style={{ fontWeight: "bold" }}>₹</span>}
-              precision={2}
-            />
-          </Card>
-        </Col>
-        {/* <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic title="Stock Level" value={78} suffix="%" />
-            <Progress percent={78} status="active" />
-          </Card>
-        </Col> */}
-      </Row>
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} md={8}>
-          <Card>
-            <Statistic
-              title="Total Vendor"
-              value={dashboars?.totalVendor || 0}
-              prefix={<UserOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={8}>
-          <Card>
-            <Statistic
-              title="Total Purchase"
-              value={dashboars?.totalPurchaseCount || 0}
-              prefix={<ShoppingCartOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={8}>
-          <Card>
-            <Statistic
-              title="Purchase Revenue"
-              value={dashboars?.totalSales || 0}
-              prefix={<span style={{ fontWeight: "bold" }}>₹</span>}
-              precision={2}
-            />
-          </Card>
-        </Col>
-        {/* <Col xs={24} sm={12} md={6}>
+      {loading ? (
+        <Row gutter={16} style={{ marginBottom: 16 }}>
+          {[1, 2, 3].map((i) => (
+            <Col span={8} key={i}>
+              <Card>
+                <Skeleton active paragraph={{ rows: 1 }} />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      ) : (
+        <Row gutter={16} style={{ marginBottom: 24 }}>
+          <Col xs={24} sm={12} md={8}>
+            <Card>
+              <Statistic
+                title="Total Customers"
+                value={dashboars?.totalCustomer || 0}
+                prefix={<UserOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Card>
+              <Statistic
+                title="Total Sales"
+                value={dashboars?.totalSalesCount || 0}
+                prefix={<ShoppingCartOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Card>
+              <Statistic
+                title="Sales Revenue"
+                value={dashboars?.totalSales || 0}
+                prefix={<span style={{ fontWeight: "bold" }}>₹</span>}
+                precision={2}
+              />
+            </Card>
+          </Col>
+          {/* <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic title="Stock Level" value={78} suffix="%" />
             <Progress percent={78} status="active" />
           </Card>
         </Col> */}
-      </Row>
+        </Row>
+      )}
+
+      {loading ? (
+        <Row gutter={16} style={{ marginBottom: 16 }}>
+          {[1, 2, 3].map((i) => (
+            <Col span={8} key={i}>
+              <Card>
+                <Skeleton active paragraph={{ rows: 1 }} />
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      ) : (
+        <Row gutter={16} style={{ marginBottom: 24 }}>
+          <Col xs={24} sm={12} md={8}>
+            <Card>
+              <Statistic
+                title="Total Vendor"
+                value={dashboars?.totalVendor || 0}
+                prefix={<UserOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Card>
+              <Statistic
+                title="Total Purchase"
+                value={dashboars?.totalPurchaseCount || 0}
+                prefix={<ShoppingCartOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Card>
+              <Statistic
+                title="Purchase Revenue"
+                value={dashboars?.totalPurchase || 0}
+                prefix={<span style={{ fontWeight: "bold" }}>₹</span>}
+                precision={2}
+              />
+            </Card>
+          </Col>
+          {/* <Col xs={24} sm={12} md={6}>
+          <Card>
+            <Statistic title="Stock Level" value={78} suffix="%" />
+            <Progress percent={78} status="active" />
+          </Card>
+        </Col> */}
+        </Row>
+      )}
 
       {/* Sales Chart & Top Items */}
       <Row gutter={16} style={{ marginBottom: 24 }}>

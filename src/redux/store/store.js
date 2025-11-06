@@ -13,6 +13,7 @@ import paymentReceivedReducer from '../slice/paymentreceived/paymentReceivedSlic
 import paymentMadeReducer from '../slice/paymentMade/paymentMadeSlice'
 import customerReportReducer from "../slice/reports/customerReportSlice";
 import vendorReportReducer from "../slice/reports/vendorReportSlice"; 
+import itemReportReducer from "../slice/reports/itemReportsSlice";
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -26,6 +27,7 @@ const appReducer = combineReducers({
     paymentMade: paymentMadeReducer,
     customerReport: customerReportReducer,
     vendorReport: vendorReportReducer,
+    itemReport: itemReportReducer,
 
 });
 

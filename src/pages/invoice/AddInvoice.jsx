@@ -482,6 +482,9 @@ const AddInvoice = () => {
           form={form}
           layout="vertical"
           onFinish={onFinish}
+           initialValues={{
+              invoiceDate: dayjs(),
+            }}
           className="min-h-[70vh] !px-2"
         >
           <Title level={4}>Invoice Information</Title>

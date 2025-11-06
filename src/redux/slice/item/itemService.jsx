@@ -39,12 +39,24 @@ const deleteItem = async (id) => {
   return res.data;
 };
 
+const addStock = async (data) => {
+  const res = await api.post("/item-configuration/add-stock", data);
+  return res.data;
+};
+
+const removeStock = async (data) => {
+  const res = await api.post("/item-configuration/remove-stock", data);
+  return res.data;
+};
+
 const itemService = {
   createItem,
   getAllItem,
   getItemById,
   updateItem,
   deleteItem,
+  addStock,
+  removeStock
 };
 
 export default itemService;

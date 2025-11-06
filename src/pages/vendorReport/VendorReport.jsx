@@ -184,7 +184,7 @@ const VendorReport = () => {
     {
       title: "Payments Made",
       key: "totalPaymentAmount",
-      render: (_, record) => `₹${Number(record.billTotal || 0).toFixed(2)}`,
+      render: (_, record) => `₹${Number(record.paymentTotal || 0).toFixed(2)}`,
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
@@ -249,8 +249,8 @@ const VendorReport = () => {
       </Card>
       {loading ? (
         <Row gutter={16} style={{ marginBottom: 16 }}>
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Col span={4} key={i}>
+          {[1, 2, 3, 4].map((i) => (
+            <Col span={6} key={i}>
               <Card>
                 <Skeleton active paragraph={{ rows: 1 }} />
               </Card>

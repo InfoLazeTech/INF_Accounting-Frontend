@@ -24,6 +24,9 @@ import {
   IdcardOutlined,
   HomeOutlined,
   LockOutlined,
+  TagOutlined,
+  NumberOutlined,
+  FormOutlined,
 } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
@@ -71,6 +74,8 @@ const Profile = () => {
         state: companyData.address?.state || "",
         pin: companyData.address?.pinCode || "",
         fax: companyData.address?.faxNumber || "",
+        prefix: companyData?.invoiceNumberConfig?.prefix || "",
+        suffix: companyData?.invoiceNumberConfig?.suffix || "",
       });
     }
   }, [companyData, form, user]);
@@ -89,6 +94,10 @@ const Profile = () => {
           state: values.state,
           pinCode: values.pin,
           faxNumber: values.fax,
+        },
+        invoiceNumberConfig: {
+          prefix: values.prefix,
+          suffix: values.suffix,
         },
       };
       console.log("Payload sent to updateCompany:", payload);
@@ -471,6 +480,35 @@ const Profile = () => {
               disabled={!isEditing}
               prefix={<PhoneOutlined style={{ color: "#1890ff" }} />}
               rules={[{ required: true, message: "Please enter fax number" }]}
+            />
+          </Col>
+        </Row>
+        <SectionTitle
+          icon={<FormOutlined  />}
+          title="Invoice Number Settings"
+          subtitle="Configure your prefix and suffix for invoice numbering"
+        />
+        <Row gutter={16}>
+          <Col span={8}>
+            <CustomInput
+              type="text"
+              name="prefix"
+              label="Invoice Prefix"
+              placeholder="Enter Prefix Number"
+              disabled={!isEditing}
+              prefix={<TagOutlined style={{ color: "#1890ff" }} />}
+              // rules={[{ required: true, message: "Please enter Prefix number" }]}
+            />
+          </Col>
+          <Col span={8}>
+            <CustomInput
+              type="text"
+              name="suffix"
+              label="Invoice Suffix Number"
+              placeholder="Enter Suffix number"
+              disabled={!isEditing}
+              prefix={<NumberOutlined style={{ color: "#1890ff" }} />}
+              // rules={[{ required: true, message: "Please enter Suffix number" }]}
             />
           </Col>
         </Row>

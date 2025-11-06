@@ -218,7 +218,7 @@ const Bill = () => {
       <Card style={{ marginBottom: 16 }} bodyStyle={{ padding: "12px 20px" }}>
         <Row align="middle" justify="space-between">
           <Col>
-            <div className="text-xl font-semibold">View Bills</div>
+            <div className="text-xl font-semibold">View Purchase Bills</div>
           </Col>
           <Col>
             <Space size="middle">
@@ -228,7 +228,7 @@ const Bill = () => {
                 size="middle"
                 onClick={() => navigate("/bill/add")}
               >
-                Add Bill
+                Add Purchase Bill
               </Button>
             </Space>
           </Col>
@@ -264,7 +264,7 @@ const Bill = () => {
                   onChange={handleVendorChange}
                   allowClear
                   size="large"
-                  optionFilterProp="label" 
+                  optionFilterProp="label"
                   filterOption={(input, option) =>
                     option?.label?.toLowerCase().includes(input.toLowerCase())
                   }
@@ -273,16 +273,16 @@ const Bill = () => {
                   options={
                     dropdownVendors?.length
                       ? dropdownVendors.map((vendor) => ({
-                          label: vendor.companyName || vendor.name,
-                          value: vendor._id,
-                        }))
+                        label: vendor.companyName || vendor.name,
+                        value: vendor._id,
+                      }))
                       : [
-                          {
-                            label: "No vendors available",
-                            value: "",
-                            disabled: true,
-                          },
-                        ]
+                        {
+                          label: "No vendors available",
+                          value: "",
+                          disabled: true,
+                        },
+                      ]
                   }
                 />
               </div>

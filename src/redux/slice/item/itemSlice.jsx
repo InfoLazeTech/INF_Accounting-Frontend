@@ -59,6 +59,30 @@ export const deleteItem = createAsyncThunk(
   }
 );
 
+export const addStock = createAsyncThunk(
+  "item/addStock",
+  async (data) => {
+    try {
+      const response = await itemService.addStock(data);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
+    }
+  }
+);
+
+export const removeStock = createAsyncThunk(
+  "item/removeStock",
+  async (data) => {
+    try {
+      const response = await itemService.removeStock(data);
+      return response;
+    } catch (error) {
+      throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
+    }
+  }
+);
+
 const itemSlice = createSlice({
   name: "item",
   initialState: {
@@ -159,7 +183,33 @@ const itemSlice = createSlice({
         state.deleteLoading = false;
         state.error = action.error.message;
         toast.error(state.error);
-      });
+      })
+      .addCase(addStock.pending, (state) => {
+        state.postLoading = true;
+      })
+      .addCase(addStock.fulfilled, (state, action) => {
+        state.postLoading = false;
+        state.message = action.payload.message;
+        toast.success(state.message);
+      })
+      .addCase(addStock.rejected, (state, action) => {
+        state.postLoading = false;
+        state.error = action.error.message;
+        toast.error(state.error);
+      })
+      .addCase(removeStock.pending, (state) => {
+        state.postLoading = true;
+      })
+      .addCase(removeStock.fulfilled, (state, action) => {
+        state.postLoading = false;
+        state.message = action.payload.message;
+        toast.success(state.message);
+      })
+      .addCase(removeStock.rejected, (state, action) => {
+        state.postLoading = false;
+        state.error = action.error.message;
+        toast.error(state.error);
+      })
   },
 });
 
