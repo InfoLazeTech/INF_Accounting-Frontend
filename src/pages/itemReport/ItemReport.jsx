@@ -105,32 +105,21 @@ function ItemReport() {
         //   }),
         // },
         {
-            title: "Due Date",
-            dataIndex: "dueDate",
-            key: "dueDate",
-            render: (date) => (date ? new Date(date).toLocaleDateString() : "-"),
+            title: "Quantity",
+            key: "quantity",
+            render: (_, record) => record?.itemDetails?.quantity ?? "-",
             onHeaderCell: () => ({
                 style: { fontSize: 16, fontWeight: 700, color: "#001529" },
             }),
         },
         {
-            title: "Total Amount",
-            dataIndex: ["totals", "grandTotal"],
-            key: "totalAmount",
-            render: (amount) => (amount ? `₹${amount.toFixed(2)}` : "₹0.00"),
+            title: "Unit Price",
+            key: "unitPrice",
+            render: (_, record) => record?.itemDetails?.unitPrice ?? "-",
             onHeaderCell: () => ({
                 style: { fontSize: 16, fontWeight: 700, color: "#001529" },
             }),
         },
-        // {
-        //   title: "Balance Due",
-        //   dataIndex: "remainingAmount",
-        //   key: "balanceDue",
-        //   render: (amount) => (amount ? `₹${amount.toFixed(2)}` : "₹0.00"),
-        //   onHeaderCell: () => ({
-        //     style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-        //   }),
-        // },
         {
             title: "Action",
             key: "action",
@@ -139,7 +128,7 @@ function ItemReport() {
                     <Button
                         type="default"
                         icon={<Icons.EyeOutlined />}
-                        // onClick={() => navigate(`/invoice/view/${record._id}`)}
+                    // onClick={() => navigate(`/invoice/view/${record._id}`)}
                     />
                     {/* <Button
                         type="primary"
@@ -254,14 +243,14 @@ function ItemReport() {
                 <CustomTable
                     tableId="invoiceId"
                     columns={columns}
-                    data={itemSalesDetail  || []}
+                    data={itemSalesDetail || []}
                     loading={loading}
-                    // pagination={{
-                    //     current: parseInt(searchParams?.get("page")) || 1,
-                    //     pageSize: parseInt(searchParams?.get("limit")) || 10,
-                    //     total: pagination.totalCount,
-                    //     onChange: handlePaginationChange,
-                    // }}
+                // pagination={{
+                //     current: parseInt(searchParams?.get("page")) || 1,
+                //     pageSize: parseInt(searchParams?.get("limit")) || 10,
+                //     total: pagination.totalCount,
+                //     onChange: handlePaginationChange,
+                // }}
                 />
             </Card>
         </div>
