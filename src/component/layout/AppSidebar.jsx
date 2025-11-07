@@ -37,41 +37,47 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
     },
     {
       key: "2",
+      icon: <Icons.BankOutlined />,
+      label: "Banking",
+      path: "/banking",
+    },
+    {
+      key: "3",
       icon: <Icons.UsergroupAddOutlined />,
       label: "Customer/Vendor",
       path: "/customer",
     },
     {
-      key: "3",
+      key: "4",
       icon: <Icons.CreditCardOutlined />,
       label: "Item",
       path: "/item",
     },
     {
-      key: "4",
+      key: "5",
       icon: <Icons.BuildOutlined />,
       label: "Purchase Bill",
       path: "/bill",
     },
     {
-      key: "5",
+      key: "6",
       icon: <Icons.InboxOutlined />,
       label: "Invoice",
       path: "/invoice",
     },
     {
-      key: "6",
+      key: "7",
       icon: <Icons.DollarOutlined />,
       label: "Payments",
       children: [
         {
-          key: "6-1",
+          key: "7-1",
           label: "Payment Received",
           icon: <Icons.DollarOutlined />,
           path: "/payment-received",
         },
         {
-          key: "6-2",
+          key: "7-2",
           label: "Payment Made",
           icon: <Icons.DollarOutlined />,
           path: "/payment-made",
@@ -79,35 +85,29 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
       ],
     },
     {
-      key: "7",
+      key: "8",
       icon: <Icons.RiseOutlined />,
       label: "Reports",
       children: [
         {
-          key: "7-1",
+          key: "8-1",
           icon: <Icons.RiseOutlined />,
           label: "Customer Report",
           path: "/customer-report",
         },
         {
-          key: "7-2",
+          key: "8-2",
           icon: <Icons.RiseOutlined />,
           label: "Vendor Report",
           path: "/vendor-report",
         },
         {
-          key: "7-3",
+          key: "8-3",
           icon: <Icons.RiseOutlined />,
           label: "Item Report",
           path: "/item-report",
         },
       ],
-    },
-    {
-      key: "8",
-      icon: <Icons.BankOutlined  />,
-      label: "Banking",
-      path: "/banking",
     },
   ];
 
