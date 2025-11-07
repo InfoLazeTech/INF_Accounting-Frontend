@@ -38,6 +38,10 @@ import ViewCustomerReport from "./pages/customerReport/ViewCustomerReport";
 import ViewVendorReport from "./pages/vendorReport/ViewVendorReport";
 import ManageStock from "./pages/item/ManageStock";
 import ItemReport from "./pages/itemReport/ItemReport";
+import Banking from "./pages/banking/banking";
+import AddNewAccount from "./pages/banking/AddNewAccount";
+import AddTransaction from "./pages/banking/AddTransaction";
+import Transaction from "./pages/banking/Transaction";
 
 export default function App() {
   return (
@@ -129,6 +133,13 @@ export default function App() {
 
           <Route path="/item-report" element={<ItemReport />} />
           {/* <Route path="/item-report/view/:vendorId" element={<ViewVendorReport />} /> */}
+
+          <Route path="/banking" element={<Banking />} />
+          <Route path="/banking/add-account" element={<AddNewAccount />} />
+          <Route path="/banking/credit/:bankId" element={<AddTransaction />} />
+          <Route path="/banking/debit/:bankId" element={<AddTransaction />} />
+          <Route path="/banking/transaction/:bankId" element={<Transaction />} />
+
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

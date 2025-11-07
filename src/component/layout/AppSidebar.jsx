@@ -59,42 +59,74 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
       label: "Invoice",
       path: "/invoice",
     },
-      {
+    {
       key: "6",
       icon: <Icons.DollarOutlined />,
-      label: "Payment Received",
-      path: "/payment-received",
+      label: "Payments",
+      children: [
+        {
+          key: "6-1",
+          label: "Payment Received",
+          icon: <Icons.DollarOutlined />,
+          path: "/payment-received",
+        },
+        {
+          key: "6-2",
+          label: "Payment Made",
+          icon: <Icons.DollarOutlined />,
+          path: "/payment-made",
+        },
+      ],
     },
-     {
+    {
       key: "7",
-      icon: <Icons.DollarOutlined />,
-      label: "Payment Made",
-      path: "/payment-made",
+      icon: <Icons.RiseOutlined />,
+      label: "Reports",
+      children: [
+        {
+          key: "7-1",
+          icon: <Icons.RiseOutlined />,
+          label: "Customer Report",
+          path: "/customer-report",
+        },
+        {
+          key: "7-2",
+          icon: <Icons.RiseOutlined />,
+          label: "Vendor Report",
+          path: "/vendor-report",
+        },
+        {
+          key: "7-3",
+          icon: <Icons.RiseOutlined />,
+          label: "Item Report",
+          path: "/item-report",
+        },
+      ],
     },
     {
       key: "8",
-      icon: <Icons.RiseOutlined />,
-      label: "Customer Report",
-      path: "/customer-report",
-    },
-    {
-      key: "9",
-      icon: <Icons.RiseOutlined />,
-      label: "Vendor Report",
-      path: "/vendor-report",
-    },
-     {
-      key: "10",
-      icon: <Icons.RiseOutlined />,
-      label: "Item Report",
-      path: "/item-report",
+      icon: <Icons.BankOutlined  />,
+      label: "Banking",
+      path: "/banking",
     },
   ];
 
   const handleMenuClick = ({ key }) => {
-    const item = items.find((i) => i.key === key);
-    if (item?.path) navigate(item.path);
+    const findItem = (menuItems, key) => {
+      for (const item of menuItems) {
+        if (item.key === key) return item;
+        if (item.children) {
+          const child = findItem(item.children, key);
+          if (child) return child;
+        }
+      }
+      return null;
+    };
+
+    const clickedItem = findItem(items, key);
+    if (clickedItem?.path) navigate(clickedItem.path);
   };
+
 
   // Map location to menu key
   const selectedKey = items.find(
@@ -121,9 +153,8 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
       >
         {/* Logo */}
         <div
-          className={`h-16 flex items-center px-4 border-b z-50 ${
-            isDarkMode ? "bg-[#1a1a1a]" : "bg-white"
-          } ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}
+          className={`h-16 flex items-center px-4 border-b z-50 ${isDarkMode ? "bg-[#1a1a1a]" : "bg-white"
+            } ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}
           style={{
             position: "fixed",
             left: 0,
@@ -175,9 +206,8 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
         </div>
 
         <div
-          className={`${isDarkMode ? "bg-[#1a1a1a]" : "bg-white"} border-t ${
-            isDarkMode ? "border-gray-700" : "border-gray-200"
-          } p-4 flex items-center gap-3 z-50 hover:bg-gray-100 transition`}
+          className={`${isDarkMode ? "bg-[#1a1a1a]" : "bg-white"} border-t ${isDarkMode ? "border-gray-700" : "border-gray-200"
+            } p-4 flex items-center gap-3 z-50 hover:bg-gray-100 transition`}
           style={{
             position: "fixed",
             left: 0,
