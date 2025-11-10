@@ -244,7 +244,7 @@ function ItemReport() {
                     tableId="invoiceId"
                     columns={columns}
                     data={itemSalesDetail || []}
-                    loading={loading}
+                    loading={reportLoading}
                 // pagination={{
                 //     current: parseInt(searchParams?.get("page")) || 1,
                 //     pageSize: parseInt(searchParams?.get("limit")) || 10,
