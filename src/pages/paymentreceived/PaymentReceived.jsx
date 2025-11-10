@@ -294,7 +294,7 @@ const PaymentReceived = () => {
                   value={filter.partyId}
                   onChange={handleCustomerChange}
                   allowClear
-                  size="large"
+                  size="middle"
                   optionFilterProp="label"
                   filterOption={(input, option) =>
                     option?.label?.toLowerCase().includes(input.toLowerCase())

@@ -120,15 +120,6 @@ const Item = () => {
       }),
     },
     {
-      title: "Status",
-      dataIndex: "isActive",
-      key: "status",
-      render: (status) => (status ? "Active" : "Inactive"),
-      onHeaderCell: () => ({
-        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-      }),
-    },
-    {
       title: "Opening Stock",
       dataIndex: "openingStock",
       key: "openingStock",
@@ -140,6 +131,15 @@ const Item = () => {
       title: "Available Stock",
       dataIndex: "availableStock",
       key: "availableStock",
+      onHeaderCell: () => ({
+        style: { fontSize: 16, fontWeight: 700, color: "#001529" },
+      }),
+    },
+    {
+      title: "Status",
+      dataIndex: "isActive",
+      key: "status",
+      render: (status) => (status ? "Active" : "Inactive"),
       onHeaderCell: () => ({
         style: { fontSize: 16, fontWeight: 700, color: "#001529" },
       }),
@@ -203,6 +203,14 @@ const Item = () => {
           </Col>
           <Col>
             <Space size="middle">
+              <Button
+                type="default"
+                icon={<Icons.PlusCircleOutlined />}
+                size="middle"
+                onClick={() => navigate("/item/manage-stock")}
+              >
+                Manage Stock
+              </Button>
               <Button
                 type="primary"
                 icon={<Icons.PlusCircleOutlined />}

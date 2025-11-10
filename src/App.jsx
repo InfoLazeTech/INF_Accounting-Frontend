@@ -36,6 +36,12 @@ import CustomerReport from "./pages/customerReport/CustomerReport";
 import VendorReport from "./pages/vendorReport/VendorReport";
 import ViewCustomerReport from "./pages/customerReport/ViewCustomerReport";
 import ViewVendorReport from "./pages/vendorReport/ViewVendorReport";
+import ManageStock from "./pages/item/ManageStock";
+import ItemReport from "./pages/itemReport/ItemReport";
+import Banking from "./pages/banking/banking";
+import AddNewAccount from "./pages/banking/AddNewAccount";
+import AddTransaction from "./pages/banking/AddTransaction";
+import Transaction from "./pages/banking/Transaction";
 
 export default function App() {
   return (
@@ -92,6 +98,7 @@ export default function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="item" element={<Item />} />
           <Route path="item/add" element={<AddItem />} />
+          <Route path="item/manage-Stock" element={<ManageStock />} />
           <Route path="item/edit/:itemId" element={<AddItem />} />
           <Route path="/item/view/:itemId" element={<ItemView />} />
 
@@ -100,29 +107,39 @@ export default function App() {
           <Route path="bill/edit/:billId" element={<AddBill />} />
           <Route path="/bill/view/:billId" element={<BillView />} />
 
-          
-          <Route path="invoice" element={<Invoice/>} />
+
+          <Route path="invoice" element={<Invoice />} />
           <Route path="invoice/add" element={<AddInvoice />} />
           <Route path="invoice/edit/:invoiceId" element={<AddInvoice />} />
           <Route path="/invoice/view/:invoiceId" element={<InvoiceView />} />
 
-          <Route path="/payment-received" element={<PaymentReceived/>} />
-          <Route path="/payment-received/add"  element={<AddPaymentReceived/>} />
-          <Route path="/payment-received/edit/:paymentId"  element={<AddPaymentReceived/>} />
-          <Route path="/payment-received/view/:paymentId"  element={<ViewPaymentReceived/>} />
-
-          
-          <Route path="/payment-made" element={<PaymentMade/>} />
-          <Route path="/payment-made/add"  element={<AddPaymentMade/>} />
-          <Route path="/payment-made/edit/:paymentId"  element={<AddPaymentMade/>} />
-          <Route path="/payment-made/view/:paymentId"  element={<ViewPaymentMade/>} />
-
-          <Route path="/customer-report" element={<CustomerReport/>} />
-          <Route path="/customer-report/view/:customerId"  element={<ViewCustomerReport/>} />
+          <Route path="/payment-received" element={<PaymentReceived />} />
+          <Route path="/payment-received/add" element={<AddPaymentReceived />} />
+          <Route path="/payment-received/edit/:paymentId" element={<AddPaymentReceived />} />
+          <Route path="/payment-received/view/:paymentId" element={<ViewPaymentReceived />} />
 
 
-          <Route path="/vendor-report" element={<VendorReport/>} />
-          <Route path="/vendor-report/view/:vendorId"  element={<ViewVendorReport/>} />
+          <Route path="/payment-made" element={<PaymentMade />} />
+          <Route path="/payment-made/add" element={<AddPaymentMade />} />
+          <Route path="/payment-made/edit/:paymentId" element={<AddPaymentMade />} />
+          <Route path="/payment-made/view/:paymentId" element={<ViewPaymentMade />} />
+
+          <Route path="/customer-report" element={<CustomerReport />} />
+          <Route path="/customer-report/view/:customerId" element={<ViewCustomerReport />} />
+
+
+          <Route path="/vendor-report" element={<VendorReport />} />
+          <Route path="/vendor-report/view/:vendorId" element={<ViewVendorReport />} />
+
+          <Route path="/item-report" element={<ItemReport />} />
+          {/* <Route path="/item-report/view/:vendorId" element={<ViewVendorReport />} /> */}
+
+          <Route path="/banking" element={<Banking />} />
+          <Route path="/banking/add-account" element={<AddNewAccount />} />
+          <Route path="/banking/credit/:bankId" element={<AddTransaction />} />
+          <Route path="/banking/debit/:bankId" element={<AddTransaction />} />
+          <Route path="/banking/transaction/:bankId" element={<Transaction />} />
+
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

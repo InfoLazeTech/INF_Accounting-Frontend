@@ -341,6 +341,8 @@ const AddBill = () => {
       dataIndex: "itemName",
       render: (_, record, index) => (
         <Select
+          showSearch
+          optionFilterProp="children"
           placeholder="Select item"
           style={{ width: "100%" }}
           value={record.itemId || undefined}
@@ -436,7 +438,7 @@ const AddBill = () => {
           </Col>
           <Col>
             <Title level={3} style={{ margin: 0 }}>
-              {billId ? "Edit Bill" : "Add Bill"}
+              {billId ? "Edit Purchase Bill" : "Add Purchase Bill"}
             </Title>
           </Col>
         </Row>
@@ -451,9 +453,12 @@ const AddBill = () => {
             form={form}
             layout="vertical"
             onFinish={onFinish}
+            initialValues={{
+              billDate: dayjs(),
+            }}
             className="min-h-[70vh] !px-2"
           >
-            <Title level={4}>Bill Information</Title>
+            <Title level={4}>Purchase Bill Information</Title>
             <Row gutter={16}>
               <Col span={8}>
                 <CustomInput
