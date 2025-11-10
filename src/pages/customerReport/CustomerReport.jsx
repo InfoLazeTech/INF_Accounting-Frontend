@@ -278,7 +278,7 @@ const CustomerReport = () => {
             <FilterInput
               type={filterInputEnum.SEARCH}
               name="search"
-              placeHolder="Search invoice or customer..."
+              placeHolder="Search customer..."
               value={filter.search}
               setFilter={setFilter}
               onSerch={handleSearch}

@@ -22,6 +22,7 @@ const AddTransaction = () => {
 
     useEffect(() => {
         form.setFieldsValue({
+            date: transactionDate,
             transactionType: selectedType,
             bankId: bankId
         });
@@ -29,13 +30,19 @@ const AddTransaction = () => {
 
 
     useEffect(() => {
-        dispatch(getBankDropdown());
-    }, [dispatch]);
+        if (companyId) {
+            dispatch(getBankDropdown({ companyId }));
+        }
+    }, [companyId]);
+
 
     const onFinish = async (values) => {
         try {
             const payload = {
-                ...values,
+                bankId,
+                amount:values.amount,
+                description: values.description,
+                date: values.transactionDate,
                 type: values.transactionType,
                 companyId,
             };

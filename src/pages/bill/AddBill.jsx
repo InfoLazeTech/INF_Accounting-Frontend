@@ -341,6 +341,8 @@ const AddBill = () => {
       dataIndex: "itemName",
       render: (_, record, index) => (
         <Select
+          showSearch
+          optionFilterProp="children"
           placeholder="Select item"
           style={{ width: "100%" }}
           value={record.itemId || undefined}

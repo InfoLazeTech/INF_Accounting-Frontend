@@ -160,8 +160,6 @@ const AddPaymentReceived = () => {
                     label: cust.companyName || cust.name,
                     value: cust._id,
                   }))}
-                  showSearch={true}
-                  filterOption={false}
                   loading={dropLoading}
                   onChange={(value) => handleCustomerSelect(value)}
                   rules={[

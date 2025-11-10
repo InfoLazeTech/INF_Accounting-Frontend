@@ -73,9 +73,9 @@ const AddInvoice = () => {
   const [companyState, setCompanyState] = useState("");
   const [isSameState, setIsSameState] = useState(true);
   const [customerShippingAddress, setCustomerShippingAddress] = useState({});
-    const { dropdownCustomers, dropLoading } = useSelector(
-      (state) => state.customerVendor
-    );
+  const { dropdownCustomers, dropLoading } = useSelector(
+    (state) => state.customerVendor
+  );
 
   useEffect(() => {
     dispatch(getCustomerDropdown({ companyId }));
@@ -161,10 +161,10 @@ const AddInvoice = () => {
   };
 
   useEffect(() => {
-  if (invoiceId && invoice?.customerId?._id) {
-    handleCustomerSelect(invoice?.customerId?._id);
-  }
-}, [invoiceId, invoice?.customerId?._id]);
+    if (invoiceId && invoice?.customerId?._id) {
+      handleCustomerSelect(invoice?.customerId?._id);
+    }
+  }, [invoiceId, invoice?.customerId?._id]);
 
 
   const handleCustomerSelect = (value) => {
@@ -382,6 +382,8 @@ const AddInvoice = () => {
       dataIndex: "name",
       render: (_, record, index) => (
         <Select
+          showSearch
+          optionFilterProp="children"
           placeholder="Select item"
           style={{ width: "100%" }}
           value={record.itemId || undefined}
@@ -482,9 +484,9 @@ const AddInvoice = () => {
           form={form}
           layout="vertical"
           onFinish={onFinish}
-           initialValues={{
-              invoiceDate: dayjs(),
-            }}
+          initialValues={{
+            invoiceDate: dayjs(),
+          }}
           className="min-h-[70vh] !px-2"
         >
           <Title level={4}>Invoice Information</Title>

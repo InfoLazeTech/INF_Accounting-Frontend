@@ -81,7 +81,17 @@ const CustomInput = ({
       break;
     case "select":
       inputComponent = (
-        <Select placeholder={placeholder} options={options} {...restProps} />
+        <Select
+          showSearch                    
+          allowClear                    
+          placeholder={placeholder}
+          optionFilterProp="label"      
+          filterOption={(input, option) =>
+            (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
+          }
+          options={options}
+          {...restProps}
+        />
       );
       break;
     case "date":
@@ -136,10 +146,10 @@ const CustomInput = ({
     type === "switch"
       ? "checked"
       : type === "file"
-      ? "fileList"
-      : type === "checkbox" && options.length === 0
-      ? "checked"
-      : "value";
+        ? "fileList"
+        : type === "checkbox" && options.length === 0
+          ? "checked"
+          : "value";
 
   return (
     <Form.Item

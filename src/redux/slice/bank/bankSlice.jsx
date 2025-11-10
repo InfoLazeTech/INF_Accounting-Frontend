@@ -40,9 +40,9 @@ export const addTransaction = createAsyncThunk(
 
 export const getBankDropdown = createAsyncThunk(
     "bank/getBankDropdown",
-    async () => {
+    async ({ companyId }) => {
         try {
-            const response = await bankService.getBankAccount();
+            const response = await bankService.getBankAccount(companyId);
             return response;
         } catch (error) {
             throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
@@ -62,16 +62,43 @@ export const getTransaction = createAsyncThunk(
     }
 );
 
+export const updateTransaction = createAsyncThunk(
+    "bank/updateTransaction  ",
+    async (payload) => {
+        try {
+            const response = await bankService.updateTransaction(payload);
+            return response;
+        } catch (error) {
+            throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
+        }
+    }
+);
+
+export const deleteTransaction = createAsyncThunk(
+    "bank/deleteTransaction",
+    async (transactionId) => {
+        try {
+            const response = await bankService.deleteTransaction(transactionId);
+            return response;
+        } catch (error) {
+            throw error?.response?.data?.error?.message || error?.message || "Something went wrong";
+        }
+    }
+);
+
+
+
 const bankSlice = createSlice({
     name: "bank",
     initialState: {
         banks: [],
         bankDropdown: [],
         transactions: [],
-        bankData:{},
+        bankData: {},
         bank: null,
         loading: false,
         postLoading: false,
+        deleteLoading: false,
         error: null,
         message: null,
         pagination: {
@@ -148,6 +175,32 @@ const bankSlice = createSlice({
             })
             .addCase(getTransaction.rejected, (state, action) => {
                 state.loading = false;
+            })
+            .addCase(updateTransaction.pending, (state) => {
+                state.postLoading = true;
+            })
+            .addCase(updateTransaction.fulfilled, (state, action) => {
+                state.postLoading = false;
+                state.message = action.payload.message;
+                toast.success(state.message);
+            })
+            .addCase(updateTransaction.rejected, (state, action) => {
+                state.postLoading = false;
+                state.error = action.error.message;
+                toast.error(state.error);
+            })
+            .addCase(deleteTransaction.pending, (state) => {
+                state.deleteLoading = true;
+            })
+            .addCase(deleteTransaction.fulfilled, (state, action) => {
+                state.deleteLoading = false;
+                state.message = action.payload.message;
+                toast.success(state.message);
+            })
+            .addCase(deleteTransaction.rejected, (state, action) => {
+                state.deleteLoading = false;
+                state.error = action.error.message;
+                toast.error(state.error);
             })
     },
 });

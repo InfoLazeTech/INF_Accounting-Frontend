@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, Row, Col, Button, Space, Tag, DatePicker, Skeleton, Popconfirm } from "antd";
+import { Card, Row, Col, Button, Space, Tag, DatePicker, Skeleton, Popconfirm, Form, Modal, Input, Select } from "antd";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import CustomTable from "../../component/commonComponent/CustomTable";
 import Icons from "../../assets/icon";
@@ -13,7 +13,7 @@ import { filteredURLParams, getQueryParams } from "../../utlis/services";
 import FilterInput from "../../component/commonComponent/FilterInput";
 import { filterInputEnum } from "../../utlis/constants";
 import dayjs from "dayjs";
-import { getTransaction } from "../../redux/slice/bank/bankSlice";
+import { deleteTransaction, getBankDropdown, getTransaction, updateTransaction } from "../../redux/slice/bank/bankSlice";
 
 const { RangePicker } = DatePicker;
 
@@ -21,23 +21,56 @@ function Transaction() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { bankId } = useParams();
+    const [selectedBankId, setSelectedBankId] = useState(bankId);
     const [searchParams, setSearchParams] = useSearchParams();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editData, setEditData] = useState(null);
+    const [form] = Form.useForm();
 
     const [filter, setFilter] = useState({
         startDate: searchParams.get("startDate") || "",
         endDate: searchParams.get("endDate") || "",
     });
 
-    const { transactions, loading, bankData } = useSelector((state) => state.bank);
+    const { transactions, loading, bankData, bankDropdown, postLoading, deleteLoading } = useSelector((state) => state.bank);
     const { companyId } = useSelector((state) => state.auth);
 
     console.log("transactions", transactions);
 
     useEffect(() => {
+        if (companyId) {
+            dispatch(getBankDropdown({ companyId }));
+        }
+    }, [companyId]);
+
+
+    useEffect(() => {
         if (!companyId || !bankId) return;
 
-        dispatch(getTransaction({ companyId, bankId }));
-    }, [companyId, bankId]);
+        dispatch(getTransaction({ companyId, bankId, startDate: "", endDate: "" }));
+    }, [companyId]);
+
+    useEffect(() => {
+        if (!filter.startDate && !filter.endDate) {
+            const startOfMonth = dayjs().startOf("month").format("YYYY-MM-DD");
+            const endOfMonth = dayjs().endOf("month").format("YYYY-MM-DD");
+
+            setFilter({
+                startDate: startOfMonth,
+                endDate: endOfMonth,
+            });
+
+            // Also load with default month range
+            if (companyId && selectedBankId) {
+                dispatch(getTransaction({
+                    companyId,
+                    bankId: selectedBankId,
+                    startDate: startOfMonth,
+                    endDate: endOfMonth,
+                }));
+            }
+        }
+    }, [companyId, selectedBankId]);
 
 
     const updateUrlParams = (newParams) => {
@@ -55,7 +88,7 @@ function Transaction() {
         dispatch(
             getTransaction({
                 companyId,
-                bankId,
+                bankId: selectedBankId,
                 startDate: filter.startDate || undefined,
                 endDate: filter.endDate || undefined,
             })
@@ -81,7 +114,37 @@ function Transaction() {
             startDate: "",
             endDate: "",
         });
-        dispatch(getTransaction({ companyId, bankId }));
+        dispatch(getTransaction({ companyId, bankId: selectedBankId }));
+    };
+
+    const openEditModal = (record) => {
+        setEditData(record);
+        form.setFieldsValue({
+            description: record?.description,
+            amount: record?.amount,
+            type: record?.type,
+            date: dayjs(record?.date),
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleUpdate = async () => {
+        try {
+            const values = await form.validateFields();
+            await dispatch(updateTransaction({
+                transactionId: editData._id,
+                companyId,
+                bankId,
+                ...values,
+                date: values.date.format("YYYY-MM-DD")
+            })).unwrap();
+
+            // message.success("Transaction updated successfully");
+            setIsModalOpen(false);
+            dispatch(getTransaction({ companyId, bankId }));
+        } catch (error) {
+            message.error(error || "Update failed");
+        }
     };
 
     const columns = [
@@ -92,24 +155,34 @@ function Transaction() {
             render: (date) => dayjs(date).format("DD-MM-YYYY"),
         },
         {
-            title: "Type",
-            dataIndex: "type",
-            key: "type",
-            render: (type) => (
-                <Tag color={type === "credit" ? "green" : "red"}>
-                    {type?.toUpperCase()}
-                </Tag>
-            ),
+            title: "Description",
+            dataIndex: "description",
+            key: "description",
+            render: (text) => text && text.trim() !== "" ? text : "-"
         },
         {
-            title: "Amount",
-            dataIndex: "amount",
-            key: "amount",
-            render: (val, record) => (
-                <span style={{ color: record.type === "credit" ? "green" : "red" }}>
-                    ₹ {Number(val).toFixed(2)}
-                </span>
-            )
+            title: "Credit (₹)",
+            key: "credit",
+            render: (_, record) =>
+                record.type === "credit" ? (
+                    <span style={{ color: "green", fontWeight: 600 }}>
+                        ₹ {Number(record.amount).toFixed(2)}
+                    </span>
+                ) : (
+                    "-"
+                ),
+        },
+        {
+            title: "Debit (₹)",
+            key: "debit",
+            render: (_, record) =>
+                record.type === "debit" ? (
+                    <span style={{ color: "red", fontWeight: 600 }}>
+                        ₹ {Number(record.amount).toFixed(2)}
+                    </span>
+                ) : (
+                    "-"
+                ),
         },
         {
             title: "Available Balance",
@@ -118,35 +191,29 @@ function Transaction() {
             render: (val) => `₹ ${Number(val).toFixed(2)}`
         },
         {
-            title: "Description",
-            dataIndex: "description",
-            key: "description",
-            render: (text) => text && text.trim() !== "" ? text : "-"
-        },
-        {
             title: "Action",
             key: "action",
             render: (_, record) => (
                 <Space>
-                    <Button
+                    {/* <Button
                         type="primary"
                         icon={<Icons.EditOutlined />}
-                        // onClick={() => navigate(`/customer/edit/${record._id}`)}
-                    />
+                        onClick={() => openEditModal(record)}
+                    /> */}
                     <Popconfirm
-                        title="Are you sure you want to delete this customer?"
+                        title="Are you sure you want to delete this Transaction?"
                         okText="Yes"
-                        disabled
                         cancelText="No"
-                        // okButtonProps={{ loading: deleteLoading }}
-                        // onConfirm={async () => {
-                        //     try {
-                        //         await dispatch(deleteCustomerVendor(record._id)).unwrap();
-                        //         message.success("Customer deleted successfully");
-                        //     } catch (err) {
-                        //         message.error(err || "Failed to delete customer");
-                        //     }
-                        // }}
+                        okButtonProps={{ loading: deleteLoading }}
+                        onConfirm={async () => {
+                            try {
+                                await dispatch(deleteTransaction(record._id)).unwrap();
+                                dispatch(getTransaction({ companyId, bankId }));
+                                message.success("Transaction deleted successfully");
+                            } catch (err) {
+                                message.error(err || "Failed to delete customer");
+                            }
+                        }}
                     >
                         <Button type="default" danger icon={<Icons.DeleteOutlined />} />
                     </Popconfirm>
@@ -173,6 +240,62 @@ function Transaction() {
                     </Col>
                     <Col>
                         <div className="text-xl font-semibold">Bank Transaction Reports</div>
+                    </Col>
+                </Row>
+            </Card>
+            <Card style={{ marginBottom: 16 }}>
+                <Row gutter={16} align="middle">
+                    <Col span={8}>
+                        <Select
+                            showSearch
+                            placeholder="Select Bank"
+                            loading={false}
+                            className="w-full"
+                            allowClear
+                            size="middle"
+                            optionFilterProp="label"
+                            dropdownStyle={{ textAlign: "left" }}
+                            style={{ textAlign: "left" }}
+                            value={selectedBankId || undefined}
+                            onChange={(value) => {
+                                setSelectedBankId(value);
+                                value ? navigate(`/banking/transaction/${value}`) : navigate(`/banking`);
+                            }}
+                            options={bankDropdown?.map((bank) => ({
+                                label: `${bank.bankName} (${bank.accountNumber})`,
+                                value: bank._id,
+                            }))}
+                        />
+                    </Col>
+                    <Col span={8}>
+                        <RangePicker
+                            style={{ width: "100%" }}
+                            value={
+                                filter.startDate
+                                    ? [dayjs(filter.startDate), dayjs(filter.endDate)]
+                                    : null
+                            }
+                            onChange={handleDateChange}
+                            format="YYYY-MM-DD"
+                        />
+                    </Col>
+                    <Col span={8} style={{ textAlign: "right" }}>
+                        <Space>
+                            <Button
+                                type="default"
+                                icon={<Icons.ClearOutlined />}
+                                onClick={handleClear}
+                            >
+                                Clear All
+                            </Button>
+                            <Button
+                                type="primary"
+                                icon={<Icons.FilterOutlined />}
+                                onClick={handleSearch}
+                            >
+                                Apply Filter
+                            </Button>
+                        </Space>
                     </Col>
                 </Row>
             </Card>
@@ -222,40 +345,36 @@ function Transaction() {
                     </Col>
                 </Row>
             )}
-            <Card style={{ marginBottom: 16 }}>
-                <Row gutter={16} align="middle">
-                    <Col span={8}>
-                        <RangePicker
-                            style={{ width: "100%" }}
-                            value={
-                                filter.startDate
-                                    ? [dayjs(filter.startDate), dayjs(filter.endDate)]
-                                    : null
-                            }
-                            onChange={handleDateChange}
-                            format="YYYY-MM-DD"
-                        />
-                    </Col>
-                    <Col span={8} style={{ textAlign: "right" }}>
-                        <Space>
-                            <Button
-                                type="default"
-                                icon={<Icons.ClearOutlined />}
-                                onClick={handleClear}
-                            >
-                                Clear All
-                            </Button>
-                            <Button
-                                type="primary"
-                                icon={<Icons.FilterOutlined />}
-                                onClick={handleSearch}
-                            >
-                                Apply Filter
-                            </Button>
-                        </Space>
-                    </Col>
-                </Row>
-            </Card>
+            <Modal
+                title="Edit Transaction"
+                open={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
+                onOk={handleUpdate}
+                okText="Update"
+                confirmLoading={postLoading}
+            >
+                <Form layout="vertical" form={form}>
+                    <Form.Item label="Description" name="description">
+                        <Input placeholder="Enter description" />
+                    </Form.Item>
+
+                    <Form.Item label="Amount" name="amount" rules={[{ required: true }]}>
+                        <Input type="number" placeholder="Enter amount" />
+                    </Form.Item>
+
+                    <Form.Item label="Type" name="type" rules={[{ required: true }]}>
+                        <Select disabled>
+                            <Select.Option value="credit">Credit</Select.Option>
+                            <Select.Option value="debit">Debit</Select.Option>
+                        </Select>
+                    </Form.Item>
+
+                    <Form.Item label="Date" name="date" rules={[{ required: true }]}>
+                        <DatePicker style={{ width: "100%" }} />
+                    </Form.Item>
+                </Form>
+            </Modal>
+
 
             {/* Table */}
             <Card>

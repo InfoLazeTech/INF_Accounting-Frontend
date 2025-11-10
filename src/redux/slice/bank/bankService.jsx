@@ -27,8 +27,8 @@ const createTransaction = async (data) => {
     return res.data;
 };
 
-const getBankAccount = async () => {
-    const res = await api.get("/bank/getBankslist");
+const getBankAccount = async (companyId) => {
+    const res = await api.get(`/bank/getBankslist?companyId=${companyId}`);
     return res.data;
 };
 
@@ -45,12 +45,32 @@ const getTransaction = async (payload) => {
     return res.data;
 };
 
+const updateTransaction = async (payload) => {
+    const { transactionId, description, amount, type, date } = payload;
+
+    const res = await api.put(`/transaction/updateTransaction/${transactionId}`, {
+        description,
+        amount,
+        type,
+        date,
+    });
+
+    return res.data;
+};
+
+const deleteTransaction = async (transactionId) => {
+    const res = await api.delete(`/transaction/deleteTransaction/${transactionId}`);
+    return res.data;
+};
+
 const bankService = {
     createBank,
     getListBank,
     createTransaction,
     getBankAccount,
-    getTransaction
+    getTransaction,
+    updateTransaction,
+    deleteTransaction
 }
 
 export default bankService;

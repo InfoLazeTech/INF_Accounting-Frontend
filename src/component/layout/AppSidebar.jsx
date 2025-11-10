@@ -1,10 +1,10 @@
+import React, { useEffect, useMemo, useState } from "react";
 import { Avatar, Layout, Menu } from "antd";
 import { useTheme } from "../commonComponent/ThemeProvider";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import Icons from "../../assets/icon";
 import { colorPalette } from "../../utlis/theme";
 import { useSelector } from "react-redux";
-// import logo from "../../assets/logo.png"
 
 const { Sider } = Layout;
 
@@ -29,59 +29,19 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
   };
 
   const items = [
-    {
-      key: "1",
-      icon: <Icons.HomeOutlined />,
-      label: "Home",
-      path: "/",
-    },
-    {
-      key: "2",
-      icon: <Icons.BankOutlined />,
-      label: "Banking",
-      path: "/banking",
-    },
-    {
-      key: "3",
-      icon: <Icons.UsergroupAddOutlined />,
-      label: "Customer/Vendor",
-      path: "/customer",
-    },
-    {
-      key: "4",
-      icon: <Icons.CreditCardOutlined />,
-      label: "Item",
-      path: "/item",
-    },
-    {
-      key: "5",
-      icon: <Icons.BuildOutlined />,
-      label: "Purchase Bill",
-      path: "/bill",
-    },
-    {
-      key: "6",
-      icon: <Icons.InboxOutlined />,
-      label: "Invoice",
-      path: "/invoice",
-    },
+    { key: "1", icon: <Icons.HomeOutlined />, label: "Home", path: "/" },
+    { key: "2", icon: <Icons.BankOutlined />, label: "Banking", path: "/banking" },
+    { key: "3", icon: <Icons.UsergroupAddOutlined />, label: "Customer/Vendor", path: "/customer" },
+    { key: "4", icon: <Icons.CreditCardOutlined />, label: "Item", path: "/item" },
+    { key: "5", icon: <Icons.BuildOutlined />, label: "Purchase Bill", path: "/bill" },
+    { key: "6", icon: <Icons.InboxOutlined />, label: "Invoice", path: "/invoice" },
     {
       key: "7",
       icon: <Icons.DollarOutlined />,
       label: "Payments",
       children: [
-        {
-          key: "7-1",
-          label: "Payment Received",
-          icon: <Icons.DollarOutlined />,
-          path: "/payment-received",
-        },
-        {
-          key: "7-2",
-          label: "Payment Made",
-          icon: <Icons.DollarOutlined />,
-          path: "/payment-made",
-        },
+        { key: "7-1", label: "Payment Received", icon: <Icons.DollarOutlined />, path: "/payment-received" },
+        { key: "7-2", label: "Payment Made", icon: <Icons.DollarOutlined />, path: "/payment-made" },
       ],
     },
     {
@@ -89,50 +49,76 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
       icon: <Icons.RiseOutlined />,
       label: "Reports",
       children: [
-        {
-          key: "8-1",
-          icon: <Icons.RiseOutlined />,
-          label: "Customer Report",
-          path: "/customer-report",
-        },
-        {
-          key: "8-2",
-          icon: <Icons.RiseOutlined />,
-          label: "Vendor Report",
-          path: "/vendor-report",
-        },
-        {
-          key: "8-3",
-          icon: <Icons.RiseOutlined />,
-          label: "Item Report",
-          path: "/item-report",
-        },
+        { key: "8-1", icon: <Icons.RiseOutlined />, label: "Customer Report", path: "/customer-report" },
+        { key: "8-2", icon: <Icons.RiseOutlined />, label: "Vendor Report", path: "/vendor-report" },
+        { key: "8-3", icon: <Icons.RiseOutlined />, label: "Item Report", path: "/item-report" },
       ],
     },
   ];
 
+  // safe matching: exact match OR segment prefix (path + "/")
+  const matchesPath = (pathname, path) => {
+    if (!path) return false;
+    if (path === "/") return pathname === "/"; // root only exact
+    return pathname === path || pathname.startsWith(path + "/");
+  };
+
+  // Recursively find selected key and which parents should be open
+  const computeActive = (menuItems, pathname) => {
+    for (const item of menuItems) {
+      // If parent has a path and matches (treat parent as active for subroutes)
+      if (item.path && matchesPath(pathname, item.path)) {
+        return { selectedKey: item.key, openKeys: [] }; // parent is selected
+      }
+
+      // If children exist, check children
+      if (item.children) {
+        for (const child of item.children) {
+          if (child.path && matchesPath(pathname, child.path)) {
+            return { selectedKey: child.key, openKeys: [item.key] }; // child selected, parent open
+          }
+        }
+      }
+    }
+    return { selectedKey: null, openKeys: [] };
+  };
+
+  const { selectedKey: initialSelectedKey, openKeys: initialOpenKeys } = useMemo(
+    () => computeActive(items, location.pathname),
+    [items, location.pathname]
+  );
+
+  const [openKeys, setOpenKeys] = useState(initialOpenKeys);
+  const [selectedKey, setSelectedKey] = useState(initialSelectedKey);
+
+  useEffect(() => {
+    const { selectedKey: sk, openKeys: ok } = computeActive(items, location.pathname);
+    setSelectedKey(sk);
+    setOpenKeys(collapsed ? [] : ok);
+  }, [location.pathname, collapsed]);
+
   const handleMenuClick = ({ key }) => {
-    const findItem = (menuItems, key) => {
-      for (const item of menuItems) {
-        if (item.key === key) return item;
-        if (item.children) {
-          const child = findItem(item.children, key);
+    const findItemByKey = (menuItems, k) => {
+      for (const it of menuItems) {
+        if (it.key === k) return it;
+        if (it.children) {
+          const child = findItemByKey(it.children, k);
           if (child) return child;
         }
       }
       return null;
     };
 
-    const clickedItem = findItem(items, key);
-    if (clickedItem?.path) navigate(clickedItem.path);
+    const clicked = findItemByKey(items, key);
+    if (clicked?.path) {
+      navigate(clicked.path);
+    }
+    setSelectedKey(key);
   };
 
-
-  // Map location to menu key
-  const selectedKey = items.find(
-    (i) =>
-      location.pathname === i.path || location.pathname.startsWith(i.path + "/")
-  )?.key;
+  const onOpenChange = (keys) => {
+    setOpenKeys(keys);
+  };
 
   return (
     <>
@@ -164,13 +150,6 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
           }}
         >
           <NavLink to="/" className="w-full text-center">
-            {/* <img
-              alt="INF"
-              src={logo}
-              className={`transition-all duration-300 ${
-                collapsed ? "w-40" : "w-full"
-              }`}
-            /> */}
             <span
               className={`font-semibold text-2xl text-gray-800 transition-all duration-500 ease-in-out block`}
             >
@@ -198,7 +177,9 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
             theme="light"
             inlineCollapsed={collapsed}
             onClick={handleMenuClick}
-            selectedKeys={[selectedKey]}
+            selectedKeys={selectedKey ? [selectedKey] : []}
+            openKeys={collapsed ? [] : openKeys}
+            onOpenChange={onOpenChange}
             items={items}
             style={menuStyles}
             className="border-none custom-menu h-full"
@@ -225,9 +206,7 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
 
           {!collapsed && (
             <div className="flex flex-col min-w-0 flex-1">
-              <span className="font-semibold text-sm truncate">
-                {user?.name}
-              </span>
+              <span className="font-semibold text-sm truncate">{user?.name}</span>
               <span className="text-xs text-gray-500 truncate">
                 {user?.company?.companyName}
               </span>
@@ -235,7 +214,6 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
           )}
         </div>
 
-        {/* Custom Styles */}
         <style jsx global>{`
           .ant-menu-light .ant-menu-item,
           .ant-menu-light .ant-menu-submenu-title {
