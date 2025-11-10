@@ -38,7 +38,7 @@ import ViewCustomerReport from "./pages/customerReport/ViewCustomerReport";
 import ViewVendorReport from "./pages/vendorReport/ViewVendorReport";
 import ManageStock from "./pages/item/ManageStock";
 import ItemReport from "./pages/itemReport/ItemReport";
-import Banking from "./pages/banking/banking";
+import Banking from "./pages/banking/Banking";
 import AddNewAccount from "./pages/banking/AddNewAccount";
 import AddTransaction from "./pages/banking/AddTransaction";
 import Transaction from "./pages/banking/Transaction";
