@@ -88,9 +88,9 @@ function Banking() {
             }),
         },
         {
-            title: "Account Numebr",
-            dataIndex: "bankName",
-            key: "bankName",
+            title: "Account Number",
+            dataIndex: "accountNumber",
+            key: "accountNumber",
             onHeaderCell: () => ({
                 style: { fontSize: 16, fontWeight: 700, color: "#001529" },
             }),
