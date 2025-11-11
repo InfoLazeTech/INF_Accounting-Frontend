@@ -471,7 +471,7 @@ const Profile = () => {
               rules={[{ required: true, message: "Please enter PIN code" }]}
             />
           </Col>
-          <Col span={8}>
+          {/* <Col span={8}>
             <CustomInput
               type="text"
               name="fax"
@@ -481,7 +481,7 @@ const Profile = () => {
               prefix={<PhoneOutlined style={{ color: "#1890ff" }} />}
               rules={[{ required: true, message: "Please enter fax number" }]}
             />
-          </Col>
+          </Col> */}
         </Row>
         <SectionTitle
           icon={<FormOutlined  />}
