@@ -26,6 +26,7 @@ import BillView from "./pages/bill/BillView";
 import Invoice from "./pages/invoice/Invoice";
 import AddInvoice from "./pages/invoice/AddInvoice";
 import InvoiceView from "./pages/invoice/InvoiceView";
+import ViewAccount from "./pages/settings/Accountant/ViewAccount";
 
 export default function App() {
   return (
@@ -95,6 +96,8 @@ export default function App() {
           <Route path="invoice/add" element={<AddInvoice />} />
           <Route path="invoice/edit/:invoiceId" element={<AddInvoice />} />
           <Route path="/invoice/view/:invoiceId" element={<InvoiceView />} />
+
+          <Route path="account" element={<ViewAccount/>} />
         </Route>
 
         <Route path="*" element={<Navigate to="/login" replace />} />

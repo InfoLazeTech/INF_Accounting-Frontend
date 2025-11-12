@@ -32,8 +32,13 @@ const AppHeader = ({ collapsed, toggleSidebar }) => {
           My Profile
         </Menu.Item>
       </NavLink>
+      <NavLink to="/account">
+        <Menu.Item key="2" icon={<Icons.BarChartOutlined />}>
+         Chart of Accounts
+        </Menu.Item>
+      </NavLink>
       <Menu.Item
-        key="2"
+        key="3"
         icon={<Icons.PoweroffOutlined />}
         danger
         onClick={handleLogout}
