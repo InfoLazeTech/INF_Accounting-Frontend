@@ -1,20 +1,20 @@
-
+// src/features/account/selectors.js
 export const selectAccountTree = (state) => {
   const accounts = state.account.accounts;
-  const map = {};
-  const roots = [];
+  const groups = {};
 
   accounts.forEach((acc) => {
-    map[acc._id] = { ...acc, children: [] };
-  });
-
-  accounts.forEach((acc) => {
-    if (acc.parenttype && map[acc.parenttype]) {
-      map[acc.parenttype].children.push(map[acc._id]);
-    } else {
-      roots.push(map[acc._id]);
+    const type = acc.parenttype;
+    if (!groups[type]) {
+      groups[type] = {
+        accountname: type,
+        children: [],
+        isGroup: true,
+        _id: `group-${type}`,
+      };
     }
+    groups[type].children.push({ ...acc, children: [] });
   });
 
-  return roots;
+  return Object.values(groups);
 };

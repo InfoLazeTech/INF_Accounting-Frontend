@@ -18,7 +18,17 @@ const getAllAccount= async (payload) => {
   }
 
   const res = await api.get("/accounts/list", { params: quaryParams });
-  return res.data;
+ return {
+    data: res.data.data,
+    extras: {
+      pagination: {
+        currentPage: res.data.extras.page,
+        totalPages: res.data.extras.totalPages,
+        limit: res.data.extras.limit,
+        totalCount: res.data.extras.total,
+      },
+    },
+  };
 };
 const getAccountById = async (id, companyId) => {
   const res = await api.get(`/accounts/${id}?companyId=${companyId}`);
@@ -29,13 +39,23 @@ const getAccountsByCompany = async (companyId) => {
   const res = await api.get(`/accounts?companyId=${companyId}`);
   return res.data;
 };
+const updateAccount = async ({ accountId, data }) => {
+  const res = await api.put(`/accounts/${accountId}`, data);
+  return res.data;
+};
 
+const deleteAccount = async (accountId) => {
+  const res = await api.delete(`/accounts/${accountId}`);
+  return res.data;
+};
 
 const accountService = {
   createAccount,
   getAllAccount,
   getAccountById,
-  getAccountsByCompany
+  getAccountsByCompany,
+  updateAccount,
+  deleteAccount
 };
 
 export default accountService;
