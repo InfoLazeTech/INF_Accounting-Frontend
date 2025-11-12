@@ -168,61 +168,61 @@ const InvoiceView = () => {
       : false;
   const taxSummary = invoice?.items?.length
     ? [
-        ...Object.values(
-          invoice.items.reduce((acc, item) => {
-            const hsnSac = item.hsnCode;
-            if (!acc[hsnSac]) {
-              acc[hsnSac] = {
-                hsnSac,
-                quantity: 0,
-                taxableValue: 0,
-                cgstTax: isInterState
-                  ? { rate: "", amount: 0 }
-                  : { rate: item.taxRate / 2, amount: 0 },
-                sgstTax: isInterState
-                  ? { rate: "", amount: 0 }
-                  : { rate: item.taxRate / 2, amount: 0 },
-                igstTax: isInterState
-                  ? { rate: item.taxRate, amount: 0 }
-                  : { rate: "", amount: 0 },
-                totalTax: 0,
-              };
-            }
-            acc[hsnSac].quantity += item.quantity;
-            acc[hsnSac].taxableValue += item.lineTotal;
-            if (isInterState) {
-              acc[hsnSac].igstTax.amount +=
-                (item.lineTotal * item.taxRate) / 100;
-            } else {
-              acc[hsnSac].cgstTax.amount +=
-                (item.lineTotal * item.taxRate) / 200;
-              acc[hsnSac].sgstTax.amount +=
-                (item.lineTotal * item.taxRate) / 200;
-            }
-            acc[hsnSac].totalTax += (item.lineTotal * item.taxRate) / 100;
-            return acc;
-          }, {})
-        ),
-        {
-          hsnSac: "Total",
-          quantity:
-            invoice.items.reduce(
-              (sum, item) => sum + (item.quantity || 0),
-              0
-            ) || 0,
-          taxableValue: invoice?.totals?.subtotal || 0,
-          cgstTax: isInterState
-            ? { rate: "", amount: 0 }
-            : { rate: "", amount: invoice?.totals?.cgst || 0 },
-          sgstTax: isInterState
-            ? { rate: "", amount: 0 }
-            : { rate: "", amount: invoice?.totals?.sgst || 0 },
-          igstTax: isInterState
-            ? { rate: "", amount: invoice?.totals?.totalTax || 0 }
-            : { rate: "", amount: 0 },
-          totalTax: invoice?.totals?.totalTax || 0,
-        },
-      ]
+      ...Object.values(
+        invoice.items.reduce((acc, item) => {
+          const hsnSac = item.hsnCode;
+          if (!acc[hsnSac]) {
+            acc[hsnSac] = {
+              hsnSac,
+              quantity: 0,
+              taxableValue: 0,
+              cgstTax: isInterState
+                ? { rate: "", amount: 0 }
+                : { rate: item.taxRate / 2, amount: 0 },
+              sgstTax: isInterState
+                ? { rate: "", amount: 0 }
+                : { rate: item.taxRate / 2, amount: 0 },
+              igstTax: isInterState
+                ? { rate: item.taxRate, amount: 0 }
+                : { rate: "", amount: 0 },
+              totalTax: 0,
+            };
+          }
+          acc[hsnSac].quantity += item.quantity;
+          acc[hsnSac].taxableValue += item.lineTotal;
+          if (isInterState) {
+            acc[hsnSac].igstTax.amount +=
+              (item.lineTotal * item.taxRate) / 100;
+          } else {
+            acc[hsnSac].cgstTax.amount +=
+              (item.lineTotal * item.taxRate) / 200;
+            acc[hsnSac].sgstTax.amount +=
+              (item.lineTotal * item.taxRate) / 200;
+          }
+          acc[hsnSac].totalTax += (item.lineTotal * item.taxRate) / 100;
+          return acc;
+        }, {})
+      ),
+      {
+        hsnSac: "Total",
+        quantity:
+          invoice.items.reduce(
+            (sum, item) => sum + (item.quantity || 0),
+            0
+          ) || 0,
+        taxableValue: invoice?.totals?.subtotal || 0,
+        cgstTax: isInterState
+          ? { rate: "", amount: 0 }
+          : { rate: "", amount: invoice?.totals?.cgst || 0 },
+        sgstTax: isInterState
+          ? { rate: "", amount: 0 }
+          : { rate: "", amount: invoice?.totals?.sgst || 0 },
+        igstTax: isInterState
+          ? { rate: "", amount: invoice?.totals?.totalTax || 0 }
+          : { rate: "", amount: 0 },
+        totalTax: invoice?.totals?.totalTax || 0,
+      },
+    ]
     : [];
   if (invoiceLoading || companyLoading) {
     return (
@@ -279,7 +279,7 @@ const InvoiceView = () => {
                   </tr>
                   <tr>
                     <td className="pr-4">Cust. Code</td>
-                    <td>: {invoice.customerId._id}</td>
+                    <td>: {invoice.customerId.customerVendorId}</td>
                   </tr>
                   <tr>
                     <td className="pr-4">Cust. Name</td>
@@ -295,6 +295,10 @@ const InvoiceView = () => {
                       : {moment(invoice.invoiceDate).format("DD/MM/YYYY")}
                     </td>
                   </tr>
+                  <tr>
+                    <td className="pr-4">GST No.</td>
+                    <td>: {invoice.customerId.gstNumber}</td>
+                  </tr>
                 </table>
               </div>
               <div className="text-right">
@@ -302,19 +306,17 @@ const InvoiceView = () => {
                   <img className="h-20  w-60" src={company.logo} alt="" />
                 </div>
                 <p>
-                  {company.address?.street1 || "A-807, Empire Business Hub"}
+                  {company.address?.street1}
                   <br />
-                  {company.address?.street2 || "Science City Road, Sola"}
+                  {company.address?.street2}
                   <br />
-                  {company.address?.city || "Ahmedabad"}, [
-                  {company.address?.state || "GJ"}] -{" "}
-                  {company.address?.pinCode || "360004"}
+                  {company.address?.city}, {" "}
+                  {company.address?.state} -{" "}
+                  {company.address?.pinCode}
                   <br />
-                  GSTIN: {company.gstNo || "27ABCDE1234F1Z5"}
+                  GSTIN: {company.gstNo}
                   <br />
-                  PAN No: {company.panNo || "BJPFC1243E"}
-                  <br />
-                  Contact No: {invoice.customerId.phone || "7229028694"}
+                  PAN No: {company.panNo}
                 </p>
               </div>
             </div>
@@ -324,18 +326,20 @@ const InvoiceView = () => {
                   <td className="border  border-[#e9e9e9] p-2 ">
                     <span className="font-semibold">Bill To:</span>
                     <br />
-                    {invoice.customerName}
-                    <br />
-                    {invoice.deliveryAddress.street},{" "}
-                    {invoice.deliveryAddress.city}
+                    {invoice.customerId.billingAddress.street},{" "}<br />
+                    {invoice.customerId.billingAddress.city}, {" "}
+                    {invoice.customerId.billingAddress.state}, {" "}
+                    {invoice.customerId.billingAddress.country} -{" "}
+                    {invoice.customerId.billingAddress.zip}
                   </td>
                   <td className="border  border-[#e9e9e9] p-2">
                     <span className="font-semibold">Ship To:</span>
                     <br />
-                    {invoice.customerName}
-                    <br />
-                    {invoice.deliveryAddress.street},{" "}
-                    {invoice.deliveryAddress.city}
+                    {invoice.customerId.shippingAddress.street},{" "}<br />
+                    {invoice.customerId.shippingAddress.city}, {" "}
+                    {invoice.customerId.shippingAddress.state}, {" "}
+                    {invoice.customerId.shippingAddress.country} -{" "}
+                    {invoice.customerId.shippingAddress.zip}
                   </td>
                   <td className="border border-[#e9e9e9] p-2">
                     <span className="font-semibold ">Other Information:</span>
@@ -448,7 +452,7 @@ const InvoiceView = () => {
                       <td className="border border-[#e9e9e9] p-1 text-xs">
                         ₹{item.taxableValue.toFixed(2)}
                       </td>
-                       {isInterState ? (
+                      {isInterState ? (
                         <>
                           <td className="border border-[#e9e9e9] p-1 text-xs">
                             {item.igstTax.rate}%

@@ -9,6 +9,12 @@ import categoryReducer from "../slice/category/categorySlice";
 import itemReducer from '../slice/item/itemSlice'
 import billReducer from '../slice/bill/billSlice'
 import invoiceReducer from '../slice/invoice/invoiceSlice'
+import paymentReceivedReducer from '../slice/paymentreceived/paymentReceivedSlice'
+import paymentMadeReducer from '../slice/paymentMade/paymentMadeSlice'
+import customerReportReducer from "../slice/reports/customerReportSlice";
+import vendorReportReducer from "../slice/reports/vendorReportSlice"; 
+import itemReportReducer from "../slice/reports/itemReportsSlice";
+import bankReducer from "../slice/bank/bankSlice";
 import accountReducer from '../slice/account/accountSlice'
 
 const appReducer = combineReducers({
@@ -19,6 +25,13 @@ const appReducer = combineReducers({
     category:categoryReducer,
     bill: billReducer,
     invoice:invoiceReducer,
+    paymentReceived: paymentReceivedReducer,
+    paymentMade: paymentMadeReducer,
+    customerReport: customerReportReducer,
+    vendorReport: vendorReportReducer,
+    itemReport: itemReportReducer,
+    bank: bankReducer,
+
     account:accountReducer
 
 });

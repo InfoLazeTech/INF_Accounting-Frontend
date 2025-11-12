@@ -40,12 +40,36 @@ const deleteCustomerVendor = async (id) => {
   return res.data;
 };
 
+const getCustomerDropdown = async (payload) => {
+  const { companyId } = payload; 
+  const queryParams = new URLSearchParams({
+    companyId,
+    type: "customer"
+  });
+  
+  const res = await api.get("customer/dropdown", { params: queryParams });
+  return res.data;
+};
+
+const getVendorDropdown = async (payload) => {
+  const { companyId } = payload; 
+  const queryParams = new URLSearchParams({
+    companyId,
+    type: "vendor"
+  });
+  
+  const res = await api.get("customer/dropdown", { params: queryParams });
+  return res.data;
+};
+
 const customerService = {
   createCustomerVendor,
   getAllCustomerVendors,
   getCustomerVendorById,
   updateCustomerVendor,
   deleteCustomerVendor,
+  getCustomerDropdown,
+  getVendorDropdown,
 };
 
 export default customerService;
