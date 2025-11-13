@@ -27,16 +27,12 @@ const AppHeader = ({ collapsed, toggleSidebar }) => {
 
   const menu = (
     <Menu>
-      <NavLink to="/profile">
-        <Menu.Item key="1" icon={<Icons.UserOutlined />}>
-          My Profile
-        </Menu.Item>
-      </NavLink>
-      <NavLink to="/account">
-        <Menu.Item key="2" icon={<Icons.BarChartOutlined />}>
-         Chart of Accounts
-        </Menu.Item>
-      </NavLink>
+      <Menu.Item key="1" icon={<Icons.UserOutlined />}>
+        <NavLink to="/profile">My Profile</NavLink>
+      </Menu.Item>
+      <Menu.Item key="2" icon={<Icons.BarChartOutlined />}>
+        <NavLink to="/account">Chart of Accounts</NavLink>
+      </Menu.Item>
       <Menu.Item
         key="3"
         icon={<Icons.PoweroffOutlined />}

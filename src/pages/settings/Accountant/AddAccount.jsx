@@ -12,13 +12,18 @@ import { useEffect } from "react";
 
 const { Text } = Typography;
 
-const AddAccount = ({ visible, onCancel, companyId, editMode = false, accountData = null, }) => {
+const AddAccount = ({
+  visible,
+  onCancel,
+  companyId,
+  editMode = false,
+  accountData = null,
+}) => {
   const dispatch = useDispatch();
-  const { postLoading,updateLoading  } = useSelector((s) => s.account);
+  const { postLoading, updateLoading } = useSelector((s) => s.account);
   const [form] = Form.useForm();
   console.log("accountData", accountData);
-  
-   
+
   useEffect(() => {
     if (editMode && accountData) {
       form.setFieldsValue({
@@ -36,10 +41,25 @@ const AddAccount = ({ visible, onCancel, companyId, editMode = false, accountDat
     let result;
 
     if (editMode) {
-      payload = { ...values };
-      result = await dispatch(updateAccount({ accountId: accountData._id, data: payload }));
+      payload = {
+        parenttype: values.parenttype || "",
+        accountname: values.accountname || "",
+        accountcode: values.accountcode || "",
+        description: values.description || "",
+      };
+
+      result = await dispatch(
+        updateAccount({ accountId: accountData._id, data: payload })
+      );
     } else {
-      payload = { ...values, companyId };
+      payload = {
+        parenttype: values.parenttype || "",
+        accountname: values.accountname || "",
+        accountcode: values.accountcode || "",
+        description: values.description || "",
+        companyId: companyId,
+      };
+
       result = await dispatch(addAccount(payload));
     }
     const isFulfilled = editMode
@@ -54,7 +74,7 @@ const AddAccount = ({ visible, onCancel, companyId, editMode = false, accountDat
   };
 
   return (
-   <Modal
+    <Modal
       title={editMode ? "Edit Account" : "Add New Account"}
       open={visible}
       onCancel={onCancel}
@@ -64,25 +84,19 @@ const AddAccount = ({ visible, onCancel, companyId, editMode = false, accountDat
     >
       <Spin spinning={editMode ? updateLoading : postLoading}>
         <Form form={form} layout="vertical" onFinish={onFinish}>
-          {editMode ? (
-            <Form.Item label="Parent Type" name="parenttype">
-              <Text strong style={{ color: "#1890ff" }}>
-                {accountData?.parenttype}
-              </Text>
-            </Form.Item>
-          ) : (
-            <CustomInput
-              type="select"
-              name="parenttype"
-              label="Parent Type"
-              placeholder="Select parent type"
-              options={PARENT_TYPES.map((type) => ({
-                label: type,
-                value: type,
-              }))}
-              rules={[{ required: true, message: "Please select parent type" }]}
-            />
-          )}
+          <CustomInput
+            type="select"
+            name="parenttype"
+            label="Parent Type"
+            placeholder="Select parent type"
+            options={PARENT_TYPES.map((type) => ({
+              label: type,
+              value: type,
+            }))}
+            disabled={editMode}
+            rules={[{ required: true, message: "Please select parent type" }]}
+          />
+
           <CustomInput
             type="text"
             name="accountname"
@@ -104,7 +118,7 @@ const AddAccount = ({ visible, onCancel, companyId, editMode = false, accountDat
             placeholder="Enter description"
           />
 
-         <Form.Item className="text-right mb-0">
+          <Form.Item className="text-right mb-0">
             <Space>
               <Button onClick={onCancel} disabled={postLoading}>
                 Cancel

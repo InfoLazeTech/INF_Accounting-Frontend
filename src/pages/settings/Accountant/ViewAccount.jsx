@@ -140,13 +140,7 @@ const ViewAccount = () => {
               cancelText="No"
               placement="left"
             >
-              <Button
-                type="primary"
-                danger
-                icon={<Icons.DeleteOutlined />}
-                loading={deleteLoading}
-                title="Delete"
-              />
+              <Button type="default" danger icon={<Icons.DeleteOutlined />} />
             </Popconfirm>
           </Space>
         );
