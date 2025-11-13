@@ -102,7 +102,6 @@ const AddTransaction = () => {
   };
 
   const onFinish = async (values) => {
-    console.log("values", values);
     try {
       const payload = {
         bankId,
