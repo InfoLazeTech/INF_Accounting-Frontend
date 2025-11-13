@@ -5,6 +5,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import Icons from "../../assets/icon";
 import { colorPalette } from "../../utlis/theme";
 import { useSelector } from "react-redux";
+import { ProductOutlined } from "@ant-design/icons";
 
 const { Sider } = Layout;
 
@@ -35,23 +36,24 @@ const AppSidebar = ({ collapsed, setCollapsed }) => {
     { key: "4", icon: <Icons.CreditCardOutlined />, label: "Item", path: "/item" },
     { key: "5", icon: <Icons.BuildOutlined />, label: "Purchase Bill", path: "/bill" },
     { key: "6", icon: <Icons.InboxOutlined />, label: "Invoice", path: "/invoice" },
+    { key: "7", icon: <ProductOutlined />, label: "Producation Order", path: "/producation-order" },
     {
-      key: "7",
+      key: "8",
       icon: <Icons.DollarOutlined />,
       label: "Payments",
       children: [
-        { key: "7-1", label: "Payment Received", icon: <Icons.DollarOutlined />, path: "/payment-received" },
-        { key: "7-2", label: "Payment Made", icon: <Icons.DollarOutlined />, path: "/payment-made" },
+        { key: "8-1", label: "Payment Received", icon: <Icons.DollarOutlined />, path: "/payment-received" },
+        { key: "8-2", label: "Payment Made", icon: <Icons.DollarOutlined />, path: "/payment-made" },
       ],
     },
     {
-      key: "8",
+      key: "9",
       icon: <Icons.RiseOutlined />,
       label: "Reports",
       children: [
-        { key: "8-1", icon: <Icons.RiseOutlined />, label: "Customer Report", path: "/customer-report" },
-        { key: "8-2", icon: <Icons.RiseOutlined />, label: "Vendor Report", path: "/vendor-report" },
-        { key: "8-3", icon: <Icons.RiseOutlined />, label: "Item Report", path: "/item-report" },
+        { key: "9-1", icon: <Icons.RiseOutlined />, label: "Customer Report", path: "/customer-report" },
+        { key: "9-2", icon: <Icons.RiseOutlined />, label: "Vendor Report", path: "/vendor-report" },
+        { key: "9-3", icon: <Icons.RiseOutlined />, label: "Item Report", path: "/item-report" },
       ],
     },
   ];
