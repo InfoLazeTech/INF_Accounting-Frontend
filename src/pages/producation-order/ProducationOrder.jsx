@@ -9,6 +9,7 @@ import {
     message,
     Popconfirm,
     Select,
+    Modal,
 } from "antd";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -19,15 +20,19 @@ import { filteredURLParams, getQueryParams } from "../../utlis/services";
 import { filterInputEnum } from "../../utlis/constants";
 import FilterInput from "../../component/commonComponent/FilterInput";
 import { getcategory } from "../../redux/slice/category/categorySlice";
-import { getProducationOrder } from "../../redux/slice/producation/producationSlice";
+import { deleteProducationOrder, getProducationOrder } from "../../redux/slice/producation/producationSlice";
 
 
 const ProducationOrder = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { producationOrder, loading, pagination } = useSelector((state) => state.producation);
+    const { producationOrder, loading, pagination, deleteLoading } = useSelector((state) => state.producation);
     const [searchParams, setSearchParams] = useSearchParams();
     const { categorys } = useSelector((state) => state.category);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [modalTitle, setModalTitle] = useState("");
+    const [modalData, setModalData] = useState([]);
+
 
     // const [filter, setFilter] = useState({
     //     search: searchParams.get("search") || "",
@@ -89,6 +94,19 @@ const ProducationOrder = () => {
         updateUrlParams({ page, limit: pageSize });
     };
 
+    const openModal = (title, data) => {
+        setModalTitle(title);
+        setModalData(data);
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setModalTitle("");
+        setModalData([]);
+    };
+
+
     const columns = [
         {
             title: "Production Order No",
@@ -111,41 +129,67 @@ const ProducationOrder = () => {
             title: "Raw Materials",
             dataIndex: "rawMaterials",
             key: "rawMaterials",
-            render: (rawMaterials) =>
-                rawMaterials && rawMaterials.length ? (
-                    <ul style={{ margin: 0, paddingLeft: 16 }}>
-                        {rawMaterials.map((rm) => (
-                            <li key={rm._id}>
-                                {rm.itemId?.name || "-"} ({rm.quantity})
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    "-"
-                ),
-            onHeaderCell: () => ({
-                style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-            }),
+            render: (rawMaterials) => {
+                if (!rawMaterials || rawMaterials.length === 0) return "-";
+
+                const firstTwo = rawMaterials.slice(0, 2);
+
+                return (
+                    <div>
+                        <ul style={{ margin: 0, paddingLeft: 16 }}>
+                            {firstTwo.map((rm) => (
+                                <li key={rm._id}>
+                                    {rm.itemId?.name || "-"} ({rm.quantity})
+                                </li>
+                            ))}
+                        </ul>
+
+                        {rawMaterials.length > 2 && (
+                            <Button
+                                type="link"
+                                onClick={() =>
+                                    openModal("Raw Materials", rawMaterials)
+                                }
+                            >
+                                View More
+                            </Button>
+                        )}
+                    </div>
+                );
+            },
         },
         {
             title: "Finished Goods",
             dataIndex: "finishedGoods",
             key: "finishedGoods",
-            render: (finishedGoods) =>
-                finishedGoods && finishedGoods.length ? (
-                    <ul style={{ margin: 0, paddingLeft: 16 }}>
-                        {finishedGoods.map((fg) => (
-                            <li key={fg._id}>
-                                {fg.itemId?.name || "-"} ({fg.quantity})
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    "-"
-                ),
-            onHeaderCell: () => ({
-                style: { fontSize: 16, fontWeight: 700, color: "#001529" },
-            }),
+            render: (finishedGoods) => {
+                if (!finishedGoods || finishedGoods.length === 0) return "-";
+
+                const firstTwo = finishedGoods.slice(0, 2);
+
+                return (
+                    <div>
+                        <ul style={{ margin: 0, paddingLeft: 16 }}>
+                            {firstTwo.map((fg) => (
+                                <li key={fg._id}>
+                                    {fg.itemId?.name || "-"} ({fg.quantity})
+                                </li>
+                            ))}
+                        </ul>
+
+                        {finishedGoods.length > 2 && (
+                            <Button
+                                type="link"
+                                onClick={() =>
+                                    openModal("Finished Goods", finishedGoods)
+                                }
+                            >
+                                View More
+                            </Button>
+                        )}
+                    </div>
+                );
+            },
         },
         // {
         //     title: "Available Stock",
@@ -171,31 +215,24 @@ const ProducationOrder = () => {
                     <Button
                         type="default"
                         icon={<Icons.EyeOutlined />}
-                    // onClick={() => navigate(`/item/view/${record._id}`)}
+                        onClick={() => navigate(`/producation-order/view/${record._id}`)}
                     />
-
-                    {/* <Button
-                        type="primary"
-                        icon={<Icons.EditOutlined />}
-                        onClick={() => navigate(`/item/edit/${record._id}`)}
-                    /> */}
-                    {/* <Popconfirm
+                    <Popconfirm
                         title="Are you sure you want to delete this item?"
                         okText="Yes"
                         okButtonProps={{ loading: deleteLoading }}
                         cancelText="No"
-                        disabled
                         onConfirm={async () => {
                             try {
-                                await dispatch(deleteItem(record._id)).unwrap();
-                                message.success("Item deleted successfully");
+                                await dispatch(deleteProducationOrder(record._id)).unwrap();
+                                dispatch(getProducationOrder({ companyId }));
                             } catch (err) {
                                 message.error(err || "Failed to delete item");
                             }
                         }}
                     >
                         <Button type="default" danger icon={<Icons.DeleteOutlined />} />
-                    </Popconfirm> */}
+                    </Popconfirm>
                 </Space>
             ),
             onHeaderCell: () => ({
@@ -203,6 +240,7 @@ const ProducationOrder = () => {
             }),
         },
     ];
+
 
     const categoryOptions =
         categorys && Array.isArray(categorys) && categorys.length
@@ -309,6 +347,68 @@ const ProducationOrder = () => {
                     }}
                 />
             </Card>
+            <Modal
+                title={
+                    <div
+                        style={{
+                            fontSize: 20,
+                            fontWeight: 700,
+                            color: "#111",
+                            paddingBottom: 4,
+                        }}
+                    >
+                        {modalTitle}
+                    </div>
+                }
+                open={isModalOpen}
+                onCancel={closeModal}
+                footer={null}
+                bodyStyle={{
+                    maxHeight: "65vh",
+                    overflowY: "auto",
+                    padding: "0",
+                }}
+            >
+                <div
+                    style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 100px",
+                        padding: "14px 22px",
+                        background: "#fafafa",
+                        borderBottom: "1px solid #eee",
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: "#444",
+                        position: "sticky",
+                        top: 0,
+                        zIndex: 10,
+                    }}
+                >
+                    <div>Item Name</div>
+                    <div style={{ textAlign: "right" }}>Quantity</div>
+                </div>
+                {modalData.map((item) => (
+                    <div
+                        key={item._id}
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "1fr 100px",
+                            padding: "14px 22px",
+                            fontSize: 15,
+                            borderBottom: "1px solid #f2f2f2",
+                            transition: "background 0.2s",
+                            cursor: "default",
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "#f9f9f9")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    >
+                        <div style={{ color: "#333" }}>{item?.itemId?.name || "-"}</div>
+                        <div style={{ fontWeight: 600, textAlign: "right" }}>
+                            {item?.quantity}
+                        </div>
+                    </div>
+                ))}
+            </Modal>
         </div>
     )
 }

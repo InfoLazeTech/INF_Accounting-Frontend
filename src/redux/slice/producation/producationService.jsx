@@ -17,4 +17,14 @@ const getProducationOrder = async (payload) => {
     return res.data;
 };
 
-export default { getProducationOrder, createProducationOrder };
+const deleteProducationOrder = async (orderId) => {
+    const res = await api.delete(`/productionOrder/deleteProductionOrder/${orderId}`);
+    return res.data;
+};
+
+const getProducationOrderById = async (orderId) => {
+    const res = await api.get(`/productionOrder/getProductionOrder/${orderId}`);
+    return res.data;
+};
+
+export default { getProducationOrder, createProducationOrder,deleteProducationOrder,getProducationOrderById };

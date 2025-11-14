@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import Icons from "../../assets/icon";
 import { getItem } from "../../redux/slice/item/itemSlice";
-import { addProducationOrder } from "../../redux/slice/producation/producationSlice"; // ✅ your correct thunk
+import { addProducationOrder } from "../../redux/slice/producation/producationSlice";
 
 const { Title } = Typography;
 
@@ -30,7 +30,6 @@ const AddProductionOrder = () => {
   const { items: itemList } = useSelector((state) => state.item);
   const { loading, postLoading } = useSelector((state) => state.producation);
 
-  // Separate states for raw materials and finished goods
   const [rawMaterials, setRawMaterials] = useState([
     { id: Date.now(), itemId: "", quantity: 1 },
   ]);
@@ -38,7 +37,6 @@ const AddProductionOrder = () => {
     { id: Date.now() + 1, itemId: "", quantity: 1 },
   ]);
 
-  // Fetch items
   useEffect(() => {
     if (companyId) {
       dispatch(getItem({ companyId }));
@@ -47,7 +45,6 @@ const AddProductionOrder = () => {
     }
   }, [dispatch, companyId]);
 
-  // Select item
   const handleItemSelect = (list, setList, value, index) => {
     const selected = itemList.find((i) => i._id === value);
     if (!selected) return;
@@ -60,14 +57,12 @@ const AddProductionOrder = () => {
     setList(updated);
   };
 
-  // Quantity change
   const handleQtyChange = (list, setList, index, value) => {
     const updated = [...list];
     updated[index].quantity = value;
     setList(updated);
   };
 
-  // Add new row
   const addNewRow = (list, setList) => {
     setList([
       ...list,
@@ -79,7 +74,6 @@ const AddProductionOrder = () => {
     ]);
   };
 
-  // Remove row
   const removeRow = (list, setList, index) => {
     if (list.length === 1) {
       return message.warning("At least one item is required");
@@ -89,7 +83,6 @@ const AddProductionOrder = () => {
     setList(updated);
   };
 
-  // ✅ Submit form
   const onFinish = async () => {
     if (!companyId) {
       message.error("Company ID is missing. Please log in again.");
@@ -121,31 +114,44 @@ const AddProductionOrder = () => {
     }
   };
 
-  // Reusable columns
   const getColumns = (list, setList) => [
     {
       title: "Item",
       dataIndex: "itemId",
       width: 350,
       render: (_, record, index) => (
-        <Select
-          showSearch
-          placeholder="Select item"
-          style={{ width: "100%" }}
-          value={record.itemId || undefined}
-          onChange={(val) => handleItemSelect(list, setList, val, index)}
-          optionFilterProp="children"
+        <Form.Item
+          validateStatus={!record.itemId && record.touched ? "error" : ""}
+          help={!record.itemId && record.touched ? "Item is required" : ""}
+          style={{ margin: 0 }}
         >
-          {itemList && itemList.length > 0 ? (
-            itemList.map((item) => (
-              <Select.Option key={item._id} value={item._id}>
-                {item.name}
-              </Select.Option>
-            ))
-          ) : (
-            <Select.Option disabled>No items available</Select.Option>
-          )}
-        </Select>
+          <Select
+            showSearch
+            placeholder="Select item"
+            style={{ width: "100%" }}
+            value={record.itemId || undefined}
+            onBlur={() => {
+              // Mark field as touched
+              const updated = [...list];
+              updated[index].touched = true;
+              setList(updated);
+            }}
+            onChange={(val) => {
+              handleItemSelect(list, setList, val, index);
+            }}
+            optionFilterProp="children"
+          >
+            {itemList && itemList.length > 0 ? (
+              itemList.map((item) => (
+                <Select.Option key={item._id} value={item._id}>
+                  {item.name}
+                </Select.Option>
+              ))
+            ) : (
+              <Select.Option disabled>No items available</Select.Option>
+            )}
+          </Select>
+        </Form.Item>
       ),
     },
     {
@@ -198,7 +204,6 @@ const AddProductionOrder = () => {
         ) : (
           <Form form={form} layout="vertical" onFinish={onFinish}>
             <Row gutter={24}>
-              {/* Left - Raw Materials */}
               <Col xs={24} md={12}>
                 <Title level={4}>Raw Materials</Title>
                 <Table
@@ -220,7 +225,6 @@ const AddProductionOrder = () => {
                 </Button>
               </Col>
 
-              {/* Right - Finished Goods */}
               <Col xs={24} md={12}>
                 <Title level={4}>Finished Goods</Title>
                 <Table
@@ -246,7 +250,6 @@ const AddProductionOrder = () => {
         )}
       </Card>
 
-      {/* Bottom Action Bar */}
       <div className="flex items-center gap-5 py-4 px-12 border-t border-gray-200 w-full bg-white fixed bottom-0 shadow-[0_-1px_10px_rgba(0,0,0,0.08)] z-10">
         <Button type="primary" onClick={() => form.submit()}>
           {postLoading ? "Saving..." : "Save Production Order"}

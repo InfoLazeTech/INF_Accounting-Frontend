@@ -44,6 +44,7 @@ import AddTransaction from "./pages/banking/AddTransaction";
 import Transaction from "./pages/banking/Transaction";
 import ProducationOrder from "./pages/producation-order/ProducationOrder";
 import AddProductionOrder from "./pages/producation-order/AddProductionOrder";
+import ViewProducationOrder from "./pages/producation-order/ViewProducationOrder";
 
 export default function App() {
   return (
@@ -144,6 +145,7 @@ export default function App() {
 
            <Route path="/producation-order" element={<ProducationOrder />} />
            <Route path="/producation-order/add" element={<AddProductionOrder />} />
+           <Route path="/producation-order/view/:orderId" element={<ViewProducationOrder />} />
 
         </Route>
 
