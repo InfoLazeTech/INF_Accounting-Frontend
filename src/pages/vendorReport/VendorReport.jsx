@@ -262,7 +262,10 @@ const VendorReport = () => {
           <Col span={6}>
             <Card>
               <div className="text-sm text-gray-500">Total Bills</div>
-              <div className="text-2xl font-bold">{summary?.total?.billTotal}</div>
+              <div className="text-2xl font-bold">
+                {/* {summary?.total?.billTotal} */}
+                 ₹{Number(summary?.total?.billTotal).toFixed(2)}
+                </div>
             </Card>
           </Col>
           <Col span={6}>

@@ -137,8 +137,8 @@ export default function App() {
 
           <Route path="/banking" element={<Banking />} />
           <Route path="/banking/add-account" element={<AddNewAccount />} />
-          <Route path="/banking/credit/:bankId" element={<AddTransaction />} />
-          <Route path="/banking/debit/:bankId" element={<AddTransaction />} />
+          {/* <Route path="/banking/credit/:bankId" element={<AddTransaction />} /> */}
+          <Route path="/banking/add-transaction/:bankId" element={<AddTransaction />} />
           <Route path="/banking/transaction/:bankId" element={<Transaction />} />
 
 
