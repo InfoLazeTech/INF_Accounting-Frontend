@@ -218,7 +218,7 @@ const ProducationOrder = () => {
                         onClick={() => navigate(`/producation-order/view/${record._id}`)}
                     />
                     <Popconfirm
-                        title="Are you sure you want to delete this item?"
+                        title="Are you sure you want to delete this Producation Order?"
                         okText="Yes"
                         okButtonProps={{ loading: deleteLoading }}
                         cancelText="No"
