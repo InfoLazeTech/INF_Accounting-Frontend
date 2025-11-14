@@ -15,6 +15,7 @@ import customerReportReducer from "../slice/reports/customerReportSlice";
 import vendorReportReducer from "../slice/reports/vendorReportSlice"; 
 import itemReportReducer from "../slice/reports/itemReportsSlice";
 import bankReducer from "../slice/bank/bankSlice";
+import producationReducer from "../slice/producation/producationSlice"
 
 const appReducer = combineReducers({
   auth: authReducer,
@@ -30,7 +31,7 @@ const appReducer = combineReducers({
     vendorReport: vendorReportReducer,
     itemReport: itemReportReducer,
     bank: bankReducer,
-
+    producation: producationReducer,
 });
 
 // Root reducer that can handle resetting all slices
